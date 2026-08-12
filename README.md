@@ -11,6 +11,8 @@ An IoT observation workbook was received for the Jamsil area. The original workb
 
 See each project README for setup, physical-device networking, testing, and the production-data handoff.
 
+로컬 파일 기반 전체 테스트는 [TESTING.md](TESTING.md)의 `./scripts/test-all.sh`로 실행할 수 있습니다.
+
 ## Quick start
 
 ```bash
