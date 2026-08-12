@@ -1,0 +1,49 @@
+appId: com.pawsafe.mobile
+name: PawSafe mock walk flow
+---
+- launchApp:
+    clearState: true
+- assertVisible: "산책 조건을 선택해 주세요"
+- tapOn:
+    id: "origin-search-input"
+- inputText: "우리집"
+- hideKeyboard
+- extendedWaitUntil:
+    visible:
+      id: "origin-result-place_home"
+    timeout: 5000
+- tapOn:
+    id: "origin-result-place_home"
+- tapOn:
+    id: "destination-search-input"
+- inputText: "망원한강공원"
+- hideKeyboard
+- extendedWaitUntil:
+    visible:
+      id: "destination-result-place_mangwon_park"
+    timeout: 5000
+- tapOn:
+    id: "destination-result-place_mangwon_park"
+- tapOn:
+    id: "departure-time-button"
+- tapOn:
+    text: "OK|확인"
+- tapOn:
+    text: "OK|확인"
+- tapOn:
+    id: "walk-mode-cool"
+- tapOn:
+    id: "analyze-button"
+- extendedWaitUntil:
+    visible: "구간별 상대 열노출"
+    timeout: 10000
+- tapOn:
+    id: "segment-demo_edge_01"
+- assertVisible: "독막로 인근 보행 구간"
+- tapOn:
+    id: "comparison-button"
+- assertVisible: "일반 경로"
+- assertVisible: "PawSafe 예시 경로"
+- tapOn:
+    id: "restart-button"
+- assertVisible: "산책 조건을 선택해 주세요"

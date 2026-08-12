@@ -1,0 +1,33 @@
+.DS_Store
+.env
+.env.*
+!.env.example
+
+# JavaScript / Expo
+node_modules/
+.expo/
+dist/
+web-build/
+*.jks
+*.keystore
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+
+# Private source data and workbook exports
+*.xlsx
+*.xls
+*.xlsm
+*.xlsb
+data/source/
+
+# IDE
+.idea/
+.vscode/

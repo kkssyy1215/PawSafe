@@ -7,7 +7,11 @@ PawSafe is a hackathon MVP that compares a normal walking route with a route tha
 
 The demo does not contain a trained heat model, verified surface-temperature data, or an absolute safety classification. All bundled results are clearly identified as deterministic MVP example data until the data-analysis team supplies versioned edge-by-time Heat Cost exports.
 
+An IoT observation workbook was received for the Jamsil area. The original workbook is intentionally kept outside this public repository, and no sample, cleaned, summarized, or derived dataset is created from it. For the MVP handoff, no repeated field measurement is required; production use still requires internal mapping and validation.
+
 See each project README for setup, physical-device networking, testing, and the production-data handoff.
+
+로컬 파일 기반 전체 테스트는 [TESTING.md](TESTING.md)의 `./scripts/test-all.sh`로 실행할 수 있습니다.
 
 ## Quick start
 

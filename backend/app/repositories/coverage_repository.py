@@ -1,0 +1,49 @@
+from __future__ import annotations
+
+import json
+from dataclasses import dataclass
+from pathlib import Path
+
+from shapely.geometry import Point, Polygon, shape
+
+from app.core.errors import InvalidDataFileError
+from app.schemas.capability import CoverageResponse
+from app.schemas.geojson import PolygonGeometry
+
+
+@dataclass(frozen=True)
+class CoverageData:
+    response: CoverageResponse
+    polygon: Polygon
+
+
+class CoverageRepository:
+    def load(self, path: Path) -> CoverageData:
+        if not path.is_file():
+            raise InvalidDataFileError("coverage")
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+            if payload.get("type") == "Feature":
+                properties = payload.get("properties", {})
+                geometry_payload = payload["geometry"]
+            else:
+                properties = payload
+                geometry_payload = payload["geometry"]
+            geometry = PolygonGeometry.model_validate(geometry_payload)
+            polygon = shape(geometry.model_dump())
+            if not isinstance(polygon, Polygon) or polygon.is_empty or not polygon.is_valid:
+                raise ValueError("invalid coverage polygon")
+            response = CoverageResponse(
+                coverage_id=str(properties["coverage_id"]),
+                name=str(properties["name"]),
+                is_demo=bool(properties.get("is_demo", False)),
+                geometry=geometry,
+            )
+            return CoverageData(response=response, polygon=polygon)
+        except Exception as exc:
+            raise InvalidDataFileError("coverage") from exc
+
+    @staticmethod
+    def contains(coverage: CoverageData, *, lat: float, lng: float) -> bool:
+        point = Point(lng, lat)
+        return bool(coverage.polygon.covers(point))
