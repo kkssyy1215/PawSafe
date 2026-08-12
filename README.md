@@ -7,7 +7,7 @@ PawSafe is a hackathon MVP that compares a normal walking route with a route tha
 
 The demo does not contain a trained heat model, verified surface-temperature data, or an absolute safety classification. All bundled results are clearly identified as deterministic MVP example data until the data-analysis team supplies versioned edge-by-time Heat Cost exports.
 
-An IoT observation workbook was received for the Jamsil area (eight environmental settings, depth observations, and dated time windows). The original workbook is intentionally kept outside this public repository because it contains source metadata identifying its creator and its redistribution terms are not established. The project records the schema and handoff requirements in `backend/docs/DATA_TEAM_HANDOFF.md`; no new field measurement is required for the MVP data handoff, but edge/time mapping and validation are still required before production claims.
+An IoT observation workbook was received for the Jamsil area. The original workbook is intentionally kept outside this public repository, and no sample, cleaned, summarized, or derived dataset is created from it. For the MVP handoff, no repeated field measurement is required; production use still requires internal mapping and validation.
 
 See each project README for setup, physical-device networking, testing, and the production-data handoff.
 
