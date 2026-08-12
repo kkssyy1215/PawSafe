@@ -21,7 +21,7 @@ Expo SDK 54를 고정하고 Expo Go를 기본 개발 경로로 선택했습니�
 - Expo Router Stack: 입력 → 분석 → 구간 → 비교 → 복구 가능한 오류
 - 검색 결과를 통한 출발지·목적지 확정
 - 사용자가 눌렀을 때만 앱 사용 중 현재 위치 권한 요청
-- 날짜·시간 및 fast/balanced/cool 모드 선택
+- 날짜·시간 및 빠른/시원한 산책 모드 선택
 - deterministic Mock Provider와 FastAPI HTTP Provider 전환
 - 일반/PawSafe 경로, 마커, 구간 Polyline, 지도 텍스트 요약
 - API timeout, 취소, offline, HTTP/계약 오류 변환
@@ -114,7 +114,7 @@ analysis_source=mock_fixture
 validation_status=not_validated
 ```
 
-Mock에는 cool improvement, fast near-shortest, balanced tradeoff, same route, no improvement, out of coverage, no route, timeout 시나리오가 있습니다. 실제 시각·실측 안전 결과로 표현하지 않습니다.
+Mock에는 cool improvement, fast near-shortest, same route, no improvement, out of coverage, no route, timeout 시나리오가 있습니다. 실제 시각·실측 안전 결과로 표현하지 않습니다.
 
 API 모드는 다음 endpoint를 사용합니다.
 

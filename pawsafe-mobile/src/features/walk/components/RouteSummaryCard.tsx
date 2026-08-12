@@ -14,7 +14,7 @@ export function RouteSummaryCard({ route, tone }: { route: RouteStats; tone: 'sh
   ];
   return (
     <AppCard style={[styles.card, tone === 'pawsafe' ? styles.pawsafe : styles.shortest]}>
-      <Text style={styles.title}>{route.label}</Text>
+      <Text style={styles.title}>{tone === 'shortest' ? '카카오맵 최단경로' : 'PawSafe 추천'}</Text>
       {values.map(([label, value]) => <View key={label} style={styles.row}><Text style={styles.label}>{label}</Text><Text style={styles.value}>{value}</Text></View>)}
     </AppCard>
   );

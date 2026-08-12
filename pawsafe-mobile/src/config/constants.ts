@@ -1,4 +1,4 @@
-export const PLACE_SEARCH_MIN_LENGTH = 2;
+export const PLACE_SEARCH_MIN_LENGTH = 1;
 export const PLACE_SEARCH_DEBOUNCE_MS = 350;
 export const API_TIMEOUT_MS = 10_000;
 export const MAX_DEPARTURE_DAYS = 7;

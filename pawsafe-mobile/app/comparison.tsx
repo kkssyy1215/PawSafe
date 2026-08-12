@@ -17,7 +17,7 @@ export default function ComparisonScreen() {
   const { state, dispatch } = useWalkFlow();
   const resultState = state.status === 'comparison' || state.status === 'segmentReview' ? state : null;
   useFocusEffect(useCallback(() => {
-    AccessibilityInfo.announceForAccessibility('일반 경로와 PawSafe 경로 비교 화면');
+    AccessibilityInfo.announceForAccessibility('일반 경로와 PawSafe 추천 경로 비교 화면');
     if (state.status === 'segmentReview') dispatch({ type: 'SHOW_COMPARISON' });
   }, [dispatch, state.status]));
   if (!resultState) return <ScreenContainer style={styles.missing}><Text style={styles.missingText}>비교할 경로 결과가 없습니다.</Text><AppButton onPress={() => { dispatch({ type: 'RESET' }); router.replace('/'); }}>조건 입력으로 이동</AppButton></ScreenContainer>;

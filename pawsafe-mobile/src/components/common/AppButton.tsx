@@ -34,7 +34,7 @@ export function AppButton({ children, variant = 'primary', loading, disabled, fu
 }
 
 const styles = StyleSheet.create({
-  base: { minHeight: 48, borderRadius: 12, paddingHorizontal: spacing.lg, paddingVertical: spacing.md, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
+  base: { minHeight: 54, borderRadius: 28, paddingHorizontal: spacing.lg, paddingVertical: spacing.md, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
   fullWidth: { width: '100%' },
   primary: { backgroundColor: colors.greenStrong, borderColor: colors.greenStrong },
   secondary: { backgroundColor: colors.surface, borderColor: colors.green },

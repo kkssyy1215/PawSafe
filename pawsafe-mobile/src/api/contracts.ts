@@ -1,4 +1,4 @@
-export type WalkMode = 'fast' | 'balanced' | 'cool';
+export type WalkMode = 'fast' | 'cool';
 export type HeatLevel = 'low' | 'medium' | 'high' | 'unknown';
 export type ValidationStatus = 'not_validated' | 'validated' | 'partially_validated' | 'unknown';
 export type GeoJsonCoordinate = [longitude: number, latitude: number];
