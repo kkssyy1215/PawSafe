@@ -1,0 +1,12 @@
+import { StyleSheet, Text, View } from 'react-native';
+import type { HeatSegment, RouteStats } from '@/src/api/contracts';
+import { formatDistance } from '@/src/features/walk/utils/formatDistance';
+import { colors, spacing, typography } from '@/src/theme/theme';
+
+export function MapTextSummary({ shortest, pawsafe, segments }: { shortest?: RouteStats; pawsafe?: RouteStats; segments?: HeatSegment[] }) {
+  const counts = segments?.reduce<Record<HeatSegment['level'], number>>((all, segment) => ({ ...all, [segment.level]: all[segment.level] + 1 }), { low: 0, medium: 0, high: 0, unknown: 0 });
+  const routeText = shortest && pawsafe ? `일반 경로 ${formatDistance(shortest.distance_m)}, PawSafe 경로 ${formatDistance(pawsafe.distance_m)}.` : pawsafe ? `PawSafe 경로 ${formatDistance(pawsafe.distance_m)}.` : '';
+  const segmentText = counts ? ` 구간은 열노출 낮음 ${counts.low}개, 보통 ${counts.medium}개, 높음 ${counts.high}개, 정보 부족 ${counts.unknown}개입니다.` : '';
+  return <View accessible style={styles.container}><Text style={styles.title}>지도 텍스트 요약</Text><Text style={styles.text}>출발지에서 목적지까지 {routeText}{segmentText}</Text></View>;
+}
+const styles = StyleSheet.create({ container: { gap: spacing.xs }, title: { ...typography.caption, color: colors.text, fontWeight: '700' }, text: { ...typography.caption, color: colors.mutedText } });

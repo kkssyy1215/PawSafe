@@ -1,0 +1,33 @@
+{
+  "items": [
+    {
+      "id": "place_home", "name": "우리집", "address": "서울특별시 마포구 독막로",
+      "lat": 37.550000, "lng": 126.910000, "is_in_coverage": true
+    },
+    {
+      "id": "place_001", "name": "망원한강공원", "address": "서울특별시 마포구 마포나루길",
+      "lat": 37.555000, "lng": 126.900000, "is_in_coverage": true
+    },
+    {
+      "id": "place_002", "name": "망원시장", "address": "서울특별시 마포구 포은로",
+      "lat": 37.556000, "lng": 126.907000, "is_in_coverage": true
+    },
+    {
+      "id": "scenario_same_route", "name": "같은 경로 데모", "address": "서울특별시 마포구 데모",
+      "lat": 37.551500, "lng": 126.905000, "is_in_coverage": true
+    },
+    {
+      "id": "scenario_no_improvement", "name": "개선 없음 데모", "address": "서울특별시 마포구 데모",
+      "lat": 37.554000, "lng": 126.905000, "is_in_coverage": true
+    },
+    {
+      "id": "scenario_no_route", "name": "경로 없음 데모", "address": "서울특별시 마포구 데모",
+      "lat": 37.552000, "lng": 126.902000, "is_in_coverage": true
+    },
+    {
+      "id": "scenario_timeout", "name": "시간 초과 데모", "address": "서울특별시 마포구 데모",
+      "lat": 37.553000, "lng": 126.903000, "is_in_coverage": true
+    }
+  ]
+}
+

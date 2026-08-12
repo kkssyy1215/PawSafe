@@ -1,0 +1,44 @@
+{
+  "data_version": null,
+  "is_demo": true,
+  "notice": "MVP example values; not measured or validated surface temperature",
+  "records": [
+    {
+      "edge_id": "demo_edge_01", "from_node": "n1", "to_node": "n2",
+      "valid_at": null, "heat_cost": 80, "shade_ratio": 0.20,
+      "direct_sun_minutes": 6.5, "surface_type": "unknown", "confidence": null,
+      "validation_status": "not_validated", "data_version": null
+    },
+    {
+      "edge_id": "demo_edge_02", "from_node": "n2", "to_node": "n4",
+      "valid_at": null, "heat_cost": 64, "shade_ratio": 0.22,
+      "direct_sun_minutes": 6.5, "surface_type": "unknown", "confidence": null,
+      "validation_status": "not_validated", "data_version": null
+    },
+    {
+      "edge_id": "demo_edge_03", "from_node": "n1", "to_node": "n3",
+      "valid_at": null, "heat_cost": 35, "shade_ratio": 0.65,
+      "direct_sun_minutes": 2, "surface_type": "unknown", "confidence": null,
+      "validation_status": "not_validated", "data_version": null
+    },
+    {
+      "edge_id": "demo_edge_04", "from_node": "n3", "to_node": "n4",
+      "valid_at": null, "heat_cost": 47, "shade_ratio": 0.53,
+      "direct_sun_minutes": 2, "surface_type": "unknown", "confidence": null,
+      "validation_status": "not_validated", "data_version": null
+    },
+    {
+      "edge_id": "demo_edge_05", "from_node": "n1", "to_node": "n5",
+      "valid_at": null, "heat_cost": 50, "shade_ratio": 0.46,
+      "direct_sun_minutes": 3, "surface_type": "unknown", "confidence": null,
+      "validation_status": "not_validated", "data_version": null
+    },
+    {
+      "edge_id": "demo_edge_06", "from_node": "n5", "to_node": "n4",
+      "valid_at": null, "heat_cost": 48, "shade_ratio": 0.50,
+      "direct_sun_minutes": 3, "surface_type": "unknown", "confidence": null,
+      "validation_status": "not_validated", "data_version": null
+    }
+  ]
+}
+
