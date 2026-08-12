@@ -28,6 +28,14 @@ htmlcov/
 *.xlsb
 data/source/
 
+# Private planning materials and local design references
+*.docx
+*.pdf
+*.pptx
+*.zip
+~$*
+pawsafe.png
+
 # IDE
 .idea/
 .vscode/
