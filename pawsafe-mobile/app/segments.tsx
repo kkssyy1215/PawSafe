@@ -26,7 +26,7 @@ export default function SegmentsScreen() {
   return (
     <ScreenContainer>
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-        <ScreenHeader eyebrow="2 / 3" title="구간별 상대 열노출" description="지도나 아래 구간 목록을 눌러 MVP 예시 값을 확인하세요." />
+        <ScreenHeader eyebrow="열환경 분석 완료" title="상대적으로 열노출이 낮은 길을 찾았어요." description="노면온도와 그늘 정보를 바탕으로 추천 경로를 만들었어요." />
         {result.is_demo ? <DemoNotice /> : null}
         <PawSafeMap origin={request.origin} destination={request.destination} pawsafe={result.pawsafe} segments={result.heat_segments} selectedSegmentId={selectedId} onSegmentPress={selectSegment} showRouteLegend={false} showSegmentLegend />
         <RelativeHeatNotice />

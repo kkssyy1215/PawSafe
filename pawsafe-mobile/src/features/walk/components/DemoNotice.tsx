@@ -1,4 +1,4 @@
 import { Notice } from '@/src/components/common/Notice';
 export function DemoNotice() {
-  return <Notice tone="warning">MVP 예시 데이터 · 실측 검증 전{`\n`}현재 결과는 앱 흐름 검증을 위한 데모 시나리오입니다.</Notice>;
+  return <Notice tone="info">노면온도와 그늘 정보를 바탕으로 한 상대 비교예요.{`\n`}MVP 예시 데이터 · 실측 검증 전</Notice>;
 }

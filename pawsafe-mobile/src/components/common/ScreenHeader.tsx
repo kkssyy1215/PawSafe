@@ -1,7 +1,7 @@
 import { Image, StyleSheet, Text, View } from 'react-native';
 import { colors, spacing, typography } from '@/src/theme/theme';
 
-export function ScreenHeader({ title, description, eyebrow }: { title: string; description?: string; eyebrow?: string }) {
+export function ScreenHeader({ title, description, eyebrow, compact = false }: { title: string; description?: string; eyebrow?: string; compact?: boolean }) {
   return (
     <View accessible accessibilityRole="header" style={styles.container}>
       {eyebrow === 'PawSafe' ? (
@@ -10,7 +10,7 @@ export function ScreenHeader({ title, description, eyebrow }: { title: string; d
           <Text style={styles.brandName}>PawSafe</Text>
         </View>
       ) : eyebrow ? <Text style={styles.eyebrow}>{eyebrow}</Text> : null}
-      <Text style={styles.title}>{title}</Text>
+      <Text style={[styles.title, compact && styles.compactTitle]}>{title}</Text>
       {description ? <Text style={styles.description}>{description}</Text> : null}
     </View>
   );
@@ -22,5 +22,6 @@ const styles = StyleSheet.create({
   brandName: { ...typography.heading, color: colors.greenStrong, fontWeight: '800' },
   eyebrow: { ...typography.caption, color: colors.greenStrong, fontWeight: '700' },
   title: { ...typography.title, color: colors.text },
+  compactTitle: { fontSize: 16, lineHeight: 22, fontWeight: '600' },
   description: { ...typography.body, color: colors.mutedText },
 });

@@ -2,10 +2,9 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { WalkMode } from '@/src/api/contracts';
 import { colors, spacing, typography } from '@/src/theme/theme';
 
-const modes: { id: WalkMode; title: string; description: string }[] = [
-  { id: 'fast', title: '빠른 산책', description: '이동 거리를 우선해 경로를 비교합니다.' },
-  { id: 'balanced', title: '균형 산책', description: '거리와 상대 열노출을 함께 고려합니다.' },
-  { id: 'cool', title: '시원한 산책', description: '상대 열노출 감소를 우선해 경로를 비교합니다.' },
+const modes: { id: WalkMode; title: string; description: string; icon: string; recommended?: boolean }[] = [
+  { id: 'fast', title: '빠른 산책', description: '가장 거리가 짧은 경로 우선', icon: '↯' },
+  { id: 'cool', title: '시원한 산책', description: '직사광선과 지면 열노출을 최소화', icon: '☼', recommended: true },
 ];
 
 export function WalkModeSelector({ value, onChange }: { value: WalkMode; onChange: (mode: WalkMode) => void }) {
@@ -24,8 +23,9 @@ export function WalkModeSelector({ value, onChange }: { value: WalkMode; onChang
             style={({ pressed }) => [styles.option, selected && styles.selected, pressed && styles.pressed]}
             onPress={() => onChange(mode.id)}
           >
-            <View style={[styles.radio, selected && styles.radioSelected]}><View style={selected ? styles.dot : undefined} /></View>
+            <View style={[styles.icon, selected && styles.iconSelected]}><Text style={[styles.iconText, selected && styles.iconTextSelected]}>{mode.icon}</Text></View>
             <View style={styles.copy}><Text style={styles.title}>{mode.title}</Text><Text style={styles.description}>{mode.description}</Text></View>
+            {mode.recommended ? <Text style={styles.badge}>추천</Text> : null}
           </Pressable>
         );
       })}
@@ -36,7 +36,8 @@ const styles = StyleSheet.create({
   group: { gap: spacing.sm }, label: { ...typography.subheading, color: colors.text, marginBottom: spacing.xs },
   option: { minHeight: 72, flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.md, borderWidth: 1, borderColor: colors.border, borderRadius: 12, backgroundColor: colors.surface },
   selected: { borderColor: colors.green, backgroundColor: colors.greenSoft }, pressed: { opacity: 0.78 },
-  radio: { width: 22, height: 22, borderRadius: 11, borderWidth: 2, borderColor: colors.mutedText, alignItems: 'center', justifyContent: 'center' },
-  radioSelected: { borderColor: colors.greenStrong }, dot: { width: 10, height: 10, borderRadius: 5, backgroundColor: colors.greenStrong },
+  icon: { width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: '#EDF7EF' },
+  iconSelected: { backgroundColor: colors.greenStrong }, iconText: { fontSize: 22, color: colors.greenStrong, fontWeight: '700' }, iconTextSelected: { color: colors.white },
   copy: { flex: 1, gap: 2 }, title: { ...typography.body, color: colors.text, fontWeight: '700' }, description: { ...typography.caption, color: colors.mutedText },
+  badge: { ...typography.caption, color: colors.greenStrong, backgroundColor: '#D9F0DD', borderRadius: 5, paddingHorizontal: 5, paddingVertical: 2, fontWeight: '700' },
 });

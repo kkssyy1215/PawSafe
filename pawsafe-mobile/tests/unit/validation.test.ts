@@ -16,7 +16,7 @@ describe('walk form validation', () => {
   it('rejects identical places by id or coordinate', () => {
     expect(isSamePlace(origin, { ...destination, id: origin.id })).toBe(true);
     expect(isSamePlace(origin, { ...destination, lat: origin.lat, lng: origin.lng })).toBe(true);
-    expect(validateWalkForm({ origin, destination: { ...destination, id: origin.id }, departureAt: new Date(now.getTime() + 60_000), walkMode: 'balanced' }, now))
+    expect(validateWalkForm({ origin, destination: { ...destination, id: origin.id }, departureAt: new Date(now.getTime() + 60_000), walkMode: 'cool' }, now))
       .toBe('출발지와 목적지를 다르게 선택해 주세요.');
   });
 

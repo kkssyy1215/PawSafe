@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { AccessibilityInfo, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { router, useFocusEffect } from 'expo-router';
+import { router, useFocusEffect, type RelativePathString } from 'expo-router';
 import { AppButton } from '@/src/components/common/AppButton';
 import { Notice } from '@/src/components/common/Notice';
 import { ScreenContainer } from '@/src/components/common/ScreenContainer';
@@ -36,6 +36,7 @@ export default function ComparisonScreen() {
         <View style={styles.actions}>
           <AppButton variant="secondary" onPress={() => { if (state.status === 'comparison') dispatch({ type: 'SHOW_SEGMENTS' }); router.back(); }}>구간 다시 보기</AppButton>
           <AppButton testID="restart-button" onPress={() => { dispatch({ type: 'RESET' }); router.dismissAll(); router.replace('/'); }}>다른 조건으로 검색</AppButton>
+          <AppButton onPress={() => router.push('/live' as RelativePathString)}>산책 시작</AppButton>
         </View>
       </ScrollView>
     </ScreenContainer>

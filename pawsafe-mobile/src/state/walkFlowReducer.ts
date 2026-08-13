@@ -4,7 +4,7 @@ import type { WalkFlowAction, WalkFlowState } from './walkFlowTypes';
 export function createInitialWalkFlowState(): WalkFlowState {
   return {
     status: 'input',
-    form: { origin: null, destination: null, departureAt: createDefaultDeparture(), walkMode: 'balanced' },
+    form: { origin: null, destination: null, departureAt: createDefaultDeparture(), walkMode: 'cool' },
   };
 }
 

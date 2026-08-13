@@ -6,7 +6,7 @@ const shortestCoordinates: GeoJsonCoordinate[] = [
 const coolCoordinates: GeoJsonCoordinate[] = [
   [126.91, 37.55], [126.909, 37.553], [126.906, 37.5555], [126.902, 37.5565], [126.9, 37.555],
 ];
-const balancedCoordinates: GeoJsonCoordinate[] = [
+const noImprovementCoordinates: GeoJsonCoordinate[] = [
   [126.91, 37.55], [126.908, 37.552], [126.905, 37.554], [126.902, 37.555], [126.9, 37.555],
 ];
 
@@ -92,20 +92,17 @@ function buildResponse(
   };
 }
 
-export type DemoSuccessScenario = 'cool-improvement' | 'fast-near-shortest' | 'balanced-tradeoff' | 'same-route' | 'no-improvement';
+export type DemoSuccessScenario = 'cool-improvement' | 'fast-near-shortest' | 'same-route' | 'no-improvement';
 
 export function getMockRouteScenario(request: RouteAnalysisRequest): RouteAnalysisResponse {
   if (request.destination.id === 'scenario_same_route') {
     return buildResponse(request, 'same-route', { ...shortest, route_id: 'pawsafe_same', label: 'PawSafe 예시 경로' }, true);
   }
   if (request.destination.id === 'scenario_no_improvement') {
-    return buildResponse(request, 'no-improvement', route('pawsafe_no_change', balancedCoordinates, 1290, 18, 74, 0.25, 12));
+    return buildResponse(request, 'no-improvement', route('pawsafe_no_change', noImprovementCoordinates, 1290, 18, 74, 0.25, 12));
   }
   if (request.walk_mode === 'fast') {
     return buildResponse(request, 'fast-near-shortest', route('pawsafe_fast', shortestCoordinates, 1220, 17, 68, 0.27, 12));
-  }
-  if (request.walk_mode === 'balanced') {
-    return buildResponse(request, 'balanced-tradeoff', route('pawsafe_balanced', balancedCoordinates, 1300, 19, 53, 0.44, 8));
   }
   return buildResponse(request, 'cool-improvement', route('pawsafe_cool', coolCoordinates, 1400, 20, 41, 0.59, 4));
 }

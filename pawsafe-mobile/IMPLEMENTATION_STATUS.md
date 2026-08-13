@@ -5,11 +5,11 @@
 ## 구현 완료
 
 - [x] React Native + TypeScript strict + Expo SDK 54 프로젝트
-- [x] Expo Router Stack과 입력/분석/구간/비교/오류 화면
+- [x] Expo Router Stack과 입력/분석/구간/비교/실시간 산책 도우미/오류 화면
 - [x] Safe Area, Android edge-to-edge, 접근성 레이블·상태·텍스트 지도 요약
 - [x] 검색 결과 기반 출발지·목적지 선택과 동일 위치 검증
 - [x] foreground-only 현재 위치 요청과 거부/차단/서비스 비활성 안내
-- [x] 날짜·시간 및 fast/balanced/cool 선택
+- [x] 날짜·시간 및 fast/cool 선택
 - [x] deterministic Mock 장소/분석 Provider
 - [x] FastAPI 장소 검색/reverse geocode/route analysis Provider
 - [x] timeout, AbortSignal 취소, offline, JSON/content-type, HTTP와 Zod 계약 오류 처리
@@ -21,6 +21,7 @@
 - [x] Expo Go 실행 구성
 - [x] EAS development/internal preview APK/production 프로필
 - [x] Jest Expo, React Native Testing Library와 Maestro scaffold
+- [x] 첨부 목업 기반 분석 진행 지도, 열환경 카드, 우회 알림 UI
 
 ## 이번 작업에서 확인한 결과
 
@@ -32,7 +33,8 @@
 | `npm run lint` | 통과 |
 | `npm test -- --runInBand` | 12 suites, 33 tests 통과 |
 | `npx expo-doctor@latest` | 18/18 checks 통과 |
-| Android Metro export | 통과; Hermes bundle, 1,555 modules |
+| Android Metro export | 통과; Hermes bundle, 1,557 modules |
+| Web static export | 통과; `/`, `/analyzing`, `/segments`, `/comparison`, `/live` 포함 8 routes |
 | EAS cloud build | 미실행 |
 | Preview APK 실제 설치 | 미실행 |
 | Maestro 물리/emulator E2E | scaffold 작성, 미실행 |
@@ -56,7 +58,7 @@ EAS development profile에는 `expo-dev-client`가 설치되어 있어 향후 �
 - 장소 목록과 서비스 coverage 표시
 - 일반/PawSafe 경로 geometry와 통계
 - Heat Cost, 그늘 비율, 직사광선 시간과 구간 정보
-- fast/balanced/cool 결과와 오류 시나리오
+- fast/cool 결과와 오류 시나리오
 
 성공 fixture는 `is_demo=true`, `analysis_source=mock_fixture`, `validation_status=not_validated`입니다. 실제 AI 분석, 실시간 안전 분석, 절대 노면온도 또는 화상 위험 없음으로 표현하지 않습니다.
 
@@ -67,7 +69,7 @@ EAS development profile에는 `expo-dev-client`가 설치되어 있어 향후 �
 - [ ] 실제 Heat Cost export
 - [ ] 실제 운영 보행 그래프
 - [ ] 실측 표면온도 검증과 validation status
-- [ ] 검증된 fast/balanced/cool 가중치
+- [ ] 검증된 fast/cool 가중치
 - [ ] 운영 Kakao 장소 검색과 credential
 - [ ] 운영 분석 API와 배포 URL
 - [ ] EAS 계정/project ID/signing credential

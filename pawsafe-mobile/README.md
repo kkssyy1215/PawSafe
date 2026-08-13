@@ -18,12 +18,13 @@ Expo SDK 54를 고정하고 Expo Go를 기본 개발 경로로 선택했습니�
 
 ## 현재 구현 범위
 
-- Expo Router Stack: 입력 → 분석 → 구간 → 비교 → 복구 가능한 오류
+- Expo Router Stack: 입력 → 분석 → 구간 → 비교 → 실시간 산책 도우미 → 복구 가능한 오류
 - 검색 결과를 통한 출발지·목적지 확정
 - 사용자가 눌렀을 때만 앱 사용 중 현재 위치 권한 요청
-- 날짜·시간 및 fast/balanced/cool 모드 선택
+- 날짜·시간 및 fast/cool 모드 선택
 - deterministic Mock Provider와 FastAPI HTTP Provider 전환
 - 일반/PawSafe 경로, 마커, 구간 Polyline, 지도 텍스트 요약
+- 목업 기반 분석 진행 지도와 실시간 노면 열환경·우회 알림 화면
 - API timeout, 취소, offline, HTTP/계약 오류 변환
 - 데모/실측 검증 전 상태 표시
 - Android Preview APK와 development build용 EAS 프로필
@@ -114,7 +115,7 @@ analysis_source=mock_fixture
 validation_status=not_validated
 ```
 
-Mock에는 cool improvement, fast near-shortest, balanced tradeoff, same route, no improvement, out of coverage, no route, timeout 시나리오가 있습니다. 실제 시각·실측 안전 결과로 표현하지 않습니다.
+Mock에는 cool improvement, fast near-shortest, same route, no improvement, out of coverage, no route, timeout 시나리오가 있습니다. 실제 시각·실측 안전 결과로 표현하지 않습니다.
 
 API 모드는 다음 endpoint를 사용합니다.
 
@@ -174,7 +175,7 @@ npm run test:coverage
 
 Jest 테스트는 formatter/null 처리, GeoJSON 변환, 입력 검증, 오류 카피, 결과 headline, same/no-improvement, demo 상태, deterministic provider 오류·취소와 reducer 전체 흐름을 포함합니다.
 
-현재 저장소 검증 결과는 Expo Go 모드 Metro 시작, TypeScript와 lint 통과, Jest 12 suites/33 tests 통과, Expo Doctor 18/18 통과, Android Hermes Metro export 성공(1,555 modules)입니다. 이 export는 네이티브 APK를 만드는 EAS Build와 다릅니다.
+현재 저장소 검증 결과는 Expo Go 모드 Metro 시작, TypeScript와 lint 통과, Jest 12 suites/33 tests 통과, 웹 정적 export 8개 라우트 성공, Android Hermes Metro export 성공(1,557 modules)입니다. 이 export는 네이티브 APK를 만드는 EAS Build와 다릅니다.
 
 Maestro가 설치되어 있고 `com.pawsafe.mobile` APK/development build가 실행 가능한 Android 기기에 설치되어 있으면 다음을 실행합니다.
 

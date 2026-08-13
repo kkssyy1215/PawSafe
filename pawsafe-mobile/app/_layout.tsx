@@ -29,6 +29,7 @@ export default function RootLayout() {
             <Stack.Screen name="analyzing" />
             <Stack.Screen name="segments" />
             <Stack.Screen name="comparison" />
+            <Stack.Screen name="live" />
             <Stack.Screen name="error" />
             <Stack.Screen name="+not-found" />
           </Stack>

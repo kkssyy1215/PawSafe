@@ -4,7 +4,7 @@ import { colors, spacing, typography } from '@/src/theme/theme';
 
 interface AppButtonProps extends Omit<ComponentProps<typeof Pressable>, 'children' | 'style'> {
   children: ReactNode;
-  variant?: 'primary' | 'secondary' | 'quiet' | 'danger';
+  variant?: 'primary' | 'secondary' | 'quiet' | 'danger' | 'warning';
   loading?: boolean;
   fullWidth?: boolean;
 }
@@ -27,7 +27,7 @@ export function AppButton({ children, variant = 'primary', loading, disabled, fu
     >
       <View style={styles.content}>
         {loading ? <ActivityIndicator color={variant === 'primary' ? colors.white : colors.green} /> : null}
-        <Text style={[styles.label, variant === 'primary' || variant === 'danger' ? styles.lightLabel : styles.darkLabel]}>{children}</Text>
+        <Text style={[styles.label, variant === 'primary' || variant === 'danger' || variant === 'warning' ? styles.lightLabel : styles.darkLabel]}>{children}</Text>
       </View>
     </Pressable>
   );
@@ -40,6 +40,7 @@ const styles = StyleSheet.create({
   secondary: { backgroundColor: colors.surface, borderColor: colors.green },
   quiet: { backgroundColor: 'transparent', borderColor: colors.border },
   danger: { backgroundColor: colors.error, borderColor: colors.error },
+  warning: { backgroundColor: colors.orange, borderColor: colors.orange },
   content: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   label: typography.button,
   lightLabel: { color: colors.white },
