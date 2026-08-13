@@ -31,7 +31,7 @@
 | `npx expo config --type public` | 통과; SDK 54, app identity와 foreground location 설정 해석됨 |
 | `npm run typecheck` | 통과 |
 | `npm run lint` | 통과 |
-| `npm test -- --runInBand` | 14 suites, 38 tests 통과 |
+| `npm test -- --runInBand` | 15 suites, 40 tests 통과 |
 | `npx expo-doctor@latest` | 18/18 checks 통과 |
 | Android Metro export | 통과; Hermes bundle, 1,557 modules |
 | Web static export | 통과; `/`, `/analyzing`, `/segments`, `/comparison`, `/live` 포함 8 routes |

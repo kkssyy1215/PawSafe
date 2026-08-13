@@ -3,7 +3,7 @@ name: PawSafe mock walk flow
 ---
 - launchApp:
     clearState: true
-- assertVisible: "우리 강아지가 걷기 좋은 길을 찾아볼까요?"
+- assertVisible: "우리 강아지의 발바닥을 안전하게"
 - tapOn:
     id: "origin-search-input"
 - inputText: "우리집"

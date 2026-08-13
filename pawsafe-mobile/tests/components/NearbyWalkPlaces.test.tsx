@@ -23,6 +23,7 @@ describe('NearbyWalkPlaces', () => {
 
     await act(async () => { await jest.advanceTimersByTimeAsync(300); });
     expect(screen.getByText('주변 산책로·공원')).toBeTruthy();
+    expect(screen.getAllByText('🍃')).toHaveLength(3);
     await fireEvent.press(screen.getByTestId('nearby-place-place_yanghwajin_trail'));
     expect(onSelect).toHaveBeenCalledWith(expect.objectContaining({ id: 'place_yanghwajin_trail', is_in_coverage: true }));
   });

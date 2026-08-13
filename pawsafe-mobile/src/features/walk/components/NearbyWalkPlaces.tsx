@@ -22,7 +22,7 @@ export function NearbyWalkPlaces({ origin, selected, onSelect }: NearbyWalkPlace
           <Text style={styles.title}>주변 산책로·공원</Text>
           <Text style={styles.description}>{origin ? `${origin.name}에서 가까운 순이에요.` : '출발지를 선택하면 가까운 순으로 보여드려요.'}</Text>
         </View>
-        <Text accessibilityElementsHidden style={styles.leaf}>●</Text>
+        <Text accessibilityElementsHidden style={styles.leaf}>🍃</Text>
       </View>
       {isLoading ? <View accessibilityLiveRegion="polite" style={styles.loading}><ActivityIndicator size="small" color={colors.greenStrong} /><Text style={styles.description}>주변 장소를 찾고 있어요.</Text></View> : null}
       {!isLoading && hasError ? <Text accessibilityLiveRegion="polite" style={styles.description}>주변 추천을 불러오지 못했어요. 위 검색창에서 직접 찾아주세요.</Text> : null}
@@ -43,7 +43,7 @@ export function NearbyWalkPlaces({ origin, selected, onSelect }: NearbyWalkPlace
                 style={({ pressed }) => [styles.card, active && styles.selected, pressed && styles.pressed]}
                 onPress={() => onSelect(place)}
               >
-                <View style={styles.kindRow}><Text style={styles.kindIcon}>{kind === '공원' ? '●' : '↝'}</Text><Text style={styles.kind}>{kind}</Text></View>
+                <View style={styles.kindRow}><Text style={styles.kindIcon}>🍃</Text><Text style={styles.kind}>{kind}</Text></View>
                 <Text style={styles.placeName} numberOfLines={1}>{place.name}</Text>
                 <Text style={styles.address} numberOfLines={2}>{place.address}</Text>
                 <Text style={styles.distance}>{active ? '선택됨' : distance ? `약 ${distance}` : '목적지로 선택'}</Text>
@@ -58,7 +58,7 @@ export function NearbyWalkPlaces({ origin, selected, onSelect }: NearbyWalkPlace
 
 const styles = StyleSheet.create({
   container: { gap: spacing.sm }, headingRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: spacing.sm }, headingCopy: { flex: 1, gap: 2 },
-  title: { ...typography.subheading, color: colors.text }, description: { ...typography.caption, color: colors.mutedText }, leaf: { color: colors.greenStrong, fontSize: 18 },
+  title: { ...typography.subheading, color: colors.text }, description: { ...typography.caption, color: colors.mutedText }, leaf: { color: colors.greenStrong, fontSize: 24 },
   loading: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, minHeight: 48 }, list: { gap: spacing.sm, paddingRight: spacing.md },
   card: { width: 164, minHeight: 136, borderWidth: 1, borderColor: colors.border, borderRadius: 14, backgroundColor: colors.surface, padding: spacing.md, gap: 4 }, selected: { borderColor: colors.greenStrong, backgroundColor: colors.greenSoft }, pressed: { opacity: 0.78 },
   kindRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs }, kindIcon: { color: colors.greenStrong, fontSize: 16, fontWeight: '700' }, kind: { ...typography.caption, color: colors.greenStrong, fontWeight: '700' }, placeName: { ...typography.body, color: colors.text, fontWeight: '700' }, address: { ...typography.caption, color: colors.mutedText, minHeight: 38 }, distance: { ...typography.caption, color: colors.greenStrong, fontWeight: '700', marginTop: 'auto' },
