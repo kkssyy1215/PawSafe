@@ -50,9 +50,21 @@ Base prefix는 `/v1`입니다. 모든 JSON 키는 snake_case입니다. GeoJSON �
 
 `CoverageResponse`는 `coverage_id`, `name`, `is_demo`, GeoJSON `Polygon geometry`를 반환합니다.
 
-## `GET /v1/places/search?q={query}`
+## `GET /v1/places/search?q={query}&lat={originLat}&lng={originLng}`
 
 응답 envelope는 반드시 `{ "items": Place[] }`입니다. `Place`는 `id`, `name`, `address`, `lat`, `lng`, `is_in_coverage`를 포함합니다. 빈 query는 `VALIDATION_ERROR`입니다.
+
+`lat`과 `lng`는 기존 직접 검색과 호환되는 선택적 출발 위치 힌트입니다. 둘 다 생략하면 기존 `q`-only 검색과 결과 순서를 유지합니다. 하나만 전달하면 `VALIDATION_ERROR`이며, 둘 다 전달할 때 각각 위도 -90~90, 경도 -180~180 범위를 검증합니다.
+
+- Mock Provider: query와 일치한 장소를 힌트 좌표와의 거리순으로 정렬합니다.
+- Kakao Provider: 두 좌표가 모두 있을 때만 서버 측 요청에 `x`, `y`, `radius=5000`, `sort=distance`를 추가합니다.
+- 이 좌표는 검색 결과 정렬에만 사용하며 DB에 저장하지 않습니다. 운영 환경에서는 프록시·액세스 로그에 query string을 남기지 않도록 설정해야 합니다.
+
+예시:
+
+```http
+GET /v1/places/search?q=공원&lat=37.55&lng=126.91
+```
 
 ## `POST /v1/places/reverse-geocode`
 
@@ -154,4 +166,3 @@ Base prefix는 `/v1`입니다. 모든 JSON 키는 snake_case입니다. GeoJSON �
 지원 코드: `VALIDATION_ERROR`, `OUT_OF_COVERAGE`, `PLACE_NOT_FOUND`, `SAME_LOCATION`, `NO_WALKABLE_NODE`, `NO_ROUTE`, `HEAT_DATA_NOT_AVAILABLE`, `STALE_HEAT_DATA`, `ANALYSIS_TIMEOUT`, `NETWORK_ERROR`, `EXTERNAL_API_TIMEOUT`, `EXTERNAL_API_ERROR`, `MODEL_NOT_READY`, `PIPELINE_NOT_READY`, `INVALID_DATA_FILE`, `INVALID_RESPONSE`, `INTERNAL_ERROR`.
 
 요청의 유효한 `X-Request-ID`는 그대로 응답합니다. 없거나 안전한 형식이 아니면 서버가 `req_` prefix ID를 생성합니다. validation `details`에는 field/type만 포함하며 입력값, 주소, 좌표, 내부 경로는 포함하지 않습니다.
-

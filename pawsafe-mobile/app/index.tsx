@@ -8,6 +8,7 @@ import { ScreenHeader } from '@/src/components/common/ScreenHeader';
 import { CurrentLocationButton } from '@/src/features/walk/components/CurrentLocationButton';
 import { DepartureTimePicker } from '@/src/features/walk/components/DepartureTimePicker';
 import { PlaceSearchField } from '@/src/features/walk/components/PlaceSearchField';
+import { NearbyWalkPlaces } from '@/src/features/walk/components/NearbyWalkPlaces';
 import { WalkModeSelector } from '@/src/features/walk/components/WalkModeSelector';
 import { toLocalIsoWithOffset } from '@/src/features/walk/utils/dateTime';
 import { toApiPlace, validateWalkForm } from '@/src/features/walk/utils/validation';
@@ -48,6 +49,7 @@ export default function InputScreen() {
             <PlaceSearchField label="출발지" field="origin" selected={form.origin} onSelect={(place) => { setValidationError(null); dispatch({ type: 'SET_PLACE', field: 'origin', place }); }} />
             {!form.origin ? <CurrentLocationButton onSelect={(place) => dispatch({ type: 'SET_PLACE', field: 'origin', place })} /> : null}
             <PlaceSearchField label="목적지" field="destination" selected={form.destination} onSelect={(place) => { setValidationError(null); dispatch({ type: 'SET_PLACE', field: 'destination', place }); }} />
+            <NearbyWalkPlaces origin={form.origin} selected={form.destination} onSelect={(place) => { setValidationError(null); dispatch({ type: 'SET_PLACE', field: 'destination', place }); }} />
           </View>
           <View style={styles.section}>
             <Text style={styles.step}>2 · 언제 걸을까요?</Text>

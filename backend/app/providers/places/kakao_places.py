@@ -11,9 +11,11 @@ from app.core.errors import (
     NetworkError,
     PlaceNotFoundError,
 )
+from app.schemas.location import CoordinateInput
 from app.schemas.place import Place
 
 KAKAO_BASE_URL = "https://dapi.kakao.com"
+KAKAO_SEARCH_RADIUS_M = 5_000
 
 
 class KakaoPlaceSearchProvider:
@@ -28,10 +30,25 @@ class KakaoPlaceSearchProvider:
         self._headers = {"Authorization": f"KakaoAK {api_key}"}
         self._timeout = timeout_seconds
 
-    async def search(self, query: str) -> list[Place]:
+    async def search(
+        self,
+        query: str,
+        *,
+        origin: CoordinateInput | None = None,
+    ) -> list[Place]:
+        params = {"query": query, "size": "10"}
+        if origin is not None:
+            params.update(
+                {
+                    "x": str(origin.lng),
+                    "y": str(origin.lat),
+                    "radius": str(KAKAO_SEARCH_RADIUS_M),
+                    "sort": "distance",
+                }
+            )
         payload = await self._get(
             "/v2/local/search/keyword.json",
-            params={"query": query, "size": "10"},
+            params=params,
         )
         try:
             return [

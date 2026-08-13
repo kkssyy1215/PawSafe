@@ -7,7 +7,7 @@
 - [x] React Native + TypeScript strict + Expo SDK 54 프로젝트
 - [x] Expo Router Stack과 입력/분석/구간/비교/실시간 산책 도우미/오류 화면
 - [x] Safe Area, Android edge-to-edge, 접근성 레이블·상태·텍스트 지도 요약
-- [x] 검색 결과 기반 출발지·목적지 선택과 동일 위치 검증
+- [x] 장소명·주소 직접 검색, 출발지 기반 주변 산책로·공원 추천, 동일 위치 검증
 - [x] foreground-only 현재 위치 요청과 거부/차단/서비스 비활성 안내
 - [x] 날짜·시간 및 fast/cool 선택
 - [x] deterministic Mock 장소/분석 Provider
@@ -31,7 +31,7 @@
 | `npx expo config --type public` | 통과; SDK 54, app identity와 foreground location 설정 해석됨 |
 | `npm run typecheck` | 통과 |
 | `npm run lint` | 통과 |
-| `npm test -- --runInBand` | 12 suites, 33 tests 통과 |
+| `npm test -- --runInBand` | 14 suites, 38 tests 통과 |
 | `npx expo-doctor@latest` | 18/18 checks 통과 |
 | Android Metro export | 통과; Hermes bundle, 1,557 modules |
 | Web static export | 통과; `/`, `/analyzing`, `/segments`, `/comparison`, `/live` 포함 8 routes |

@@ -5,12 +5,14 @@ import { Notice } from '@/src/components/common/Notice';
 import { usePlaceSearch } from '@/src/features/walk/hooks/usePlaceSearch';
 import { colors, spacing, typography } from '@/src/theme/theme';
 
-export function PlaceSearchField({ label, field, selected, onSelect }: {
+interface PlaceSearchFieldProps {
   label: string;
   field: 'origin' | 'destination';
   selected: Place | null;
   onSelect: (place: PlaceSearchResult | null) => void;
-}) {
+}
+
+export function PlaceSearchField({ label, field, selected, onSelect }: PlaceSearchFieldProps) {
   const { query, setQuery, results, isLoading, error, minimumLength } = usePlaceSearch();
   const prefix = field === 'origin' ? 'origin' : 'destination';
   if (selected) {
@@ -41,7 +43,7 @@ export function PlaceSearchField({ label, field, selected, onSelect }: {
         aria-labelledby={`${prefix}-label`}
         value={query}
         onChangeText={setQuery}
-        placeholder="장소 이름이나 주소 검색"
+        placeholder="장소 이름이나 주소 직접 검색"
       />
       {query.trim().length > 0 && query.trim().length < minimumLength ? <Text style={styles.help}>두 글자 이상 입력해 주세요.</Text> : null}
       {isLoading ? <View accessibilityLiveRegion="polite" style={styles.searching}><ActivityIndicator size="small" color={colors.green} /><Text style={styles.help}>장소 검색 중</Text></View> : null}

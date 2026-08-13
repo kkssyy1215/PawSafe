@@ -3,6 +3,7 @@ import { z } from 'zod';
 import type { RouteAnalysisRequest } from '@/src/api/contracts';
 import { requestJson } from '@/src/api/client';
 import { HttpAnalysisProvider } from '@/src/providers/analysis/HttpAnalysisProvider';
+import { HttpPlaceSearchProvider } from '@/src/providers/places/HttpPlaceSearchProvider';
 import { getMockRouteScenario } from '@/src/mocks/routeScenarios';
 
 jest.mock('@react-native-community/netinfo', () => ({
@@ -42,6 +43,19 @@ describe('HTTP analysis client', () => {
       method: 'POST',
       body: JSON.stringify(request),
     }));
+  });
+
+  it('adds an optional location hint when searching for nearby parks', async () => {
+    mockFetch.mockResolvedValue(response({ items: [] }));
+    await new HttpPlaceSearchProvider('https://api.example.test').searchPlaces(
+      '공원',
+      undefined,
+      { near: { lat: 37.55, lng: 126.91 } },
+    );
+    expect(mockFetch).toHaveBeenCalledWith(
+      'https://api.example.test/v1/places/search?q=%EA%B3%B5%EC%9B%90&lat=37.55&lng=126.91',
+      expect.objectContaining({ method: 'GET' }),
+    );
   });
 
   it('rejects a contract-invalid or non-JSON response', async () => {

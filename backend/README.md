@@ -48,7 +48,7 @@ EXPO_PUBLIC_API_BASE_URL=http://192.168.0.10:8000
 | `GET` | `/health` | 데이터/Provider 로딩 상태 |
 | `GET` | `/v1/capabilities` | 데모·파이프라인 기능 공개 |
 | `GET` | `/v1/coverage` | 분석 영역 GeoJSON |
-| `GET` | `/v1/places/search?q=망원` | 장소 검색 |
+| `GET` | `/v1/places/search?q=망원&lat=37.55&lng=126.91` | 장소 검색; 좌표는 선택적 근접 검색 힌트 |
 | `POST` | `/v1/places/reverse-geocode` | 좌표를 장소 이름으로 변환 |
 | `POST` | `/v1/route-analyses` | 일반/PawSafe 경로 비교 |
 
@@ -153,4 +153,3 @@ docker run --env-file .env -p 8000:8000 pawsafe-api
 ## 현재 한계
 
 실제 Heat Cost, 실제 보행 그래프, 실측 검증, 검증된 가중치, 운영용 Kakao/외부 분석 연결, rate limiter, 지속 저장소, 실제 데이터 갱신 파이프라인은 아직 준비되지 않았습니다. 현재 fixture는 해커톤 사용자 흐름 검증용 예시입니다. 자세한 상태는 [구현 상태](docs/IMPLEMENTATION_STATUS.md)를 참고합니다.
-
