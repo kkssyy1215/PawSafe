@@ -1,0 +1,26 @@
+export const colors = {
+  background: '#F7F8F4',
+  surface: '#FFFFFF',
+  text: '#202923',
+  mutedText: '#727A73',
+  green: '#3FA447',
+  greenStrong: '#2F9B44',
+  /** Selected cool route: use the same calm brand green as the rest of the app. */
+  coolRoute: '#3FA447',
+  /** Selected fast route: distinct purple so it cannot be confused with a cool route. */
+  fastRoute: '#8B5CF6',
+  routeBaseline: '#E58A1F',
+  greenSoft: '#EAF6EC',
+  orange: '#E58A1F',
+  orangeSoft: '#FFF3E1',
+  border: '#DDE4DC',
+  error: '#A33A32',
+  errorSoft: '#F8E8E5',
+  warning: '#8A5A13',
+  low: '#3FA447',
+  medium: '#E58A1F',
+  high: '#E34C42',
+  unknown: '#7B817C',
+  white: '#FFFFFF',
+  overlay: 'rgba(31, 42, 34, 0.08)',
+} as const;

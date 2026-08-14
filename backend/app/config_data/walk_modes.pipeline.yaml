@@ -1,0 +1,19 @@
+version: pipeline-weight-v1
+is_demo: false
+
+# The data-team pipeline defines fast as distance-first and cool as
+# heat-exposure-first. Balanced remains available for backend compatibility;
+# the mobile UI exposes only fast and cool.
+modes:
+  fast:
+    id: pipeline-fast-v1
+    alpha: 0.85
+    beta: 0.15
+  balanced:
+    id: pipeline-balanced-v1
+    alpha: 0.50
+    beta: 0.50
+  cool:
+    id: pipeline-cool-v1
+    alpha: 0.15
+    beta: 0.85
