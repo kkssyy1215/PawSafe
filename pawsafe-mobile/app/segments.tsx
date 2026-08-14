@@ -17,11 +17,12 @@ export default function SegmentsScreen() {
   const { state, dispatch } = useWalkFlow();
   const resultState = state.status === 'segmentReview' || state.status === 'comparison' ? state : null;
   useFocusEffect(useCallback(() => {
-    AccessibilityInfo.announceForAccessibility('구간별 상대 열노출 화면');
+    AccessibilityInfo.announceForAccessibility(resultState?.request.walk_mode === 'fast' ? '카카오 빠른 산책길 결과 화면' : '구간별 상대 열노출 화면');
     if (state.status === 'comparison') dispatch({ type: 'SHOW_SEGMENTS' });
-  }, [dispatch, state.status]));
+  }, [dispatch, resultState?.request.walk_mode, state.status]));
   if (!resultState) return <ScreenContainer style={styles.missing}><Text style={styles.missingText}>먼저 경로를 분석해 주세요.</Text><AppButton onPress={() => { dispatch({ type: 'RESET' }); router.replace('/'); }}>조건 입력으로 이동</AppButton></ScreenContainer>;
   const { request, result } = resultState;
+  const isFast = request.walk_mode === 'fast';
   const recommendedSegment = result.heat_segments.find((segment) => segment.level === 'low') ?? result.heat_segments[0] ?? null;
   const selectedId = (state.status === 'segmentReview' ? state.selectedSegmentId : null) ?? recommendedSegment?.edge_id ?? null;
   const selected = result.heat_segments.find((segment) => segment.edge_id === selectedId) ?? null;
@@ -29,27 +30,33 @@ export default function SegmentsScreen() {
   return (
     <ScreenContainer>
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-        <ScreenHeader eyebrow="열환경 분석 완료" title="상대적으로 열노출이 낮은 길을 찾았어요." description="노면온도와 그늘 정보를 바탕으로 추천 경로를 만들었어요." />
+        <ScreenHeader
+          eyebrow={isFast ? '빠른 산책길 탐색 완료' : '열환경 분석 완료'}
+          title={isFast ? '빠르게 걸을 수 있는 길을 찾았어요.' : '상대적으로 열노출이 낮은 길을 찾았어요.'}
+          description={isFast ? '카카오 보행 API가 제공한 최단 경로예요.' : '노면온도와 그늘 정보를 바탕으로 추천 경로를 만들었어요.'}
+        />
         <RouteEndpointsCard origin={request.origin} destination={request.destination} />
-        <RecommendedRouteCard route={result.pawsafe} walkMode={request.walk_mode} />
-        <PawSafeMap origin={request.origin} destination={request.destination} pawsafe={result.pawsafe} walkMode={request.walk_mode} segments={result.heat_segments} selectedSegmentId={selectedId} onSegmentPress={selectSegment} showRouteLegend={false} showSegmentLegend />
-        {result.is_demo ? <DemoNotice analysisSource={result.analysis_source} /> : null}
-        <View style={styles.segmentSection}>
-          <View style={styles.sectionHeading}>
-            <Text style={styles.sectionTitle}>구간별 노면 정보</Text>
-            <Text style={styles.sectionHint}>지도 선이나 아래 구간을 누르면 자세히 볼 수 있어요.</Text>
+        <RecommendedRouteCard route={result.pawsafe} walkMode={request.walk_mode} showHeatMetrics={!isFast} />
+        <PawSafeMap origin={request.origin} destination={request.destination} pawsafe={result.pawsafe} walkMode={request.walk_mode} segments={isFast ? undefined : result.heat_segments} selectedSegmentId={selectedId} onSegmentPress={selectSegment} showRouteLegend={false} showSegmentLegend={!isFast} />
+        {result.is_demo ? <DemoNotice analysisSource={result.analysis_source} walkMode={request.walk_mode} /> : null}
+        {!isFast ? <>
+          <View style={styles.segmentSection}>
+            <View style={styles.sectionHeading}>
+              <Text style={styles.sectionTitle}>구간별 노면 정보</Text>
+              <Text style={styles.sectionHint}>지도 선이나 아래 구간을 누르면 자세히 볼 수 있어요.</Text>
+            </View>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.segmentList} accessibilityRole="list">
+              {result.heat_segments.map((segment) => {
+                const active = selectedId === segment.edge_id;
+                return <Pressable key={segment.edge_id} testID={`segment-${segment.edge_id}`} accessibilityRole="button" accessibilityState={{ selected: active }} accessibilityLabel={`${segment.display_name}, ${heatLevelCopy[segment.level]}`} style={[styles.segmentButton, active && styles.active]} onPress={() => selectSegment(segment.edge_id)}><View style={[styles.segmentDot, { backgroundColor: segment.level === 'low' ? colors.low : segment.level === 'medium' ? colors.medium : segment.level === 'high' ? colors.high : colors.unknown }]} /><Text numberOfLines={1} style={styles.segmentName}>{segment.display_name}</Text><Text style={styles.segmentLevel}>{heatLevelCopy[segment.level]}</Text></Pressable>;
+              })}
+            </ScrollView>
           </View>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.segmentList} accessibilityRole="list">
-            {result.heat_segments.map((segment) => {
-              const active = selectedId === segment.edge_id;
-              return <Pressable key={segment.edge_id} testID={`segment-${segment.edge_id}`} accessibilityRole="button" accessibilityState={{ selected: active }} accessibilityLabel={`${segment.display_name}, ${heatLevelCopy[segment.level]}`} style={[styles.segmentButton, active && styles.active]} onPress={() => selectSegment(segment.edge_id)}><View style={[styles.segmentDot, { backgroundColor: segment.level === 'low' ? colors.low : segment.level === 'medium' ? colors.medium : segment.level === 'high' ? colors.high : colors.unknown }]} /><Text numberOfLines={1} style={styles.segmentName}>{segment.display_name}</Text><Text style={styles.segmentLevel}>{heatLevelCopy[segment.level]}</Text></Pressable>;
-            })}
-          </ScrollView>
-        </View>
-        {selected ? <HeatSegmentCard segment={selected} isDemo={result.is_demo} /> : <Text accessibilityLiveRegion="polite" style={styles.prompt}>확인할 구간을 선택해 주세요.</Text>}
-        <RelativeHeatNotice />
+          {selected ? <HeatSegmentCard segment={selected} isDemo={result.is_demo} /> : <Text accessibilityLiveRegion="polite" style={styles.prompt}>확인할 구간을 선택해 주세요.</Text>}
+          <RelativeHeatNotice />
+        </> : null}
         <View style={styles.actions}>
-          <AppButton testID="comparison-button" onPress={() => router.push('/comparison')}>경로 비교하기</AppButton>
+          {!isFast ? <AppButton testID="comparison-button" onPress={() => router.push('/comparison')}>경로 비교하기</AppButton> : null}
           <AppButton variant="quiet" onPress={() => { dispatch({ type: 'RESET' }); router.replace('/'); }}>다른 조건으로 검색</AppButton>
         </View>
       </ScrollView>

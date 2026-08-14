@@ -8,9 +8,9 @@ import { getWalkModeLabel } from '@/src/features/walk/utils/walkModeCopy';
 import { getRecommendedRouteColor } from '@/src/components/map/routeStyles';
 import { colors, spacing, typography } from '@/src/theme/theme';
 
-export function RecommendedRouteCard({ route, walkMode }: { route: RouteStats; walkMode: WalkMode }) {
+export function RecommendedRouteCard({ route, walkMode, showHeatMetrics = true }: { route: RouteStats; walkMode: WalkMode; showHeatMetrics?: boolean }) {
   return (
-    <AppCard accessibilityLabel={`${getWalkModeLabel(walkMode)}, ${formatDistance(route.distance_m)}, ${formatDuration(route.duration_min)}, Heat Cost ${route.heat_cost.toFixed(0)}`} style={[styles.card, { borderColor: getRecommendedRouteColor(walkMode) }]}>
+    <AppCard accessibilityLabel={`${getWalkModeLabel(walkMode)}, ${formatDistance(route.distance_m)}, ${formatDuration(route.duration_min)}${showHeatMetrics ? `, Heat Cost ${route.heat_cost.toFixed(0)}` : ''}`} style={[styles.card, { borderColor: getRecommendedRouteColor(walkMode) }]}>
       <View style={styles.header}>
         <View style={styles.titleWrap}>
           <Text style={styles.eyebrow}>PawSafe 추천</Text>
@@ -21,9 +21,9 @@ export function RecommendedRouteCard({ route, walkMode }: { route: RouteStats; w
       <View style={styles.metrics}>
         <Metric label="거리" value={formatDistance(route.distance_m)} />
         <Metric label="예상 시간" value={formatDuration(route.duration_min)} />
-        <Metric label="Heat Cost" value={route.heat_cost.toFixed(0)} />
+        {showHeatMetrics ? <Metric label="Heat Cost" value={route.heat_cost.toFixed(0)} /> : null}
       </View>
-      <Text style={styles.footnote}>그늘 비율 {formatPercent(route.shade_ratio)} · 직사광선 {formatDuration(route.direct_sun_minutes)}</Text>
+      {showHeatMetrics ? <Text style={styles.footnote}>그늘 비율 {formatPercent(route.shade_ratio)} · 직사광선 {formatDuration(route.direct_sun_minutes)}</Text> : <Text style={styles.footnote}>카카오 보행 API가 제공한 최단 경로입니다.</Text>}
     </AppCard>
   );
 }

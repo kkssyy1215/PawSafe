@@ -65,7 +65,7 @@ PLACE_PROVIDER=mock
 KAKAO_REST_API_KEY=서버에만_보관할_Kakao_REST_API_키
 ```
 
-`ANALYSIS_PROVIDER=kakao_walk`는 Kakao 도보 경로 API에 `route_mode=SHORTEST`를 요청해 최단 경로의 거리·시간·좌표를 가져옵니다. `PLACE_PROVIDER=mock`은 앱의 출발지·목적지·현재 위치·주변 추천을 고정 좌표 fixture로 제공합니다. PawSafe 대체 경로와 Heat Cost는 데이터팀의 그래프·Heat Cost 파일이 연결될 때까지 MVP fixture입니다.
+`ANALYSIS_PROVIDER=kakao_walk`는 Kakao 도보 경로 API에 `route_mode=SHORTEST`를 요청해 최단 경로의 거리·시간·좌표를 가져옵니다. 앱에서 `fast`를 선택하면 이 live Kakao 최단 geometry가 빠른 산책길 추천으로도 사용됩니다. `PLACE_PROVIDER=mock`은 앱의 출발지·목적지·현재 위치·주변 추천을 고정 좌표 fixture로 제공합니다. `cool`의 PawSafe 대체 경로와 Heat Cost는 데이터팀의 그래프·Heat Cost 파일이 연결될 때까지 MVP fixture입니다.
 
 ### 데이터팀 파이프라인 연결(Graph 모드)
 

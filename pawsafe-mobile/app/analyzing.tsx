@@ -19,6 +19,7 @@ export default function AnalyzingScreen() {
   const mounted = useRef(true);
   const running = useRef(false);
   const request = state.status === 'submitting' ? state.request : null;
+  const walkMode = request?.walk_mode ?? 'cool';
   const showTemporaryResult = () => {
     // Keep the preview usable even if a web refresh lost the in-memory form
     // state. The real model/API path is untouched; this is only a local UI
@@ -35,7 +36,11 @@ export default function AnalyzingScreen() {
     router.replace('/segments');
   };
 
-  useEffect(() => { AccessibilityInfo.announceForAccessibility(env.analysisMode === 'mock' ? 'MVP 예시 경로를 준비하고 있어요' : '선택한 조건으로 경로를 분석하고 있어요'); }, []);
+  useEffect(() => {
+    AccessibilityInfo.announceForAccessibility(
+      walkMode === 'fast' ? '빠른 산책길을 찾고 있어요' : '시원한 산책길을 찾고 있어요',
+    );
+  }, [walkMode]);
   useEffect(() => {
     mounted.current = true;
     if (!request) return;
@@ -69,8 +74,8 @@ export default function AnalyzingScreen() {
   return (
     <ScreenContainer>
       <View style={styles.container}>
-        <AnalysisStatus isMock={env.analysisMode === 'mock'} />
-        {env.showDemoControls ? <AppButton testID="preview-results-button" variant="secondary" onPress={showTemporaryResult}>분석 결과 임시로 보기</AppButton> : null}
+        <AnalysisStatus isMock={env.analysisMode === 'mock'} walkMode={walkMode} />
+        {env.showDemoControls && env.analysisMode === 'mock' ? <AppButton testID="preview-results-button" variant="secondary" onPress={showTemporaryResult}>분석 결과 임시로 보기</AppButton> : null}
         <AppButton variant="quiet" onPress={() => { cancel(); router.back(); }}>이전 화면</AppButton>
       </View>
     </ScreenContainer>

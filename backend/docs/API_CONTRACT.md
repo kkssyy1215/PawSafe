@@ -149,7 +149,7 @@ GET /v1/places/search?q=공원&lat=37.55&lng=126.91
 
 ### Kakao 최단 보행 경로 MVP 모드
 
-`ANALYSIS_PROVIDER=kakao_walk`이면 `shortest`의 geometry·distance·duration은 Kakao맵 도보 경로 API의 `route_mode=SHORTEST` 응답으로 채웁니다. 입력·출력 좌표계는 WGS84이며 Kakao의 `[x, y]`를 GeoJSON `[lng, lat]`로 유지합니다. `pawsafe`, Heat Cost, `heat_segments`는 데이터팀의 보행 그래프와 Edge × Time Heat Cost가 연결되기 전까지 demo fixture입니다.
+`ANALYSIS_PROVIDER=kakao_walk`이면 `shortest`의 geometry·distance·duration은 Kakao맵 도보 경로 API의 `route_mode=SHORTEST` 응답으로 채웁니다. 입력·출력 좌표계는 WGS84이며 Kakao의 `[x, y]`를 GeoJSON `[lng, lat]`로 유지합니다. 요청이 `walk_mode=fast`이면 이 live Kakao 최단 geometry를 `pawsafe` 빠른 산책길 추천에도 사용합니다. `walk_mode=cool`의 `pawsafe`, Heat Cost, `heat_segments`는 데이터팀의 보행 그래프와 Edge × Time Heat Cost가 연결되기 전까지 demo fixture입니다.
 
 응답에는 `analysis_source=kakao_walk+mock_heat_fixture`와 `KAKAO_SHORTEST_WITH_DEMO_HEAT` warning이 포함됩니다. 따라서 이 모드의 Kakao 경로는 실제 보행 최단 경로이지만 열환경 비교는 검증된 모델 결과가 아닙니다.
 

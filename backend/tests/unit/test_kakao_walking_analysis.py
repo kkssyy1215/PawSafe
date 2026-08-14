@@ -86,3 +86,64 @@ async def test_kakao_walk_maps_shortest_route_and_keeps_demo_heat_fixture() -> N
     assert result.is_demo is True
     assert any(warning.code == "KAKAO_SHORTEST_WITH_DEMO_HEAT" for warning in result.warnings)
 
+
+@pytest.mark.asyncio
+async def test_kakao_walk_fast_recommends_the_live_shortest_geometry() -> None:
+    async def handler(request: httpx.Request) -> httpx.Response:
+        del request
+        return httpx.Response(
+            200,
+            json={
+                "status": "OK",
+                "route": {
+                    "properties": {"totalDistance": 900, "totalTime": 480},
+                    "legs": [
+                        {
+                            "steps": [
+                                {
+                                    "path": {
+                                        "points": [[126.91, 37.55], [126.9, 37.555]]
+                                    }
+                                }
+                            ]
+                        }
+                    ],
+                },
+            },
+        )
+
+    async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as client:
+        provider = KakaoWalkingAnalysisProvider(
+            client,
+            api_key="server-only-key",
+            mock_scenarios_path=Path(__file__).parents[2] / "app/fixtures/demo_scenarios.json",
+            timeout_seconds=5,
+        )
+        result = await provider.analyze(
+            RouteAnalysisRequest(
+                origin={
+                    "id": "place_home",
+                    "name": "우리집",
+                    "address": "서울특별시 마포구 독막로 12",
+                    "lat": 37.55,
+                    "lng": 126.91,
+                },
+                destination={
+                    "id": "place_mangwon_park",
+                    "name": "망원한강공원",
+                    "address": "서울특별시 마포구 마포나루길 467",
+                    "lat": 37.555,
+                    "lng": 126.9,
+                },
+                departure_at=datetime.fromisoformat("2026-08-14T18:30:00+09:00"),
+                walk_mode="fast",
+            )
+        )
+
+    assert result.pawsafe.route_source == "kakao_walk"
+    assert result.pawsafe.route_id == "kakao_fast"
+    assert result.pawsafe.label == "빠른 산책길(카카오 최단)"
+    assert result.pawsafe.geometry == result.shortest.geometry
+    assert result.pawsafe.distance_m == result.shortest.distance_m == 900
+    assert result.comparison.same_route is True
+    assert result.heat_segments == []

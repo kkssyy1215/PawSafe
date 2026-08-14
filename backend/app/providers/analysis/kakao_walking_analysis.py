@@ -47,10 +47,26 @@ class KakaoWalkingAnalysisProvider:
         self._mock = MockAnalysisProvider(mock_scenarios_path)
 
     async def analyze(self, request: RouteAnalysisRequest) -> RouteAnalysisResponse:
-        demo = await self._mock.analyze(request)
         payload = await self._get_route(request)
+        # The fast mode is a direct Kakao shortest-route lookup. The fixture is
+        # only used to satisfy the shared response envelope until the heat
+        # pipeline is connected; it is not used to choose the route.
+        demo = await self._mock.analyze(request)
         shortest = self._to_route_summary(payload, demo.shortest)
-        pawsafe = demo.pawsafe.model_copy(update={"label": "PawSafe 추천 경로(데모)"})
+        # Fast mode is distance-first by definition. Reuse Kakao's live
+        # shortest geometry as the recommendation so the purple fast route
+        # shown in the app is not a second, unrelated fixture polyline.
+        # Cool mode still uses the fixture recommendation until the pipeline
+        # graph + Edge x Time Heat Cost export is connected.
+        if request.walk_mode == "fast":
+            pawsafe = shortest.model_copy(
+                update={
+                    "route_id": "kakao_fast",
+                    "label": "빠른 산책길(카카오 최단)",
+                }
+            )
+        else:
+            pawsafe = demo.pawsafe.model_copy(update={"label": "PawSafe 추천 경로(데모)"})
         comparison = demo.comparison.model_copy(
             update={
                 "distance_delta_m": pawsafe.distance_m - shortest.distance_m,
@@ -79,6 +95,7 @@ class KakaoWalkingAnalysisProvider:
                 "shortest": shortest,
                 "pawsafe": pawsafe,
                 "comparison": comparison,
+                "heat_segments": [] if request.walk_mode == "fast" else demo.heat_segments,
                 "warnings": warnings,
             }
         )
