@@ -29,25 +29,30 @@ export const mockPlaces: PlaceSearchResult[] = [
 
 // The data-team pipeline covers Songpa. These are fixed, non-sensitive
 // coordinate fixtures used only when EXPO_PUBLIC_PLACE_DATASET=pipeline.
-export const pipelineCurrentPlace: PlaceSearchResult = {
+// The pair mirrors the route shown in the data/model team's map reference.
+export const pipelineMockRouteOrigin: PlaceSearchResult = {
   id: 'pipeline_home',
-  name: '송파 출발지',
-  address: '서울특별시 송파구 산책로 시작점',
-  lat: 37.4851963,
-  lng: 127.1129805,
+  name: '송파 목업 출발지',
+  address: '서울특별시 송파구 보행로 목업 출발점',
+  lat: 37.50167,
+  lng: 127.15485,
   is_in_coverage: true,
 };
 
+export const pipelineMockRouteDestination: PlaceSearchResult = {
+  id: 'pipeline_seokchon_trail',
+  name: '송파 목업 산책로',
+  address: '서울특별시 송파구 보행로 목업 도착점',
+  lat: 37.48804,
+  lng: 127.15297,
+  is_in_coverage: true,
+};
+
+export const pipelineCurrentPlace = pipelineMockRouteOrigin;
+
 export const pipelinePlaces: PlaceSearchResult[] = [
   pipelineCurrentPlace,
-  {
-    id: 'pipeline_seokchon_trail',
-    name: '송파 산책로',
-    address: '서울특별시 송파구 보행 산책로 도착점',
-    lat: 37.4880751,
-    lng: 127.153041,
-    is_in_coverage: true,
-  },
+  pipelineMockRouteDestination,
   {
     id: 'pipeline_park',
     name: '송파 공원 산책로',

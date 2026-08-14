@@ -18,7 +18,8 @@
 - [x] 데이터팀 송파 pipeline Graph 모드용 edge-only GPKG/시간별 Heat Cost 계약 연결(비공개 서버 경로)
 - [x] timeout, AbortSignal 취소, offline, JSON/content-type, HTTP와 Zod 계약 오류 처리
 - [x] `react-native-maps` Native Map과 key-free Mock Map
-- [x] 일반/PawSafe 경로, 구간별 Polyline, marker, 범례와 상세 카드
+- [x] 일반 최단 경로와 선택 모드 경로 Polyline: cool은 형광 초록, fast는 보라색
+- [x] 송파 pipeline 목업 출발지 `(37.50167, 127.15485)`·도착지 `(37.48804, 127.15297)` 고정값
 - [x] same-route, no-improvement, out-of-coverage, no-route, timeout 데모 처리
 - [x] MVP 예시·상대 Heat Cost·실측 검증 전 표시
 - [x] PawSafe icon, adaptive icon, splash와 favicon 설정
@@ -35,7 +36,7 @@
 | `npx expo config --type public` | 통과; SDK 54, app identity와 foreground location 설정 해석됨 |
 | `npm run typecheck` | 통과 |
 | `npm run lint` | 통과 |
-| `npm test -- --runInBand` | 16 suites, 42 tests 통과 |
+| `npm test -- --runInBand` | 17 suites, 45 tests 통과 |
 | `npx expo-doctor@latest` | 18/18 checks 통과 |
 | Android Metro export | 통과; Hermes bundle, 1,569 modules |
 | Web static export | 통과; `/`, `/analyzing`, `/segments`, `/comparison`, `/live` 포함 8 routes |
@@ -60,7 +61,8 @@ EAS development profile에는 `expo-dev-client`가 설치되어 있어 향후 �
 현재 다음 항목은 공개 예시 모드에서 fixture입니다.
 
 - 장소 목록과 서비스 coverage 표시
-- 일반/PawSafe 경로 geometry와 통계
+- 일반 최단 경로와 선택 모드 경로 geometry·통계
+- 지도 색상 규칙: cool = 형광 초록(`#35F56A`), fast = 보라(`#8B5CF6`)
 - Heat Cost, 그늘 비율, 직사광선 시간과 구간 정보
 - fast/cool 결과와 오류 시나리오
 
@@ -88,7 +90,7 @@ EAS development profile에는 `expo-dev-client`가 설치되어 있어 향후 �
 1. 데이터팀이 보행 그래프, Edge별 시간대 Heat Cost, graph/data version, validation status와 누락값 정책을 백엔드에 전달한다.
 2. `edge_id`, `from_node`, `to_node`, 좌표계, GeoJSON `[lng, lat]`, timezone과 단위를 계약한다.
 3. 백엔드가 graph/file Provider로 전환하고 앱 계약과 동일한 JSON을 제공한다.
-4. 앱은 `EXPO_PUBLIC_ANALYSIS_MODE=api`, `EXPO_PUBLIC_PLACE_SEARCH_MODE=mock`, `EXPO_PUBLIC_LOCATION_MODE=mock`으로 고정 좌표 입력을 사용한다. 운영 장소·현재 위치가 준비되면 각 모드만 별도로 전환한다.
+4. 앱은 `EXPO_PUBLIC_ANALYSIS_MODE=api`, `EXPO_PUBLIC_PLACE_SEARCH_MODE=mock`, `EXPO_PUBLIC_LOCATION_MODE=mock`으로 고정 좌표 입력을 사용한다. 현재 pipeline 목업 경로는 출발 `(37.50167, 127.15485)`, 도착 `(37.48804, 127.15297)`이며, 운영 장소·현재 위치가 준비되면 각 모드만 별도로 전환한다.
 5. HTTPS staging API에서 timeout, offline, out-of-coverage, no-route, null 필드와 오래된 데이터 오류를 검증한다.
 6. Preview APK를 생성해 실제 발표 기기에 미리 설치하고 Mock fallback도 유지한다.
 

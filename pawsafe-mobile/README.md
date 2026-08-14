@@ -25,7 +25,7 @@ Expo SDK 54를 고정하고 Expo Go를 기본 개발 경로로 선택했습니�
 - 기본은 고정 현재 위치 fixture이며, 필요할 때만 기기 위치 권한 모드로 전환
 - 날짜·시간 및 fast/cool 모드 선택
 - deterministic Mock Provider와 FastAPI HTTP Provider 전환
-- 일반/PawSafe 경로, 마커, 구간 Polyline, 지도 텍스트 요약
+- 일반 최단 경로와 선택 모드 경로, 마커, 구간 Polyline, 지도 텍스트 요약 (cool 형광 초록 / fast 보라)
 - 목업 기반 분석 진행 지도와 실시간 노면 열환경·우회 알림 화면
 - API timeout, 취소, offline, HTTP/계약 오류 변환
 - 데모/실측 검증 전 상태 표시
@@ -194,7 +194,7 @@ Maestro 흐름은 앱 실행 → 고정 출발/목적지 선택 → 시간 picke
 1. 데이터팀의 `edges_static.gpkg`, `edge_time_features.parquet`, 송파 boundary를 공개 저장소 밖에 보관합니다.
 2. 백엔드는 edge-only GeoPackage를 그래프로 분할하고, 원본 `edge_id`를 시간별 Heat Cost와 결합합니다.
 3. `/health`의 `graph_loaded`, `heat_data_loaded`, `heat_data_version`과 `/v1/route-analyses`를 확인합니다.
-4. 앱 로컬 `.env`는 `EXPO_PUBLIC_ANALYSIS_MODE=api`, `EXPO_PUBLIC_PLACE_SEARCH_MODE=mock`, `EXPO_PUBLIC_PLACE_DATASET=pipeline`으로 송파 고정 좌표를 사용합니다.
+4. 앱 로컬 `.env`는 `EXPO_PUBLIC_ANALYSIS_MODE=api`, `EXPO_PUBLIC_PLACE_SEARCH_MODE=mock`, `EXPO_PUBLIC_PLACE_DATASET=pipeline`으로 송파 고정 좌표를 사용합니다. 목업 출발지는 `(37.50167, 127.15485)`, 도착지는 `(37.48804, 127.15297)`입니다.
 5. 공개 예시를 재현할 때는 `.env.example`을 사용해 `demo` 좌표와 Kakao/fixture 모드로 돌아갑니다.
 6. 실측 검증 전 결과는 계속 명시적으로 표시하고 누락값을 0이나 임의 신뢰도로 채우지 않습니다.
 

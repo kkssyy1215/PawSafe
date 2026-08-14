@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import MapView, { Marker, Polyline } from 'react-native-maps';
-import type { HeatSegment, Place, RouteStats } from '@/src/api/contracts';
+import type { HeatSegment, Place, RouteStats, WalkMode } from '@/src/api/contracts';
 import { DEFAULT_MAP_REGION } from '@/src/config/constants';
 import { colors, spacing, typography } from '@/src/theme/theme';
 import { geometryToMapCoordinates } from './mapUtils';
+import { getRecommendedRouteColor } from './routeStyles';
 
 export interface RouteMapProps {
   origin: Place;
@@ -14,12 +15,13 @@ export interface RouteMapProps {
   segments?: HeatSegment[];
   selectedSegmentId?: string | null;
   selectedRoute?: 'shortest' | 'pawsafe' | null;
+  walkMode?: WalkMode;
   onSegmentPress?: (id: string) => void;
 }
 
 const segmentColors: Record<HeatSegment['level'], string> = { low: colors.low, medium: colors.medium, high: colors.high, unknown: colors.unknown };
 
-export function NativeMap({ origin, destination, shortest, pawsafe, segments, selectedSegmentId, selectedRoute, onSegmentPress }: RouteMapProps) {
+export function NativeMap({ origin, destination, shortest, pawsafe, segments, selectedSegmentId, selectedRoute, walkMode = 'cool', onSegmentPress }: RouteMapProps) {
   const mapRef = useRef<MapView>(null);
   const [loaded, setLoaded] = useState(false);
   const [timedOut, setTimedOut] = useState(false);
@@ -48,8 +50,8 @@ export function NativeMap({ origin, destination, shortest, pawsafe, segments, se
       <MapView ref={mapRef} style={StyleSheet.absoluteFill} initialRegion={DEFAULT_MAP_REGION} onMapReady={() => setLoaded(true)} onMapLoaded={() => setLoaded(true)} accessibilityLabel="경로 지도">
         <Marker coordinate={{ latitude: origin.lat, longitude: origin.lng }} title="출발" description={origin.name} pinColor={colors.greenStrong} />
         <Marker coordinate={{ latitude: destination.lat, longitude: destination.lng }} title="도착" description={destination.name} pinColor={colors.orange} />
-        {shortestCoordinates.length > 1 ? <Polyline coordinates={shortestCoordinates} strokeColor={colors.orange} strokeWidth={selectedRoute === 'pawsafe' ? 4 : 6} lineDashPattern={[9, 5]} zIndex={2} /> : null}
-        {pawsafeCoordinates.length > 1 ? <Polyline coordinates={pawsafeCoordinates} strokeColor={colors.greenStrong} strokeWidth={selectedRoute === 'shortest' ? 4 : 7} zIndex={3} /> : null}
+        {shortestCoordinates.length > 1 ? <Polyline coordinates={shortestCoordinates} strokeColor={colors.routeBaseline} strokeWidth={selectedRoute === 'pawsafe' ? 4 : 6} lineDashPattern={[9, 5]} zIndex={2} /> : null}
+        {pawsafeCoordinates.length > 1 ? <Polyline coordinates={pawsafeCoordinates} strokeColor={getRecommendedRouteColor(walkMode)} strokeWidth={selectedRoute === 'shortest' ? 4 : 7} zIndex={3} /> : null}
         {segments?.map((segment) => {
           const coordinates = geometryToMapCoordinates(segment.geometry);
           if (coordinates.length < 2) return null;

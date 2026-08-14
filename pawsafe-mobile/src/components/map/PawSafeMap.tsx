@@ -7,5 +7,5 @@ import { NativeMap, type RouteMapProps } from './NativeMap';
 
 export function PawSafeMap(props: RouteMapProps & { showRouteLegend?: boolean; showSegmentLegend?: boolean }) {
   const MapComponent = env.mapMode === 'mock' ? MockMap : NativeMap;
-  return <View><MapComponent {...props} /><MapLegend showRoutes={props.showRouteLegend} showSegments={props.showSegmentLegend} /><MapTextSummary shortest={props.shortest} pawsafe={props.pawsafe} segments={props.segments} /></View>;
+  return <View><MapComponent {...props} /><MapLegend showRoutes={props.showRouteLegend} showSegments={props.showSegmentLegend} walkMode={props.walkMode} /><MapTextSummary shortest={props.shortest} pawsafe={props.pawsafe} segments={props.segments} /></View>;
 }

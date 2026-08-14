@@ -5,6 +5,11 @@ export const colors = {
   mutedText: '#727A73',
   green: '#3FA447',
   greenStrong: '#2F9B44',
+  /** Selected cool route: deliberately brighter than the brand green for map contrast. */
+  coolRoute: '#35F56A',
+  /** Selected fast route: distinct purple so it cannot be confused with a cool route. */
+  fastRoute: '#8B5CF6',
+  routeBaseline: '#E58A1F',
   greenSoft: '#EAF6EC',
   orange: '#E58A1F',
   orangeSoft: '#FFF3E1',

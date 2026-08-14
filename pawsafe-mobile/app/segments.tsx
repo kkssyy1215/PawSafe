@@ -28,7 +28,7 @@ export default function SegmentsScreen() {
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <ScreenHeader eyebrow="열환경 분석 완료" title="상대적으로 열노출이 낮은 길을 찾았어요." description="노면온도와 그늘 정보를 바탕으로 추천 경로를 만들었어요." />
         {result.is_demo ? <DemoNotice analysisSource={result.analysis_source} /> : null}
-        <PawSafeMap origin={request.origin} destination={request.destination} pawsafe={result.pawsafe} segments={result.heat_segments} selectedSegmentId={selectedId} onSegmentPress={selectSegment} showRouteLegend={false} showSegmentLegend />
+        <PawSafeMap origin={request.origin} destination={request.destination} pawsafe={result.pawsafe} walkMode={request.walk_mode} segments={result.heat_segments} selectedSegmentId={selectedId} onSegmentPress={selectSegment} showRouteLegend={false} showSegmentLegend />
         <RelativeHeatNotice />
         <View accessibilityRole="list" style={styles.segmentList}>
           {result.heat_segments.map((segment) => {
