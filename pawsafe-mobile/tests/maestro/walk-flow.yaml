@@ -6,24 +6,24 @@ name: PawSafe mock walk flow
 - assertVisible: "우리 강아지의 발바닥을 안전하게"
 - tapOn:
     id: "origin-search-input"
-- inputText: "우리집"
+- inputText: "송파"
 - hideKeyboard
 - extendedWaitUntil:
     visible:
-      id: "origin-result-place_home"
+      id: "origin-result-pipeline_home"
     timeout: 5000
 - tapOn:
-    id: "origin-result-place_home"
+    id: "origin-result-pipeline_home"
 - tapOn:
     id: "destination-search-input"
-- inputText: "망원한강공원"
+- inputText: "목업"
 - hideKeyboard
 - extendedWaitUntil:
     visible:
-      id: "destination-result-place_mangwon_park"
+      id: "destination-result-pipeline_seokchon_trail"
     timeout: 5000
 - tapOn:
-    id: "destination-result-place_mangwon_park"
+    id: "destination-result-pipeline_seokchon_trail"
 - tapOn:
     id: "departure-time-button"
 - tapOn:
@@ -42,8 +42,8 @@ name: PawSafe mock walk flow
 - assertVisible: "독막로 인근 보행 구간"
 - tapOn:
     id: "comparison-button"
-- assertVisible: "일반 경로"
-- assertVisible: "PawSafe 예시 경로"
+- assertVisible: "일반 최단 경로"
+- assertVisible: "시원한 산책길"
 - tapOn:
     id: "restart-button"
 - assertVisible: "산책 조건을 선택해 주세요"

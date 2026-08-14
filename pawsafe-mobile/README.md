@@ -44,6 +44,37 @@ cp .env.example .env
 npm start
 ```
 
+## 백엔드 없이 화면 테스트하기
+
+컴퓨터 브라우저에서 바로 확인하려면 다음 명령을 사용합니다. 이 모드는 백엔드,
+Kakao 키, Docker 없이 송파 목업 좌표와 mock 경로로 전체 입력·분석·비교 흐름을
+실행합니다.
+
+```bash
+cd /Users/kkssyy/Projects/PawSafe/pawsafe-mobile
+npm install                 # 최초 1회
+npm run start:test
+```
+
+터미널에 표시된 `http://localhost:8081` 주소를 브라우저에서 열고, 출발지와
+목적지를 선택한 뒤 `안전한 산책길 찾기`를 누르면 됩니다. cool은 형광 초록,
+fast는 보라색 경로로 표시됩니다. 이 테스트 모드의 출발지는
+`(37.50167, 127.15485)`, 도착지는 `(37.48804, 127.15297)`입니다. 종료하려면
+실행 중인 터미널에서 `Ctrl+C`를 누릅니다.
+
+iOS Simulator에서 같은 mock 흐름을 확인하려면 Xcode가 설치된 Mac에서 다음을
+사용합니다.
+
+```bash
+npm run start:test:ios
+```
+
+자동 검증만 실행하려면 다음 명령으로 타입체크·린트·Jest를 한 번에 실행합니다.
+
+```bash
+npm run test:all
+```
+
 Expo Go 앱으로 터미널의 QR 코드를 스캔합니다. LAN 연결이 막힌 환경에서는 다음을 사용합니다.
 
 ```bash
