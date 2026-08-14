@@ -1,6 +1,8 @@
 import { useRef, useState } from 'react';
 import * as Location from 'expo-location';
 import type { PlaceSearchResult } from '@/src/api/contracts';
+import { env } from '@/src/config/env';
+import { mockCurrentPlace, pipelineCurrentPlace } from '@/src/mocks/places';
 import { getPlaceSearchProvider } from '@/src/providers/places/createPlaceSearchProvider';
 
 type LocationError = 'permission-denied' | 'permission-blocked' | 'services-disabled' | 'unavailable' | null;
@@ -12,6 +14,7 @@ export function useCurrentLocation() {
 
   const getCurrentPlace = async (): Promise<PlaceSearchResult | null> => {
     if (isLoading) return null;
+    if (env.locationMode === 'mock') return env.placeDataset === 'pipeline' ? pipelineCurrentPlace : mockCurrentPlace;
     setIsLoading(true);
     setError(null);
     controller.current?.abort();

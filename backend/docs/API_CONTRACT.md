@@ -147,6 +147,26 @@ GET /v1/places/search?q=공원&lat=37.55&lng=126.91
 
 `pawsafe`는 `shortest`와 같은 `RouteSummary` shape입니다. `heat_segments`의 각 항목은 edge id/name, level, nullable Heat Cost/statistics, surface/confidence/validation, LineString geometry를 가집니다. 정확한 JSON Schema는 `/openapi.json`을 기준으로 합니다.
 
+### Kakao 최단 보행 경로 MVP 모드
+
+`ANALYSIS_PROVIDER=kakao_walk`이면 `shortest`의 geometry·distance·duration은 Kakao맵 도보 경로 API의 `route_mode=SHORTEST` 응답으로 채웁니다. 입력·출력 좌표계는 WGS84이며 Kakao의 `[x, y]`를 GeoJSON `[lng, lat]`로 유지합니다. `pawsafe`, Heat Cost, `heat_segments`는 데이터팀의 보행 그래프와 Edge × Time Heat Cost가 연결되기 전까지 demo fixture입니다.
+
+응답에는 `analysis_source=kakao_walk+mock_heat_fixture`와 `KAKAO_SHORTEST_WITH_DEMO_HEAT` warning이 포함됩니다. 따라서 이 모드의 Kakao 경로는 실제 보행 최단 경로이지만 열환경 비교는 검증된 모델 결과가 아닙니다.
+
+### 데이터팀 파이프라인 Graph 모드
+
+`ANALYSIS_PROVIDER=graph`와 `HEAT_COST_PROVIDER=file`에 비공개
+`edges_static.gpkg` 및 `edge_time_features.parquet` 경로를 지정하면, 백엔드는
+edge-only GeoPackage의 모든 선분을 그래프 정점쌍으로 나누고 원본 `edge_id`를
+시간별 Heat Cost 키로 보존합니다. 요청 시각과 가장 가까운 Asia/Seoul 시간
+스냅샷을 선택해 `fast`/`cool` 비용으로 두 경로를 계산합니다.
+
+이 모드의 응답은 `analysis_source=graph`, `is_demo=false`,
+`validation_status=not_validated`이며 `PIPELINE_RELATIVE_HEAT` 경고를 포함합니다.
+파이프라인의 Heat Cost는 상대 열노출 지표이지 실측 노면온도(℃)나 절대 안전
+판정이 아닙니다. 원본 Excel/CSV, Parquet, GeoPackage와 모델 파일은 API 응답이나
+공개 저장소에 포함하지 않습니다.
+
 ## 표준 오류
 
 모든 검증/도메인/외부/예상치 못한 오류는 다음 형태입니다.

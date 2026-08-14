@@ -24,7 +24,8 @@ async def capabilities(request: Request) -> CapabilityResponse:
         ),
         data_pipeline=(
             "configured"
-            if settings.analysis_provider != "mock" and container.heat_provider is not None
+            if settings.analysis_provider not in {"mock", "kakao_walk"}
+            and container.heat_provider is not None
             else "not_ready"
         ),
         heat_cost_source=(
@@ -33,6 +34,8 @@ async def capabilities(request: Request) -> CapabilityResponse:
         route_optimizer=(
             "mock_fixture"
             if settings.analysis_provider == "mock"
+            else "kakao_walk"
+            if settings.analysis_provider == "kakao_walk"
             else settings.shortest_route_provider
         ),
     )

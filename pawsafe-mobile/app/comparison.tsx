@@ -26,7 +26,7 @@ export default function ComparisonScreen() {
     <ScreenContainer>
       <ScrollView contentContainerStyle={styles.content}>
         <ResultHeadline result={result} />
-        {result.is_demo ? <DemoNotice /> : null}
+        {result.is_demo || result.analysis_source === 'graph' ? <DemoNotice analysisSource={result.analysis_source} /> : null}
         {result.comparison.same_route ? <Notice tone="warning">두 경로의 선이 지도에서 겹칩니다.</Notice> : null}
         <PawSafeMap origin={request.origin} destination={request.destination} shortest={result.shortest} pawsafe={result.pawsafe} showRouteLegend />
         <View style={styles.routeCards}><RouteSummaryCard route={result.shortest} tone="shortest" /><RouteSummaryCard route={result.pawsafe} tone="pawsafe" /></View>

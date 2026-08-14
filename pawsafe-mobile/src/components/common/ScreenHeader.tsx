@@ -16,7 +16,7 @@ export function ScreenHeader({ title, description, eyebrow, compact = false, bra
         <View style={styles.brandBlock}>
           <View style={styles.brandRow}>
             <View style={styles.brandMarkFrame}>
-              <Image source={require('../../../assets/brand/pawsafe-mark.png')} accessibilityLabel="PawSafe 강아지 발바닥 로고" resizeMode="contain" style={styles.brandMark} />
+              <Image source={require('../../../assets/brand/splash-icon.png')} accessibilityLabel="PawSafe 강아지 발바닥 로고" resizeMode="contain" style={styles.brandMark} />
             </View>
             <Text style={styles.brandName}>PawSafe</Text>
           </View>
@@ -32,8 +32,8 @@ const styles = StyleSheet.create({
   container: { gap: spacing.sm },
   brandBlock: { gap: 2 },
   brandRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
-  brandMarkFrame: { width: 30, height: 30, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
-  brandMark: { width: 30, height: 30, transform: [{ scale: 2 }] },
+  brandMarkFrame: { width: 22, height: 22, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+  brandMark: { width: 22, height: 22 },
   brandName: { ...typography.heading, color: colors.greenStrong, fontWeight: '800' },
   brandTagline: { ...typography.caption, color: colors.mutedText },
   eyebrow: { ...typography.caption, color: colors.greenStrong, fontWeight: '700' },

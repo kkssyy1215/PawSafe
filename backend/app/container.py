@@ -64,9 +64,22 @@ def build_container(settings: Settings) -> AppContainer:
     walk_modes: WalkModeConfig | None = None
     readiness_error: AppError | None = None
     try:
-        graph_data = GraphRepository().load(settings.resolve_path(settings.graph_file_path))
-        walk_modes = load_walk_mode_config(settings.resolve_path(settings.walk_mode_config_path))
-        heat_provider = create_heat_cost_provider(settings, sync_client)
+        graph_path = settings.pipeline_graph_file_path or settings.graph_file_path
+        heat_path = settings.pipeline_heat_cost_file_path or settings.heat_cost_file_path
+        graph_data = GraphRepository().load(settings.resolve_path(graph_path))
+        walk_mode_path = (
+            settings.pipeline_walk_mode_config_path
+            if settings.pipeline_graph_file_path
+            else settings.walk_mode_config_path
+        )
+        walk_modes = load_walk_mode_config(settings.resolve_path(walk_mode_path))
+        heat_provider = create_heat_cost_provider(
+            settings,
+            sync_client,
+            path_override=settings.resolve_path(heat_path),
+            data_version_override=settings.pipeline_data_version,
+            timezone_name=settings.pipeline_timezone,
+        )
         shortest_provider = create_shortest_route_provider(settings, graph_data, async_client)
     except AppError as exc:
         readiness_error = exc

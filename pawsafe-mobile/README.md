@@ -1,6 +1,6 @@
 # PawSafe Mobile
 
-PawSafe는 출발지, 목적지, 산책 시작 시각과 비교 기준을 입력하면 일반 경로와 상대 Heat Cost를 낮춘 PawSafe 경로를 비교하는 React Native 앱입니다. 현재 결과는 실제 모델 출력이 아니라 사용자 흐름 검증용 deterministic MVP fixture입니다.
+PawSafe는 출발지, 목적지, 산책 시작 시각과 비교 기준을 입력하면 일반 경로와 상대 Heat Cost를 낮춘 PawSafe 경로를 비교하는 React Native 앱입니다. 공개 예시 설정은 Kakao 최단 보행 경로 + fixture를 사용하고, 로컬의 비공개 설정은 데이터팀 송파 그래프·시간별 Heat Cost를 FastAPI에서 받아 사용합니다.
 
 Heat Cost는 절대 노면온도나 안전 판정이 아닙니다. 같은 조건에서 경로 간 상대 열노출을 비교하는 지표입니다.
 
@@ -19,9 +19,10 @@ Expo SDK 54를 고정하고 Expo Go를 기본 개발 경로로 선택했습니�
 ## 현재 구현 범위
 
 - Expo Router Stack: 입력 → 분석 → 구간 → 비교 → 실시간 산책 도우미 → 복구 가능한 오류
-- 장소명·주소 직접 검색을 통한 출발지·목적지 확정
+- 고정 좌표 fixture에서 출발지·목적지·현재 위치·주변 장소를 선택
+- 자주 쓰는 출발지를 `우리집`, `회사`처럼 이름 붙여 기기에 저장·재선택·삭제
 - 출발지 좌표를 기준으로 가까운 산책로·공원 추천 및 원터치 목적지 선택
-- 사용자가 눌렀을 때만 앱 사용 중 현재 위치 권한 요청
+- 기본은 고정 현재 위치 fixture이며, 필요할 때만 기기 위치 권한 모드로 전환
 - 날짜·시간 및 fast/cool 모드 선택
 - deterministic Mock Provider와 FastAPI HTTP Provider 전환
 - 일반/PawSafe 경로, 마커, 구간 Polyline, 지도 텍스트 요약
@@ -84,7 +85,7 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
 ```env
 EXPO_PUBLIC_ANALYSIS_MODE=api
-EXPO_PUBLIC_PLACE_SEARCH_MODE=api
+EXPO_PUBLIC_PLACE_SEARCH_MODE=mock
 EXPO_PUBLIC_API_BASE_URL=http://192.168.0.10:8000
 ```
 
@@ -98,21 +99,23 @@ EXPO_PUBLIC_API_BASE_URL=http://192.168.0.10:8000
 |---|---|---|
 | `EXPO_PUBLIC_ANALYSIS_MODE` | `mock`, `api` | 경로 분석 Provider |
 | `EXPO_PUBLIC_PLACE_SEARCH_MODE` | `mock`, `api` | 장소 검색 Provider |
+| `EXPO_PUBLIC_PLACE_DATASET` | `demo`, `pipeline` | 고정 좌표 장소 세트; `pipeline`은 비공개 송파 파일 연결 시에만 사용 |
+| `EXPO_PUBLIC_LOCATION_MODE` | `mock`, `device` | 고정 현재 위치 또는 기기 위치 |
 | `EXPO_PUBLIC_MAP_MODE` | `mock`, `native` | 예시 지도 또는 네이티브 지도 |
 | `EXPO_PUBLIC_API_BASE_URL` | URL | FastAPI base URL |
 | `EXPO_PUBLIC_SHOW_DEMO_CONTROLS` | `true`, `false` | 개발용 시나리오 표시 |
 
-`EXPO_PUBLIC_` 값은 앱 번들에서 누구나 읽을 수 있습니다. Kakao REST API 키, FastAPI 비밀키, Google Maps 키를 이 변수에 넣지 마세요. Kakao 키는 백엔드에만 둡니다.
+`EXPO_PUBLIC_` 값은 앱 번들에서 누구나 읽을 수 있습니다. Kakao REST API 키, FastAPI 비밀키, Google Maps 키를 이 변수에 넣지 마세요. Kakao 키는 백엔드의 `KAKAO_REST_API_KEY`에만 둡니다.
 
 Standalone Android 지도용 키가 필요한 경우 `GOOGLE_MAPS_ANDROID_API_KEY`라는 비공개 local/EAS build 환경 값으로 공급합니다. `app.config.ts`가 빌드 시 네이티브 설정으로 전달하며 JavaScript 공개 환경 변수로 노출하지 않습니다. Android package는 `com.pawsafe.mobile`이므로 키를 이 package와 빌드 인증서 SHA-1로 제한해야 합니다. Expo Go 지도 시험에는 별도 설정이 필요 없습니다.
 
 ## Mock 모드와 API 모드
 
-기본 `.env.example`은 Mock 분석과 장소 검색을 사용합니다. 고정 fixture이므로 같은 입력은 같은 결과를 반환합니다. 성공 결과에는 다음 상태가 포함됩니다.
+기본 `.env.example`은 고정 좌표 장소와 API 경로 분석을 사용합니다. Kakao 도보 API가 최단 경로 거리·시간·좌표를 제공하고, PawSafe 열환경 비교는 MVP fixture입니다. 성공 결과에는 다음 상태가 포함됩니다.
 
 ```text
 is_demo=true
-analysis_source=mock_fixture
+analysis_source=kakao_walk+mock_heat_fixture
 validation_status=not_validated
 ```
 
@@ -120,17 +123,17 @@ Mock에는 cool improvement, fast near-shortest, same route, no improvement, out
 
 API 모드는 다음 endpoint를 사용합니다.
 
-- `GET /v1/places/search?q=...`
+- `GET /v1/places/search?q=...` (고정 좌표 mock)
 - `POST /v1/places/reverse-geocode`
-- `POST /v1/route-analyses`
+- `POST /v1/route-analyses` (백엔드 `ANALYSIS_PROVIDER=kakao_walk` 필요)
 
 응답은 Zod로 검증하며 GeoJSON 좌표는 `[lng, lat]` 순서입니다. `src/config/env.ts`만 공개 환경 변수를 읽고 컴포넌트는 검증된 설정을 사용합니다.
 
 ## 위치 권한
 
-앱 시작 시 위치 권한을 요청하지 않습니다. 사용자가 “현재 위치 사용”을 누르면 foreground/When In Use 권한만 요청하고 좌표를 출발지 선택에 일시적으로 사용합니다. 거부, 다시 묻지 않음, 위치 서비스 비활성 상태에는 수동 검색 안내를 표시합니다.
+기본 `.env.example`은 `EXPO_PUBLIC_LOCATION_MODE=mock`이라 위치 권한을 요청하지 않고 미리 정한 좌표를 사용합니다. 실제 기기 위치가 필요할 때만 `device`로 바꾸면 사용자가 “현재 위치 사용”을 눌렀을 때 foreground/When In Use 권한을 요청합니다. 사용자가 선택한 장소에서 저장 버튼을 누른 경우에만 이름·주소·좌표를 기기 내부 AsyncStorage에 보관하며, 서버로 자동 전송하지 않습니다. 저장된 장소는 입력 화면에서 다시 선택하거나 삭제할 수 있습니다.
 
-백그라운드 위치, 항상 허용, 카메라, 연락처, 사진, 마이크와 Bluetooth 권한은 요청하지 않습니다. 정확한 출발지·목적지는 영구 저장하지 않습니다.
+백그라운드 위치, 항상 허용, 카메라, 연락처, 사진, 마이크와 Bluetooth 권한은 요청하지 않습니다. 사용자가 저장하지 않은 출발지·목적지는 영구 저장하지 않습니다.
 
 ## 지도 모드
 
@@ -176,7 +179,7 @@ npm run test:coverage
 
 Jest 테스트는 formatter/null 처리, GeoJSON 변환, 입력 검증, 오류 카피, 결과 headline, same/no-improvement, demo 상태, deterministic provider 오류·취소와 reducer 전체 흐름을 포함합니다.
 
-현재 저장소 검증 결과는 Expo Go 모드 Metro 시작, TypeScript와 lint 통과, Jest 15 suites/40 tests 통과, 웹 정적 export 8개 라우트 성공, Android Hermes Metro export 성공(1,557 modules)입니다. 이 export는 네이티브 APK를 만드는 EAS Build와 다릅니다.
+현재 저장소 검증 결과는 Expo Go 모드 Metro 시작, TypeScript와 lint 통과, Jest 16 suites/42 tests 통과, 웹 정적 export 8개 라우트 성공, Android Hermes Metro export 성공(1,569 modules)입니다. 이 export는 네이티브 APK를 만드는 EAS Build와 다릅니다.
 
 Maestro가 설치되어 있고 `com.pawsafe.mobile` APK/development build가 실행 가능한 Android 기기에 설치되어 있으면 다음을 실행합니다.
 
@@ -184,23 +187,28 @@ Maestro가 설치되어 있고 `com.pawsafe.mobile` APK/development build가 실
 maestro test tests/maestro/walk-flow.yaml
 ```
 
-Maestro 흐름은 앱 실행 → 출발/목적지 선택 → 시간 picker → cool 모드 → 분석 → 구간 선택 → 비교 → 재검색을 다룹니다. 테스트 실행 전 Mock 모드로 빌드해야 합니다.
+Maestro 흐름은 앱 실행 → 고정 출발/목적지 선택 → 시간 picker → cool 모드 → Kakao 최단 경로 분석 → 구간 선택 → 비교 → 재검색을 다룹니다. 백엔드 `KAKAO_REST_API_KEY`와 `ANALYSIS_PROVIDER=kakao_walk`가 필요합니다.
 
 ## 데이터분석팀 결과 연결
 
-1. 데이터팀과 `edge_id`, graph/data version, 좌표계, timezone, nullable 값과 검증 상태를 합의합니다.
-2. 데이터팀은 실제 Edge별 Heat Cost와 보행 그래프를 백엔드 팀에 전달합니다.
-3. 백엔드는 Heat Cost를 그래프에 결합하고 FastAPI 응답 계약을 유지합니다.
-4. 앱 `.env`를 `analysis=api`, `placeSearch=api`와 배포 API URL로 변경합니다.
-5. `/health`, 장소 검색, reverse geocode와 route analysis 계약을 확인합니다.
+1. 데이터팀의 `edges_static.gpkg`, `edge_time_features.parquet`, 송파 boundary를 공개 저장소 밖에 보관합니다.
+2. 백엔드는 edge-only GeoPackage를 그래프로 분할하고, 원본 `edge_id`를 시간별 Heat Cost와 결합합니다.
+3. `/health`의 `graph_loaded`, `heat_data_loaded`, `heat_data_version`과 `/v1/route-analyses`를 확인합니다.
+4. 앱 로컬 `.env`는 `EXPO_PUBLIC_ANALYSIS_MODE=api`, `EXPO_PUBLIC_PLACE_SEARCH_MODE=mock`, `EXPO_PUBLIC_PLACE_DATASET=pipeline`으로 송파 고정 좌표를 사용합니다.
+5. 공개 예시를 재현할 때는 `.env.example`을 사용해 `demo` 좌표와 Kakao/fixture 모드로 돌아갑니다.
 6. 실측 검증 전 결과는 계속 명시적으로 표시하고 누락값을 0이나 임의 신뢰도로 채우지 않습니다.
+
+현재 작업공간의 `backend/.env`와 `pawsafe-mobile/.env`는 Git에서 무시되는
+로컬 설정이며, 첨부 ZIP 원본·Parquet·GeoPackage는 저장소에 들어 있지 않습니다.
+파이프라인 응답은 `analysis_source=graph`, `validation_status=not_validated`로
+표시되고 상대 열노출 지표라는 안내를 앱에 보여줍니다.
 
 ## 아직 구현·검증되지 않은 범위
 
-- 실제 Edge × Time 데이터와 실제 Heat Cost
+- 파이프라인 데이터의 실측 검증 승인과 운영 갱신 자동화
 - K-means/GMM 학습과 군집 평가
 - 실측 표면온도 검증
-- 실제 운영 보행 그래프와 검증된 가중치
+- 검증된 fast/cool 가중치와 대규모 그래프 성능 프로파일링
 - 운영 Kakao 장소 검색/외부 분석 credential
 - EAS cloud build, 실제 APK 설치와 물리 기기 QA
 - 앱스토어 배포와 운영 모니터링

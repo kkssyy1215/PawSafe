@@ -7,6 +7,7 @@ from app.core.errors import AppError, PipelineNotReadyError
 from app.providers.analysis.base import AnalysisProvider
 from app.providers.analysis.external_analysis import ExternalAnalysisProvider
 from app.providers.analysis.graph_analysis import GraphAnalysisProvider
+from app.providers.analysis.kakao_walking_analysis import KakaoWalkingAnalysisProvider
 from app.providers.analysis.mock_analysis import MockAnalysisProvider
 from app.providers.heat_cost.base import HeatCostProvider
 from app.providers.shortest_route.base import ShortestRouteProvider
@@ -46,6 +47,15 @@ def create_analysis_provider(
         return ExternalAnalysisProvider(
             client,
             settings.analysis_external_url,
+            timeout_seconds=settings.request_timeout_seconds,
+        )
+    if settings.analysis_provider == "kakao_walk":
+        if not settings.kakao_rest_api_key:
+            return UnavailableAnalysisProvider(PipelineNotReadyError("kakao_rest_api_key"))
+        return KakaoWalkingAnalysisProvider(
+            client,
+            api_key=settings.kakao_rest_api_key,
+            mock_scenarios_path=settings.resolve_path(settings.mock_scenarios_file_path),
             timeout_seconds=settings.request_timeout_seconds,
         )
     if not graph_data or not heat_provider or not shortest_route_provider or not walk_modes:

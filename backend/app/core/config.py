@@ -20,13 +20,20 @@ class Settings(BaseSettings):
     app_name: str = "PawSafe API"
     api_prefix: str = "/v1"
 
-    analysis_provider: Literal["mock", "graph", "external"] = "mock"
+    analysis_provider: Literal["mock", "graph", "external", "kakao_walk"] = "mock"
     heat_cost_provider: Literal["mock", "file", "external"] = "mock"
     place_provider: Literal["mock", "kakao"] = "mock"
     shortest_route_provider: Literal["internal_graph", "external"] = "internal_graph"
 
     graph_file_path: Path = Path("app/fixtures/demo_graph.geojson")
     heat_cost_file_path: Path = Path("app/fixtures/demo_heat_cost.json")
+    # Data-team exports are intentionally configured as absolute/private paths.
+    # They are never copied into this repository or bundled into the API image.
+    pipeline_graph_file_path: Path | None = None
+    pipeline_heat_cost_file_path: Path | None = None
+    pipeline_walk_mode_config_path: Path = Path("app/config_data/walk_modes.pipeline.yaml")
+    pipeline_data_version: str | None = None
+    pipeline_timezone: str = "Asia/Seoul"
     coverage_file_path: Path | None = None
     walk_mode_config_path: Path = Path("app/config_data/walk_modes.demo.yaml")
     mock_scenarios_file_path: Path = Path("app/fixtures/demo_scenarios.json")
@@ -58,6 +65,9 @@ class Settings(BaseSettings):
         "heat_cost_external_url",
         "shortest_route_external_url",
         "kakao_rest_api_key",
+        "pipeline_graph_file_path",
+        "pipeline_heat_cost_file_path",
+        "pipeline_data_version",
         mode="before",
     )
     @classmethod

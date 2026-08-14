@@ -64,6 +64,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         analysis_ready = (
             container.settings.analysis_provider == "mock"
             or (
+                container.settings.analysis_provider == "kakao_walk"
+                and bool(container.settings.kakao_rest_api_key)
+            )
+            or (
                 container.settings.analysis_provider == "external"
                 and bool(container.settings.analysis_external_url)
             )

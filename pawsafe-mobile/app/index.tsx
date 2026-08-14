@@ -9,7 +9,9 @@ import { CurrentLocationButton } from '@/src/features/walk/components/CurrentLoc
 import { DepartureTimePicker } from '@/src/features/walk/components/DepartureTimePicker';
 import { PlaceSearchField } from '@/src/features/walk/components/PlaceSearchField';
 import { NearbyWalkPlaces } from '@/src/features/walk/components/NearbyWalkPlaces';
+import { SavedPlacePicker } from '@/src/features/walk/components/SavedPlacePicker';
 import { WalkModeSelector } from '@/src/features/walk/components/WalkModeSelector';
+import { useSavedPlaces } from '@/src/features/walk/hooks/useSavedPlaces';
 import { toLocalIsoWithOffset } from '@/src/features/walk/utils/dateTime';
 import { toApiPlace, validateWalkForm } from '@/src/features/walk/utils/validation';
 import { getWalkSearchButtonLabel } from '@/src/features/walk/utils/walkModeCopy';
@@ -18,6 +20,7 @@ import { colors, spacing, typography } from '@/src/theme/theme';
 
 export default function InputScreen() {
   const { state, dispatch } = useWalkFlow();
+  const { savedPlaces, savePlace, removePlace } = useSavedPlaces();
   const [validationError, setValidationError] = useState<string | null>(null);
   useFocusEffect(useCallback(() => {
     if (state.status !== 'input') dispatch({ type: 'RESET' });
@@ -48,6 +51,13 @@ export default function InputScreen() {
           <ScreenHeader eyebrow="PawSafe" brandTagline="우리 강아지의 발바닥을 안전하게" />
           <View style={styles.section}>
             <PlaceSearchField label="출발지" field="origin" selected={form.origin} onSelect={(place) => { setValidationError(null); dispatch({ type: 'SET_PLACE', field: 'origin', place }); }} />
+            <SavedPlacePicker
+              selectedOrigin={form.origin}
+              savedPlaces={savedPlaces}
+              onSelect={(place) => { setValidationError(null); dispatch({ type: 'SET_PLACE', field: 'origin', place }); }}
+              onSave={(label) => { if (form.origin) void savePlace(form.origin, label); }}
+              onDelete={removePlace}
+            />
             {!form.origin ? <CurrentLocationButton onSelect={(place) => dispatch({ type: 'SET_PLACE', field: 'origin', place })} /> : null}
             <PlaceSearchField label="목적지" field="destination" selected={form.destination} onSelect={(place) => { setValidationError(null); dispatch({ type: 'SET_PLACE', field: 'destination', place }); }} />
             <NearbyWalkPlaces origin={form.origin} selected={form.destination} onSelect={(place) => { setValidationError(null); dispatch({ type: 'SET_PLACE', field: 'destination', place }); }} />
@@ -65,7 +75,7 @@ export default function InputScreen() {
             accessibilityHint="선택한 조건으로 경로 비교를 요청합니다."
             onPress={submit}
           >{submitLabel}</AppButton>
-          <Text style={styles.privacy}>현재 위치는 출발지 선택에만 일시적으로 사용하며 기기에 영구 저장하지 않습니다.</Text>
+          <Text style={styles.privacy}>저장한 장소는 이 기기에만 보관되며, 언제든 삭제할 수 있어요.</Text>
         </ScrollView>
       </KeyboardAvoidingView>
     </ScreenContainer>
