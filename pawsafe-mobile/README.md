@@ -68,6 +68,19 @@ fast는 보라색 경로로 표시됩니다. 이 테스트 모드의 출발지�
 `(37.50167, 127.15485)`, 도착지는 `(37.48804, 127.15297)`입니다. 종료하려면
 실행 중인 터미널에서 `Ctrl+C`를 누릅니다.
 
+실제 휴대폰의 Expo Go에서 백엔드 없이 같은 목업 흐름을 확인하려면 다음 명령을
+사용합니다. 터미널에 표시된 QR 코드를 Expo Go로 스캔하고, 휴대폰과 Mac을 같은
+Wi-Fi에 연결하세요.
+
+```bash
+npm run start:test:go
+```
+
+Expo Go에서 실제 API 설정을 확인하려면 `npm start`를 사용합니다. 이 경우 `.env`의
+`EXPO_PUBLIC_API_BASE_URL`이 휴대폰에서 접근 가능한 주소인지 확인해야 합니다.
+분석 결과 화면의 임시 미리보기 버튼이 필요하면 `.env`에서
+`EXPO_PUBLIC_SHOW_DEMO_CONTROLS=true`로 설정한 뒤 Expo 서버를 다시 시작하세요.
+
 iOS Simulator에서 같은 mock 흐름을 확인하려면 Xcode가 설치된 Mac에서 다음을
 사용합니다.
 

@@ -1,0 +1,42 @@
+import { StyleSheet, Text, View } from 'react-native';
+import type { RouteStats, WalkMode } from '@/src/api/contracts';
+import { AppCard } from '@/src/components/common/AppCard';
+import { formatDistance } from '@/src/features/walk/utils/formatDistance';
+import { formatDuration } from '@/src/features/walk/utils/formatDuration';
+import { formatPercent } from '@/src/features/walk/utils/formatPercent';
+import { getWalkModeLabel } from '@/src/features/walk/utils/walkModeCopy';
+import { getRecommendedRouteColor } from '@/src/components/map/routeStyles';
+import { colors, spacing, typography } from '@/src/theme/theme';
+
+export function RecommendedRouteCard({ route, walkMode }: { route: RouteStats; walkMode: WalkMode }) {
+  return (
+    <AppCard accessibilityLabel={`${getWalkModeLabel(walkMode)}, ${formatDistance(route.distance_m)}, ${formatDuration(route.duration_min)}, Heat Cost ${route.heat_cost.toFixed(0)}`} style={[styles.card, { borderColor: getRecommendedRouteColor(walkMode) }]}>
+      <View style={styles.header}>
+        <View style={styles.titleWrap}>
+          <Text style={styles.eyebrow}>PawSafe 추천</Text>
+          <Text style={styles.title}>{getWalkModeLabel(walkMode)}</Text>
+        </View>
+        <View style={[styles.routeDot, { backgroundColor: getRecommendedRouteColor(walkMode) }]} />
+      </View>
+      <View style={styles.metrics}>
+        <Metric label="거리" value={formatDistance(route.distance_m)} />
+        <Metric label="예상 시간" value={formatDuration(route.duration_min)} />
+        <Metric label="Heat Cost" value={route.heat_cost.toFixed(0)} />
+      </View>
+      <Text style={styles.footnote}>그늘 비율 {formatPercent(route.shade_ratio)} · 직사광선 {formatDuration(route.direct_sun_minutes)}</Text>
+    </AppCard>
+  );
+}
+
+function Metric({ label, value }: { label: string; value: string }) {
+  return <View style={styles.metric}><Text style={styles.metricLabel}>{label}</Text><Text style={styles.metricValue}>{value}</Text></View>;
+}
+
+const styles = StyleSheet.create({
+  card: { gap: spacing.md, borderWidth: 2, padding: spacing.md },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  titleWrap: { gap: 2 }, eyebrow: { ...typography.caption, color: colors.greenStrong, fontWeight: '700' }, title: { ...typography.subheading, color: colors.text },
+  routeDot: { width: 14, height: 14, borderRadius: 7 },
+  metrics: { flexDirection: 'row', gap: spacing.sm }, metric: { flex: 1, gap: 2 }, metricLabel: { ...typography.caption, color: colors.mutedText }, metricValue: { ...typography.body, color: colors.greenStrong, fontWeight: '700' },
+  footnote: { ...typography.caption, color: colors.mutedText },
+});
