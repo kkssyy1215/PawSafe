@@ -10,6 +10,7 @@ import { RelativeHeatNotice } from '@/src/features/walk/components/RelativeHeatN
 import { ResultHeadline } from '@/src/features/walk/components/ResultHeadline';
 import { RouteComparisonCard } from '@/src/features/walk/components/RouteComparisonCard';
 import { RouteSummaryCard } from '@/src/features/walk/components/RouteSummaryCard';
+import { RouteEndpointsCard } from '@/src/features/walk/components/RouteEndpointsCard';
 import { useWalkFlow } from '@/src/state/WalkFlowContext';
 import { colors, spacing, typography } from '@/src/theme/theme';
 import { getWalkModeLabel } from '@/src/features/walk/utils/walkModeCopy';
@@ -30,6 +31,7 @@ export default function ComparisonScreen() {
         <ResultHeadline result={result} />
         {result.is_demo || result.analysis_source === 'graph' ? <DemoNotice analysisSource={result.analysis_source} /> : null}
         {result.comparison.same_route ? <Notice tone="warning">두 경로의 선이 지도에서 겹칩니다.</Notice> : null}
+        <RouteEndpointsCard origin={request.origin} destination={request.destination} />
         <PawSafeMap origin={request.origin} destination={request.destination} shortest={result.shortest} pawsafe={result.pawsafe} walkMode={request.walk_mode} showRouteLegend />
         <View style={styles.routeCards}><RouteSummaryCard route={result.shortest} tone="shortest" /><RouteSummaryCard route={result.pawsafe} tone="pawsafe" walkMode={request.walk_mode} /></View>
         <RouteComparisonCard comparison={result.comparison} />

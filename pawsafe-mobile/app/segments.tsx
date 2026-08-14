@@ -8,6 +8,7 @@ import { PawSafeMap } from '@/src/components/map/PawSafeMap';
 import { DemoNotice } from '@/src/features/walk/components/DemoNotice';
 import { HeatSegmentCard, heatLevelCopy } from '@/src/features/walk/components/HeatSegmentCard';
 import { RelativeHeatNotice } from '@/src/features/walk/components/RelativeHeatNotice';
+import { RouteEndpointsCard } from '@/src/features/walk/components/RouteEndpointsCard';
 import { useWalkFlow } from '@/src/state/WalkFlowContext';
 import { colors, spacing, typography } from '@/src/theme/theme';
 
@@ -28,6 +29,7 @@ export default function SegmentsScreen() {
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <ScreenHeader eyebrow="열환경 분석 완료" title="상대적으로 열노출이 낮은 길을 찾았어요." description="노면온도와 그늘 정보를 바탕으로 추천 경로를 만들었어요." />
         {result.is_demo ? <DemoNotice analysisSource={result.analysis_source} /> : null}
+        <RouteEndpointsCard origin={request.origin} destination={request.destination} />
         <PawSafeMap origin={request.origin} destination={request.destination} pawsafe={result.pawsafe} walkMode={request.walk_mode} segments={result.heat_segments} selectedSegmentId={selectedId} onSegmentPress={selectSegment} showRouteLegend={false} showSegmentLegend />
         <RelativeHeatNotice />
         <View accessibilityRole="list" style={styles.segmentList}>

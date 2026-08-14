@@ -26,6 +26,7 @@ Expo SDK 54를 고정하고 Expo Go를 기본 개발 경로로 선택했습니�
 - 날짜·시간 및 fast/cool 모드 선택
 - deterministic Mock Provider와 FastAPI HTTP Provider 전환
 - 일반 최단 경로와 선택 모드 경로, 마커, 구간 Polyline, 지도 텍스트 요약 (cool 형광 초록 / fast 보라)
+- 결과 화면의 출발지·목적지 이름/주소와 목업 경로 좌표·거리·구간명을 선택값 기준으로 표시
 - 목업 기반 분석 진행 지도와 실시간 노면 열환경·우회 알림 화면
 - API timeout, 취소, offline, HTTP/계약 오류 변환
 - 데모/실측 검증 전 상태 표시

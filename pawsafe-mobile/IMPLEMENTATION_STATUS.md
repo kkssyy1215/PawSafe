@@ -21,6 +21,7 @@
 - [x] 일반 최단 경로와 선택 모드 경로 Polyline: cool은 형광 초록, fast는 보라색
 - [x] 송파 pipeline 목업 출발지 `(37.50167, 127.15485)`·도착지 `(37.48804, 127.15297)` 고정값
 - [x] 결과 카드·지도 텍스트 요약·접근성 안내까지 선택 모드 이름과 색상 일치
+- [x] 결과 화면에 사용자가 선택한 출발지·목적지, 주소, 경로 좌표·거리·구간명을 반영
 - [x] same-route, no-improvement, out-of-coverage, no-route, timeout 데모 처리
 - [x] MVP 예시·상대 Heat Cost·실측 검증 전 표시
 - [x] PawSafe icon, adaptive icon, splash와 favicon 설정

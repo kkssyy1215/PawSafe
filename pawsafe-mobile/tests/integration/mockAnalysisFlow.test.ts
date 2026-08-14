@@ -28,6 +28,10 @@ describe('deterministic mock walk flow', () => {
     const comparison = walkFlowReducer(selected, { type: 'SHOW_COMPARISON' });
     expect(comparison.status).toBe('comparison');
     expect(result).toMatchObject({ is_demo: true, validation_status: 'not_validated', analysis_source: 'mock_fixture' });
+    expect(result.shortest.geometry.coordinates[0]).toEqual([request.origin.lng, request.origin.lat]);
+    expect(result.shortest.geometry.coordinates.at(-1)).toEqual([request.destination.lng, request.destination.lat]);
+    expect(result.pawsafe.geometry.coordinates[0]).toEqual([request.origin.lng, request.origin.lat]);
+    expect(result.pawsafe.geometry.coordinates.at(-1)).toEqual([request.destination.lng, request.destination.lat]);
   });
 
   it.each([
