@@ -46,7 +46,8 @@ npm start
 
 ## 백엔드 없이 화면 테스트하기
 
-컴퓨터 브라우저에서 바로 확인하려면 다음 명령을 사용합니다. 이 모드는 백엔드,
+컴퓨터 브라우저에서 바로 확인하려면 다음 명령을 사용합니다. 이 명령은 프로젝트의
+API용 `.env`를 무시하고 mock 설정을 강제로 적용합니다. 이 모드는 백엔드,
 Kakao 키, Docker 없이 송파 목업 좌표와 mock 경로로 전체 입력·분석·비교 흐름을
 실행합니다.
 
@@ -55,6 +56,10 @@ cd /Users/kkssyy/Projects/PawSafe/pawsafe-mobile
 npm install                 # 최초 1회
 npm run start:test
 ```
+
+분석 화면이 바로 다음 화면으로 넘어가지 않거나 결과 화면만 먼저 확인하고 싶을 때는
+분석 중 표시되는 `분석 결과 임시로 보기` 버튼을 누르세요. 이 버튼은 로컬 테스트용
+목업 결과를 보여주며, 실제 모델/API 결과를 대신하지 않습니다.
 
 터미널에 표시된 `http://localhost:8081` 주소를 브라우저에서 열고, 출발지와
 목적지를 선택한 뒤 `안전한 산책길 찾기`를 누르면 됩니다. cool은 형광 초록,
@@ -118,6 +123,7 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 EXPO_PUBLIC_ANALYSIS_MODE=api
 EXPO_PUBLIC_PLACE_SEARCH_MODE=mock
 EXPO_PUBLIC_API_BASE_URL=http://192.168.0.10:8000
+EXPO_PUBLIC_SHOW_DEMO_CONTROLS=true # 로컬 UI 확인 때만 임시 결과 버튼 표시
 ```
 
 휴대폰과 PC가 같은 Wi-Fi인지, 방화벽이 8000 포트를 허용하는지 확인합니다. 발표 환경에는 HTTPS API를 권장합니다. 변경 후 Expo 개발 서버를 다시 시작합니다.

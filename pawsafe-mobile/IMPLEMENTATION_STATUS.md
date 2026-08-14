@@ -26,6 +26,7 @@
 - [x] PawSafe icon, adaptive icon, splash와 favicon 설정
 - [x] Expo Go 실행 구성
 - [x] 백엔드 없이 브라우저에서 재현 가능한 `npm run start:test` mock 테스트 모드
+- [x] 로컬 UI 검토용 `분석 결과 임시로 보기` 버튼으로 모델/API 대기 없이 결과 화면 진입
 - [x] EAS development/internal preview APK/production 프로필
 - [x] Jest Expo, React Native Testing Library와 Maestro scaffold
 - [x] 첨부 목업 기반 분석 진행 지도, 열환경 카드, 우회 알림 UI

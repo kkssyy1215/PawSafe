@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { AccessibilityInfo, AppState, StyleSheet, View } from 'react-native';
+import { AccessibilityInfo, AppState, Platform, StyleSheet, View } from 'react-native';
 import { router } from 'expo-router';
 import type { AppStateStatus } from 'react-native';
 import { AppButton } from '@/src/components/common/AppButton';
@@ -7,6 +7,8 @@ import { ScreenContainer } from '@/src/components/common/ScreenContainer';
 import { AnalysisStatus } from '@/src/features/walk/components/AnalysisStatus';
 import { useRouteAnalysis } from '@/src/features/walk/hooks/useRouteAnalysis';
 import { env } from '@/src/config/env';
+import { getMockRouteScenario } from '@/src/mocks/routeScenarios';
+import { pipelineMockRouteDestination, pipelineMockRouteOrigin } from '@/src/mocks/places';
 import { useWalkFlow } from '@/src/state/WalkFlowContext';
 import { spacing } from '@/src/theme/spacing';
 
@@ -17,13 +19,31 @@ export default function AnalyzingScreen() {
   const mounted = useRef(true);
   const running = useRef(false);
   const request = state.status === 'submitting' ? state.request : null;
+  const showTemporaryResult = () => {
+    // Keep the preview usable even if a web refresh lost the in-memory form
+    // state. The real model/API path is untouched; this is only a local UI
+    // escape hatch for reviewing the screens after analysis.
+    const previewRequest = request ?? {
+      origin: pipelineMockRouteOrigin,
+      destination: pipelineMockRouteDestination,
+      departure_at: new Date().toISOString(),
+      walk_mode: 'cool' as const,
+    };
+    cancel();
+    if (!request) dispatch({ type: 'BEGIN_SUBMIT', request: previewRequest });
+    dispatch({ type: 'SUBMIT_SUCCESS', result: getMockRouteScenario(previewRequest) });
+    router.replace('/segments');
+  };
 
   useEffect(() => { AccessibilityInfo.announceForAccessibility(env.analysisMode === 'mock' ? 'MVP 예시 경로를 준비하고 있어요' : '선택한 조건으로 경로를 분석하고 있어요'); }, []);
   useEffect(() => {
     mounted.current = true;
     if (!request) return;
     const run = async () => {
-      if (running.current || appState.current !== 'active') return;
+      // React Native Web can report an `unknown` AppState while the tab is
+      // visible. It must not block the deterministic local mock flow; native
+      // platforms still wait for an active app before starting a request.
+      if (running.current || (Platform.OS !== 'web' && appState.current !== 'active')) return;
       running.current = true;
       try {
         const result = await analyze(request);
@@ -50,6 +70,7 @@ export default function AnalyzingScreen() {
     <ScreenContainer>
       <View style={styles.container}>
         <AnalysisStatus isMock={env.analysisMode === 'mock'} />
+        {env.showDemoControls ? <AppButton testID="preview-results-button" variant="secondary" onPress={showTemporaryResult}>분석 결과 임시로 보기</AppButton> : null}
         <AppButton variant="quiet" onPress={() => { cancel(); router.back(); }}>이전 화면</AppButton>
       </View>
     </ScreenContainer>
