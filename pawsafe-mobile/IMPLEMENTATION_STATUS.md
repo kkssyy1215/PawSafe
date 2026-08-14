@@ -1,6 +1,6 @@
 # PawSafe Mobile 구현 상태
 
-기준일: 2026-08-12
+기준일: 2026-08-14
 
 ## 구현 완료
 
@@ -20,6 +20,7 @@
 - [x] `react-native-maps` Native Map과 key-free Mock Map
 - [x] 일반 최단 경로와 선택 모드 경로 Polyline: cool은 형광 초록, fast는 보라색
 - [x] 송파 pipeline 목업 출발지 `(37.50167, 127.15485)`·도착지 `(37.48804, 127.15297)` 고정값
+- [x] 결과 카드·지도 텍스트 요약·접근성 안내까지 선택 모드 이름과 색상 일치
 - [x] same-route, no-improvement, out-of-coverage, no-route, timeout 데모 처리
 - [x] MVP 예시·상대 Heat Cost·실측 검증 전 표시
 - [x] PawSafe icon, adaptive icon, splash와 favicon 설정
@@ -36,9 +37,9 @@
 | `npx expo config --type public` | 통과; SDK 54, app identity와 foreground location 설정 해석됨 |
 | `npm run typecheck` | 통과 |
 | `npm run lint` | 통과 |
-| `npm test -- --runInBand` | 17 suites, 45 tests 통과 |
+| `npm test -- --runInBand` | 17 suites, 46 tests 통과 |
 | `npx expo-doctor@latest` | 18/18 checks 통과 |
-| Android Metro export | 통과; Hermes bundle, 1,569 modules |
+| Android Metro export | 통과; Hermes bundle, 1,570 modules |
 | Web static export | 통과; `/`, `/analyzing`, `/segments`, `/comparison`, `/live` 포함 8 routes |
 | EAS cloud build | 미실행 |
 | Preview APK 실제 설치 | 미실행 |

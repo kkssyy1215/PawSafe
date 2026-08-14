@@ -12,14 +12,16 @@ import { RouteComparisonCard } from '@/src/features/walk/components/RouteCompari
 import { RouteSummaryCard } from '@/src/features/walk/components/RouteSummaryCard';
 import { useWalkFlow } from '@/src/state/WalkFlowContext';
 import { colors, spacing, typography } from '@/src/theme/theme';
+import { getWalkModeLabel } from '@/src/features/walk/utils/walkModeCopy';
 
 export default function ComparisonScreen() {
   const { state, dispatch } = useWalkFlow();
   const resultState = state.status === 'comparison' || state.status === 'segmentReview' ? state : null;
+  const walkModeForAnnouncement = resultState?.request.walk_mode ?? null;
   useFocusEffect(useCallback(() => {
-    AccessibilityInfo.announceForAccessibility('일반 경로와 PawSafe 경로 비교 화면');
+    AccessibilityInfo.announceForAccessibility(`일반 최단 경로와 ${walkModeForAnnouncement ? getWalkModeLabel(walkModeForAnnouncement) : '산책길'} 비교 화면`);
     if (state.status === 'segmentReview') dispatch({ type: 'SHOW_COMPARISON' });
-  }, [dispatch, state.status]));
+  }, [dispatch, state.status, walkModeForAnnouncement]));
   if (!resultState) return <ScreenContainer style={styles.missing}><Text style={styles.missingText}>비교할 경로 결과가 없습니다.</Text><AppButton onPress={() => { dispatch({ type: 'RESET' }); router.replace('/'); }}>조건 입력으로 이동</AppButton></ScreenContainer>;
   const { request, result } = resultState;
   return (
@@ -29,7 +31,7 @@ export default function ComparisonScreen() {
         {result.is_demo || result.analysis_source === 'graph' ? <DemoNotice analysisSource={result.analysis_source} /> : null}
         {result.comparison.same_route ? <Notice tone="warning">두 경로의 선이 지도에서 겹칩니다.</Notice> : null}
         <PawSafeMap origin={request.origin} destination={request.destination} shortest={result.shortest} pawsafe={result.pawsafe} walkMode={request.walk_mode} showRouteLegend />
-        <View style={styles.routeCards}><RouteSummaryCard route={result.shortest} tone="shortest" /><RouteSummaryCard route={result.pawsafe} tone="pawsafe" /></View>
+        <View style={styles.routeCards}><RouteSummaryCard route={result.shortest} tone="shortest" /><RouteSummaryCard route={result.pawsafe} tone="pawsafe" walkMode={request.walk_mode} /></View>
         <RouteComparisonCard comparison={result.comparison} />
         <RelativeHeatNotice />
         <Text style={styles.version}>그래프 {result.graph_version} · {result.data_valid_at ? `데이터 ${new Date(result.data_valid_at).toLocaleString('ko-KR')}` : 'MVP 예시 시나리오'}</Text>

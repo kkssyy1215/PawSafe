@@ -179,7 +179,7 @@ npm run test:coverage
 
 Jest 테스트는 formatter/null 처리, GeoJSON 변환, 입력 검증, 오류 카피, 결과 headline, same/no-improvement, demo 상태, deterministic provider 오류·취소와 reducer 전체 흐름을 포함합니다.
 
-현재 저장소 검증 결과는 Expo Go 모드 Metro 시작, TypeScript와 lint 통과, Jest 16 suites/42 tests 통과, 웹 정적 export 8개 라우트 성공, Android Hermes Metro export 성공(1,569 modules)입니다. 이 export는 네이티브 APK를 만드는 EAS Build와 다릅니다.
+현재 저장소 검증 결과는 Expo Go 모드 Metro 시작, TypeScript와 lint 통과, Jest 17 suites/46 tests 통과, 웹 정적 export 8개 라우트 성공, Android Hermes Metro export 성공(1,570 modules)입니다. 이 export는 네이티브 APK를 만드는 EAS Build와 다릅니다.
 
 Maestro가 설치되어 있고 `com.pawsafe.mobile` APK/development build가 실행 가능한 Android 기기에 설치되어 있으면 다음을 실행합니다.
 
