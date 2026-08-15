@@ -27,6 +27,14 @@ htmlcov/
 *.xlsm
 *.xlsb
 data/source/
+data/raw/*
+!data/raw/README.md
+data/processed/
+outputs/
+*.gpkg
+*.parquet
+*.joblib
+*.pkl
 
 # Private planning materials and local design references
 *.docx
@@ -42,3 +50,10 @@ pawsafe.png
 
 # Nested scaffold metadata (the root repository tracks source files instead)
 pawsafe-mobile/.git/
+.venv
+backend/.venv
+
+# The backend image needs the versioned graph and Heat Cost snapshot.
+!backend/data/
+!backend/data/exports/
+!backend/data/exports/*

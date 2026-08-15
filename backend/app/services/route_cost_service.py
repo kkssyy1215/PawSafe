@@ -32,7 +32,7 @@ def load_walk_mode_config(path: Path) -> WalkModeConfig:
     try:
         payload = yaml.safe_load(path.read_text(encoding="utf-8"))
         config = WalkModeConfig.model_validate(payload)
-        if set(config.modes) != {"fast", "balanced", "cool"}:
+        if set(config.modes) != {"fast", "cool"}:
             raise ValueError("all walk modes are required")
         for profile in config.modes.values():
             if abs(profile.alpha + profile.beta - 1.0) > 1e-9:

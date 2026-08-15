@@ -1,0 +1,3 @@
+﻿observed_at,station_id,station_name,temperature_c,humidity_pct,wind_speed_ms,rainfall_mm,solar_radiation_mj_m2,sunshine_hours,source,fetched_at
+2026-08-14 13:00:00+09:00,108,서울,31.5,51.0,1.8,,1.37,0.1,KMA_ASOS_HOURLY_PREVIOUS_DAY_REFERENCE,2026-08-15 14:31:37.900503+09:00
+2026-08-14 14:00:00+09:00,108,서울,30.9,52.0,1.9,,0.56,0.0,KMA_ASOS_HOURLY_PREVIOUS_DAY_REFERENCE,2026-08-15 15:36:15.496922+09:00

@@ -43,6 +43,13 @@ class Settings(BaseSettings):
     heat_cost_external_url: str | None = None
     shortest_route_external_url: str | None = None
     kakao_rest_api_key: str | None = None
+    kma_service_key: str | None = None
+    kma_base_url: str = "https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0"
+    kma_grid_x: int = Field(default=62, gt=0)
+    kma_grid_y: int = Field(default=126, gt=0)
+    asos_service_key: str | None = None
+    asos_base_url: str = "https://apis.data.go.kr/1360000/AsosHourlyInfoService"
+    asos_station_id: int = Field(default=108, gt=0)
 
     allowed_origins: str = "http://localhost:8081,http://localhost:19006"
     request_timeout_seconds: float = Field(default=10.0, gt=0)
@@ -68,6 +75,8 @@ class Settings(BaseSettings):
         "pipeline_graph_file_path",
         "pipeline_heat_cost_file_path",
         "pipeline_data_version",
+        "kma_service_key",
+        "asos_service_key",
         mode="before",
     )
     @classmethod

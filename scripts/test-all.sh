@@ -25,3 +25,15 @@ echo "== PawSafe backend tests =="
 )
 
 echo "All PawSafe file-based tests passed."
+
+echo "== PawSafe data pipeline tests =="
+(
+  cd "$ROOT_DIR"
+  if [[ ! -x .venv/bin/python ]]; then
+    echo ".venv is missing. Run: python3.12 -m venv .venv && .venv/bin/python -m pip install -r requirements.txt" >&2
+    exit 1
+  fi
+  .venv/bin/python -m pytest -q tests
+)
+
+echo "All PawSafe tests passed."
