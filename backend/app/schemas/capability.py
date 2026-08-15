@@ -19,7 +19,7 @@ class HealthResponse(BaseModel):
 
 
 class CapabilityResponse(BaseModel):
-    analysis_mode: Literal["demo", "graph", "external"]
+    analysis_mode: Literal["demo", "graph", "external", "kakao_walk"]
     place_search: Literal["mock", "kakao"]
     map_graph: Literal["demo", "configured", "not_ready"]
     data_pipeline: Literal["not_ready", "configured"]

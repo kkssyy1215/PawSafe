@@ -1,6 +1,8 @@
-# PawSafe Demo Weight Profile
+# PawSafe Walk Mode Weight Profile
 
-`app/config_data/walk_modes.demo.yaml`의 값은 제품 흐름과 trade-off를 시연하기 위한 초기값입니다. 검증된 과학적·안전 가중치가 아닙니다.
+실행 환경은 `app/config_data/walk_modes.live.yaml`, Mock 테스트는
+`walk_modes.demo.yaml`을 사용합니다. 두 설정 모두 경로 간 상대 비교를 위한
+초기값이며 검증된 과학적·안전 가중치가 아닙니다.
 
 ## 비용식
 
@@ -14,11 +16,13 @@ total_cost = alpha * distance_m + beta * heat_exposure_cost
 
 경로 비용은 edge `total_cost`의 합이며 NetworkX Dijkstra로 최소화합니다.
 
-| mode | alpha | beta | 데모 의도 |
+| mode | live alpha | live beta | 의도 |
 |---|---:|---:|---|
-| `fast` | 0.85 | 0.15 | 거리를 크게 우선 |
-| `balanced` | 0.50 | 0.50 | 거리와 상대 Heat Cost 절충 |
-| `cool` | 0.25 | 0.75 | 상대 Heat Cost를 더 크게 반영 |
+| `fast` | 1.00 | 0.00 | 거리 최우선 |
+| `cool` | 0.05 | 0.95 | 상대 Heat Cost를 크게 반영 |
+
+Mock 설정은 사용자 흐름 검증을 위해 `fast=0.85/0.15`,
+`cool=0.25/0.75`를 사용합니다.
 
 ## 경로 통계
 
@@ -36,4 +40,3 @@ total_cost = alpha * distance_m + beta * heat_exposure_cost
 4. `WALK_MODE_CONFIG_PATH`를 새 파일로 바꿉니다.
 5. 경로 회귀 fixture, 실제 heat snapshot, 거리 상한, no-improvement 결과를 재검증합니다.
 6. `is_demo=false`는 실제 검증과 승인 이후에만 설정합니다.
-

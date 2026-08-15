@@ -4,7 +4,7 @@ Base prefix는 `/v1`입니다. 모든 JSON 키는 snake_case입니다. GeoJSON �
 
 ## 공통 enum과 null
 
-- `walk_mode`: `fast | balanced | cool`
+- `walk_mode`: `fast | cool`
 - 분석 `status`: `completed`
 - `validation_status`: `not_validated | validated | partially_validated | unknown`
 - Heat Segment `level`: `low | medium | high | unknown`
@@ -20,11 +20,11 @@ Base prefix는 `/v1`입니다. 모든 JSON 키는 snake_case입니다. GeoJSON �
   "status": "ok",
   "graph_loaded": true,
   "heat_data_loaded": true,
-  "analysis_provider": "mock",
-  "heat_cost_provider": "mock",
+  "analysis_provider": "graph",
+  "heat_cost_provider": "file",
   "place_provider": "mock",
-  "graph_version": "demo-graph-v1",
-  "heat_data_version": null
+  "graph_version": "walk_graph",
+  "heat_data_version": "live-20260815T1400+0900"
 }
 ```
 
@@ -34,13 +34,13 @@ Base prefix는 `/v1`입니다. 모든 JSON 키는 snake_case입니다. GeoJSON �
 
 ```json
 {
-  "analysis_mode": "demo",
+  "analysis_mode": "graph",
   "place_search": "mock",
-  "map_graph": "demo",
-  "data_pipeline": "not_ready",
+  "map_graph": "configured",
+  "data_pipeline": "configured",
   "heat_model": "not_ready",
-  "heat_cost_source": "mock_fixture",
-  "route_optimizer": "mock_fixture",
+  "heat_cost_source": "file",
+  "route_optimizer": "internal_graph",
   "absolute_surface_temperature_prediction": false,
   "absolute_safety_classification": false
 }
@@ -153,19 +153,21 @@ GET /v1/places/search?q=공원&lat=37.55&lng=126.91
 
 응답에는 `analysis_source=kakao_walk+mock_heat_fixture`와 `KAKAO_SHORTEST_WITH_DEMO_HEAT` warning이 포함됩니다. 따라서 이 모드의 Kakao 경로는 실제 보행 최단 경로이지만 열환경 비교는 검증된 모델 결과가 아닙니다.
 
-### 데이터팀 파이프라인 Graph 모드
+### Graph 모드
 
-`ANALYSIS_PROVIDER=graph`와 `HEAT_COST_PROVIDER=file`에 비공개
-`edges_static.gpkg` 및 `edge_time_features.parquet` 경로를 지정하면, 백엔드는
-edge-only GeoPackage의 모든 선분을 그래프 정점쌍으로 나누고 원본 `edge_id`를
-시간별 Heat Cost 키로 보존합니다. 요청 시각과 가장 가까운 Asia/Seoul 시간
-스냅샷을 선택해 `fast`/`cool` 비용으로 두 경로를 계산합니다.
+공유 기본 설정은 `ANALYSIS_PROVIDER=graph`, `HEAT_COST_PROVIDER=file`이며
+`backend/data/exports/walk_graph.gpkg`와 `edge_heat_cost.json`을 읽습니다.
+백엔드는 GeoPackage 선분의 정점쌍과 원본 `edge_id`를 유지하고, 요청 시각과
+가장 가까운 Asia/Seoul Heat Cost 스냅샷으로 `fast`/`cool` 경로를 계산합니다.
+export를 교체해도 API 계약은 바뀌지 않으며 파일 변경 시 Heat Cost Provider가
+새 스냅샷을 다시 읽습니다.
 
 이 모드의 응답은 `analysis_source=graph`, `is_demo=false`,
 `validation_status=not_validated`이며 `PIPELINE_RELATIVE_HEAT` 경고를 포함합니다.
 파이프라인의 Heat Cost는 상대 열노출 지표이지 실측 노면온도(℃)나 절대 안전
-판정이 아닙니다. 원본 Excel/CSV, Parquet, GeoPackage와 모델 파일은 API 응답이나
-공개 저장소에 포함하지 않습니다.
+판정이 아닙니다. 승인된 앱 실행용 export만 저장소에 포함하며 원본 IoT 문서,
+재배포 권한이 불명확한 원천 자료, 개인 API 키와 로컬 모델 산출물은 포함하지
+않습니다.
 
 ## 표준 오류
 

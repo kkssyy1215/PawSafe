@@ -2,6 +2,9 @@ from __future__ import annotations
 
 from fastapi.testclient import TestClient
 
+from app.core.config import Settings
+from app.main import create_app
+
 
 def test_health(client: TestClient) -> None:
     response = client.get("/health")
@@ -26,6 +29,19 @@ def test_capabilities_maps_mock_to_demo(client: TestClient) -> None:
     assert payload["analysis_mode"] == "demo"
     assert payload["heat_model"] == "not_ready"
     assert payload["absolute_safety_classification"] is False
+
+
+def test_capabilities_supports_kakao_walk_mode() -> None:
+    settings = Settings(
+        analysis_provider="kakao_walk",
+        kakao_rest_api_key="test-key",
+        _env_file=None,
+    )
+    with TestClient(create_app(settings)) as client:
+        response = client.get("/v1/capabilities")
+
+    assert response.status_code == 200
+    assert response.json()["analysis_mode"] == "kakao_walk"
 
 
 def test_coverage_is_geojson_lng_lat(client: TestClient) -> None:
