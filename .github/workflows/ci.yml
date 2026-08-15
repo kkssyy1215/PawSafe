@@ -56,7 +56,7 @@ jobs:
           mypy app
 
       - name: Check data pipeline
-        run: pytest -q tests
+        run: python -m pytest -q tests
 
       - name: Build web app
         working-directory: pawsafe-mobile
