@@ -31,6 +31,7 @@ export interface RouteStats {
   route_id: string;
   label: string;
   route_source: string;
+  navigation_url?: string | null;
   geometry: LineStringGeometry;
   distance_m: number;
   duration_min: number;

@@ -162,6 +162,8 @@ class KakaoWalkingAnalysisProvider:
             duration_min = max(1, round(int(properties["totalTime"]) / 60))
         except (KeyError, TypeError, ValueError) as exc:
             raise InvalidResponseError() from exc
+        landing_url = properties.get("landingUrl")
+        navigation_url = landing_url if isinstance(landing_url, str) else None
 
         coordinates: list[tuple[float, float]] = []
         legs = route.get("legs", [])
@@ -197,6 +199,7 @@ class KakaoWalkingAnalysisProvider:
                 "route_id": "kakao_shortest",
                 "label": "카카오 최단 보행 경로",
                 "route_source": "kakao_walk",
+                "navigation_url": navigation_url,
                 "geometry": LineStringGeometry(coordinates=coordinates),
                 "distance_m": distance_m,
                 "duration_min": duration_min,

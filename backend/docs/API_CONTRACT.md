@@ -123,6 +123,7 @@ GET /v1/places/search?q=공원&lat=37.55&lng=126.91
     "route_id": "shortest_001",
     "label": "일반 경로",
     "route_source": "mock_fixture",
+    "navigation_url": null,
     "geometry": {"type": "LineString", "coordinates": [[126.91, 37.55], [126.9, 37.555]]},
     "distance_m": 1200,
     "duration_min": 17,
@@ -151,7 +152,7 @@ GET /v1/places/search?q=공원&lat=37.55&lng=126.91
 
 공유 설정인 `ANALYSIS_PROVIDER=graph`에서 `KAKAO_REST_API_KEY`가 있으면 요청 모드에 따라 공급자를 분리합니다. `walk_mode=fast`는 Kakao맵 도보 경로 API의 `route_mode=SHORTEST` 응답을 사용하고, `walk_mode=cool`은 데이터팀 보행 그래프와 Edge × Time Heat Cost를 사용합니다. 입력·출력 좌표계는 WGS84이며 Kakao의 `[x, y]`는 GeoJSON `[lng, lat]`로 유지합니다.
 
-fast 응답에는 `analysis_source=kakao_walk+mock_heat_fixture`와 `KAKAO_SHORTEST_WITH_DEMO_HEAT` warning이 포함됩니다. 경로 geometry·distance·duration은 실제 Kakao 응답이며, 빠른 산책 화면에서는 열환경 수치를 표시하지 않습니다. cool 응답은 `analysis_source=graph`이며 최신 Heat Cost 스냅샷을 사용합니다.
+fast 응답에는 `analysis_source=kakao_walk+mock_heat_fixture`와 `KAKAO_SHORTEST_WITH_DEMO_HEAT` warning이 포함됩니다. 경로 geometry·distance·duration은 실제 Kakao 응답이며, Kakao가 `landingUrl`을 제공하면 `navigation_url`로 전달해 앱의 길안내 버튼에 사용합니다. 빠른 산책 화면에서는 열환경 수치를 표시하지 않습니다. cool 응답은 `analysis_source=graph`이며 최신 Heat Cost 스냅샷을 사용합니다.
 
 ### Graph 모드
 

@@ -23,6 +23,7 @@ const routeStatsSchema = z.object({
   route_id: z.string(),
   label: z.string(),
   route_source: z.string(),
+  navigation_url: z.string().url().nullable().optional(),
   geometry: lineStringSchema,
   distance_m: finiteNumber.nonnegative(),
   duration_min: finiteNumber.nonnegative(),

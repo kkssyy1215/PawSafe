@@ -10,14 +10,15 @@ import { colors, spacing, typography } from '@/src/theme/theme';
 
 export function RecommendedRouteCard({ route, walkMode, showHeatMetrics = true }: { route: RouteStats; walkMode: WalkMode; showHeatMetrics?: boolean }) {
   const routeColor = getRecommendedRouteColor(walkMode);
+  const isFast = walkMode === 'fast';
   return (
-    <AppCard accessibilityLabel={`${getWalkModeLabel(walkMode)}, ${formatDistance(route.distance_m)}, ${formatDuration(route.duration_min)}${showHeatMetrics ? `, Heat Cost ${route.heat_cost.toFixed(0)}` : ''}`} style={[styles.card, { borderColor: routeColor }]}>
+    <AppCard accessibilityLabel={`${getWalkModeLabel(walkMode)}, ${formatDistance(route.distance_m)}, ${formatDuration(route.duration_min)}${showHeatMetrics ? `, Heat Cost ${route.heat_cost.toFixed(0)}` : ''}`} style={[styles.card, { borderColor: isFast ? '#DED4FA' : '#CFE8D4', backgroundColor: isFast ? '#F5F1FF' : '#EDF8EF' }]}>
       <View style={styles.header}>
         <View style={styles.titleWrap}>
           <Text style={[styles.eyebrow, { color: routeColor }]}>{walkMode === 'fast' ? '카카오 최단 경로' : 'PawSafe 추천'}</Text>
           <Text style={styles.title}>{getWalkModeLabel(walkMode)}</Text>
         </View>
-        <View style={[styles.routeDot, { backgroundColor: routeColor }]} />
+        <View style={[styles.routeIcon, { backgroundColor: routeColor }]}><Text style={styles.routeIconText}>↗</Text></View>
       </View>
       <View style={styles.metrics}>
         <Metric label="거리" value={formatDistance(route.distance_m)} color={routeColor} />
@@ -34,10 +35,14 @@ function Metric({ label, value, color }: { label: string; value: string; color: 
 }
 
 const styles = StyleSheet.create({
-  card: { gap: spacing.md, borderWidth: 2, padding: spacing.md },
+  card: { gap: spacing.lg, borderWidth: 1, padding: spacing.lg, borderRadius: 22 },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  titleWrap: { gap: 2 }, eyebrow: { ...typography.caption, color: colors.greenStrong, fontWeight: '700' }, title: { ...typography.subheading, color: colors.text },
-  routeDot: { width: 14, height: 14, borderRadius: 7 },
-  metrics: { flexDirection: 'row', gap: spacing.sm }, metric: { flex: 1, gap: 2 }, metricLabel: { ...typography.caption, color: colors.mutedText }, metricValue: { ...typography.body, color: colors.greenStrong, fontWeight: '700' },
+  titleWrap: { gap: 2 }, eyebrow: { ...typography.caption, color: colors.greenStrong, fontWeight: '800' }, title: { ...typography.heading, color: colors.text },
+  routeIcon: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
+  routeIconText: { ...typography.heading, color: colors.white, fontWeight: '800' },
+  metrics: { flexDirection: 'row', gap: spacing.sm },
+  metric: { flex: 1, minHeight: 70, gap: spacing.xs, backgroundColor: 'rgba(255,255,255,0.78)', borderRadius: 14, padding: spacing.md, justifyContent: 'center' },
+  metricLabel: { ...typography.caption, color: colors.mutedText },
+  metricValue: { ...typography.subheading, color: colors.greenStrong, fontWeight: '800' },
   footnote: { ...typography.caption, color: colors.mutedText },
 });

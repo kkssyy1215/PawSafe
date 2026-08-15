@@ -32,6 +32,7 @@ class RouteSummary(BaseModel):
     route_id: str
     label: str
     route_source: str
+    navigation_url: str | None = None
     geometry: LineStringGeometry
     distance_m: int
     duration_min: int

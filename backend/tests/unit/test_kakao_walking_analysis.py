@@ -96,7 +96,11 @@ async def test_kakao_walk_fast_recommends_the_live_shortest_geometry() -> None:
             json={
                 "status": "OK",
                 "route": {
-                    "properties": {"totalDistance": 900, "totalTime": 480},
+                    "properties": {
+                        "totalDistance": 900,
+                        "totalTime": 480,
+                        "landingUrl": "https://map.kakao.com/example-route",
+                    },
                     "legs": [{"steps": [{"path": {"points": [[126.91, 37.55], [126.9, 37.555]]}}]}],
                 },
             },
@@ -135,5 +139,6 @@ async def test_kakao_walk_fast_recommends_the_live_shortest_geometry() -> None:
     assert result.pawsafe.label == "빠른 산책길(카카오 최단)"
     assert result.pawsafe.geometry == result.shortest.geometry
     assert result.pawsafe.distance_m == result.shortest.distance_m == 900
+    assert result.pawsafe.navigation_url == "https://map.kakao.com/example-route"
     assert result.comparison.same_route is True
     assert result.heat_segments == []
