@@ -36,7 +36,9 @@ make backend
 | `POST` | `/v1/route-analyses` | fast/cool 경로 비교 |
 
 `ANALYSIS_PROVIDER=graph`와 `HEAT_COST_PROVIDER=file`이 공유 데이터 연결
-설정입니다. `fast`와 `cool`만 사용하며 Heat Cost는 상대 비교 지표입니다.
+설정입니다. 이 상태에서 `KAKAO_REST_API_KEY`가 있으면 `fast`는 Kakao 도보
+최단 경로 API를 사용하고, `cool`은 보행 그래프와 시간별 Heat Cost로 계산합니다.
+Heat Cost는 상대 비교 지표입니다.
 
 상세 계약은 [`docs/API_CONTRACT.md`](docs/API_CONTRACT.md), 전체 실행·테스트
 방법은 루트 [`README.md`](../README.md)를 참고합니다.

@@ -13,6 +13,7 @@ import { SavedPlacePicker } from '@/src/features/walk/components/SavedPlacePicke
 import { WalkModeSelector } from '@/src/features/walk/components/WalkModeSelector';
 import { useSavedPlaces } from '@/src/features/walk/hooks/useSavedPlaces';
 import { toLocalIsoWithOffset } from '@/src/features/walk/utils/dateTime';
+import { savePendingRouteRequest } from '@/src/features/walk/utils/pendingRouteRequest';
 import { toApiPlace, validateWalkForm } from '@/src/features/walk/utils/validation';
 import { getWalkSearchButtonLabel } from '@/src/features/walk/utils/walkModeCopy';
 import { useWalkFlow } from '@/src/state/WalkFlowContext';
@@ -39,15 +40,17 @@ export default function InputScreen() {
     const issue = validateWalkForm(form);
     if (issue) { setValidationError(issue); AccessibilityInfo.announceForAccessibility(issue); return; }
     if (!form.origin || !form.destination) return;
-    dispatch({ type: 'BEGIN_SUBMIT', request: {
+    const request = {
       // Search results also carry client-only coverage metadata. Explicitly build
       // the API location objects because FastAPI forbids unknown request fields.
       origin: toApiPlace(form.origin),
       destination: toApiPlace(form.destination),
       departure_at: toLocalIsoWithOffset(form.departureAt),
       walk_mode: form.walkMode,
-    } });
-    router.push('/analyzing');
+    };
+    savePendingRouteRequest(request);
+    dispatch({ type: 'BEGIN_SUBMIT', request });
+    router.push({ pathname: '/analyzing', params: { walkMode: request.walk_mode } });
   };
   return (
     <ScreenContainer>

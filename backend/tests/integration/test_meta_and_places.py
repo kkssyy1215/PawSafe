@@ -44,6 +44,22 @@ def test_capabilities_supports_kakao_walk_mode() -> None:
     assert response.json()["analysis_mode"] == "kakao_walk"
 
 
+def test_graph_mode_uses_kakao_for_fast_when_key_is_configured() -> None:
+    settings = Settings(
+        analysis_provider="graph",
+        kakao_rest_api_key="test-key",
+        _env_file=None,
+    )
+    with TestClient(create_app(settings)) as client:
+        capabilities = client.get("/v1/capabilities")
+        health = client.get("/health")
+
+    assert capabilities.status_code == 200
+    assert capabilities.json()["analysis_mode"] == "graph"
+    assert capabilities.json()["route_optimizer"] == "kakao_walk+internal_graph"
+    assert health.json()["analysis_provider"] == "graph+kakao_fast"
+
+
 def test_coverage_is_geojson_lng_lat(client: TestClient) -> None:
     payload = client.get("/v1/coverage").json()
     assert payload["coverage_id"] == "demo-mapo-v1"

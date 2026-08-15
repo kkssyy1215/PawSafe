@@ -1,11 +1,12 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { AccessibilityInfo, AppState, Platform, StyleSheet, View } from 'react-native';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import type { AppStateStatus } from 'react-native';
 import { AppButton } from '@/src/components/common/AppButton';
 import { ScreenContainer } from '@/src/components/common/ScreenContainer';
 import { AnalysisStatus } from '@/src/features/walk/components/AnalysisStatus';
 import { useRouteAnalysis } from '@/src/features/walk/hooks/useRouteAnalysis';
+import { clearPendingRouteRequest, loadPendingRouteRequest } from '@/src/features/walk/utils/pendingRouteRequest';
 import { env } from '@/src/config/env';
 import { getMockRouteScenario } from '@/src/mocks/routeScenarios';
 import { pipelineMockRouteDestination, pipelineMockRouteOrigin } from '@/src/mocks/places';
@@ -15,9 +16,11 @@ import { spacing } from '@/src/theme/spacing';
 export default function AnalyzingScreen() {
   const { state, dispatch } = useWalkFlow();
   const { analyze, cancel } = useRouteAnalysis();
+  const params = useLocalSearchParams<{ walkMode?: string }>();
   const appState = useRef<AppStateStatus>(AppState.currentState);
+  const recoveredRequest = useMemo(loadPendingRouteRequest, []);
   const request = state.status === 'submitting' ? state.request : null;
-  const walkMode = request?.walk_mode ?? 'cool';
+  const walkMode = request?.walk_mode ?? recoveredRequest?.walk_mode ?? (params.walkMode === 'fast' ? 'fast' : 'cool');
   const showTemporaryResult = () => {
     // Keep the preview usable even if a web refresh lost the in-memory form
     // state. The real model/API path is untouched; this is only a local UI
@@ -31,8 +34,18 @@ export default function AnalyzingScreen() {
     cancel();
     if (!request) dispatch({ type: 'BEGIN_SUBMIT', request: previewRequest });
     dispatch({ type: 'SUBMIT_SUCCESS', result: getMockRouteScenario(previewRequest) });
+    clearPendingRouteRequest();
     router.replace('/segments');
   };
+
+  useEffect(() => {
+    if (state.status !== 'input') return;
+    if (recoveredRequest) {
+      dispatch({ type: 'BEGIN_SUBMIT', request: recoveredRequest });
+      return;
+    }
+    router.replace('/');
+  }, [dispatch, recoveredRequest, state.status]);
 
   useEffect(() => {
     AccessibilityInfo.announceForAccessibility(
@@ -53,6 +66,7 @@ export default function AnalyzingScreen() {
         const result = await analyze(request);
         if (!active) return;
         dispatch({ type: 'SUBMIT_SUCCESS', result });
+        clearPendingRouteRequest();
         router.replace('/segments');
       } catch (error) {
         if (!active || (error instanceof Error && error.name === 'AppError' && 'code' in error && error.code === 'CANCELLED')) return;
@@ -75,7 +89,7 @@ export default function AnalyzingScreen() {
       <View style={styles.container}>
         <AnalysisStatus isMock={env.analysisMode === 'mock'} walkMode={walkMode} />
         {env.showDemoControls && env.analysisMode === 'mock' ? <AppButton testID="preview-results-button" variant="secondary" onPress={showTemporaryResult}>분석 결과 임시로 보기</AppButton> : null}
-        <AppButton variant="quiet" onPress={() => { cancel(); router.back(); }}>이전 화면</AppButton>
+        <AppButton variant="quiet" onPress={() => { cancel(); clearPendingRouteRequest(); router.back(); }}>이전 화면</AppButton>
       </View>
     </ScreenContainer>
   );

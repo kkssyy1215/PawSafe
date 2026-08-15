@@ -36,6 +36,8 @@ async def capabilities(request: Request) -> CapabilityResponse:
             if settings.analysis_provider == "mock"
             else "kakao_walk"
             if settings.analysis_provider == "kakao_walk"
+            else "kakao_walk+internal_graph"
+            if settings.analysis_provider == "graph" and settings.kakao_rest_api_key
             else settings.shortest_route_provider
         ),
     )

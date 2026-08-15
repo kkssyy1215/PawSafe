@@ -83,7 +83,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             status="ok" if analysis_ready and place_ready else "degraded",
             graph_loaded=graph_loaded,
             heat_data_loaded=heat_loaded,
-            analysis_provider=container.settings.analysis_provider,
+            analysis_provider=(
+                "graph+kakao_fast"
+                if container.settings.analysis_provider == "graph"
+                and container.settings.kakao_rest_api_key
+                else container.settings.analysis_provider
+            ),
             heat_cost_provider=container.settings.heat_cost_provider,
             place_provider=container.settings.place_provider,
             graph_version=container.graph_data.version if container.graph_data else None,

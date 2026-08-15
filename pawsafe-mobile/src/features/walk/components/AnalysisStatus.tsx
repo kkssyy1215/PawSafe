@@ -89,7 +89,8 @@ export function AnalysisStatus({ isMock, walkMode }: AnalysisStatusProps) {
 
   const scanTranslateX = scanProgress.interpolate({ inputRange: [0, 1], outputRange: [-80, 390] });
   const markerScale = markerProgress.interpolate({ inputRange: [0, 0.5, 1], outputRange: [1, 1.18, 1] });
-  const markerTranslateX = markerProgress.interpolate({ inputRange: [0, 1], outputRange: [0, isFast ? 30 : 18] });
+  const markerTranslateX = markerProgress.interpolate({ inputRange: [0, 1], outputRange: [0, isFast ? 230 : 18] });
+  const markerTranslateY = markerProgress.interpolate({ inputRange: [0, 1], outputRange: [0, isFast ? -118 : 0] });
 
   return (
     <View accessible accessibilityRole="progressbar" accessibilityState={{ busy: true }} accessibilityLiveRegion="polite" style={styles.container}>
@@ -111,14 +112,23 @@ export function AnalysisStatus({ isMock, walkMode }: AnalysisStatusProps) {
       </View>
 
       <View style={styles.map} accessibilityLabel={`${modeLabel} 경로를 찾는 중인 지도`}>
-        <View style={[styles.block, styles.blockOne]} />
-        <View style={[styles.block, styles.blockTwo]} />
-        <View style={[styles.block, styles.blockThree]} />
-        <View style={[styles.routeA, { backgroundColor: routeColor }]} />
-        <View style={[styles.routeB, { backgroundColor: routeColor }]} />
-        <View style={[styles.routeC, { backgroundColor: routeColor }]} />
-        <Animated.View style={[styles.routeDot, { backgroundColor: routeColor, transform: [{ translateX: markerTranslateX }, { scale: markerScale }] }]} />
-        {!reduceMotion ? <Animated.View pointerEvents="none" style={[styles.scan, { backgroundColor: routeColor, transform: [{ translateX: scanTranslateX }] }]} /> : null}
+        {isFast ? <>
+          <View style={[styles.fastRoad, styles.fastRoadOne]} />
+          <View style={[styles.fastRoad, styles.fastRoadTwo]} />
+          <View style={[styles.fastRoute, styles.fastRouteOne, { backgroundColor: routeColor }]} />
+          <View style={[styles.fastRoute, styles.fastRouteTwo, { backgroundColor: routeColor }]} />
+          <View style={[styles.endpoint, styles.fastStart, { borderColor: routeColor }]}><Text style={styles.endpointText}>출발</Text></View>
+          <View style={[styles.endpoint, styles.fastEnd, { borderColor: routeColor }]}><Text style={styles.endpointText}>도착</Text></View>
+        </> : <>
+          <View style={[styles.block, styles.blockOne]} />
+          <View style={[styles.block, styles.blockTwo]} />
+          <View style={[styles.block, styles.blockThree]} />
+          <View style={[styles.routeA, { backgroundColor: routeColor }]} />
+          <View style={[styles.routeB, { backgroundColor: routeColor }]} />
+          <View style={[styles.routeC, { backgroundColor: routeColor }]} />
+          {!reduceMotion ? <Animated.View pointerEvents="none" style={[styles.scan, { backgroundColor: routeColor, transform: [{ translateX: scanTranslateX }] }]} /> : null}
+        </>}
+        <Animated.View style={[styles.routeDot, isFast && styles.fastRouteDot, { backgroundColor: routeColor, transform: [{ translateX: markerTranslateX }, { translateY: markerTranslateY }, { scale: markerScale }] }]} />
         <View style={[styles.mapCaption, { borderColor: routeColor }]}>
           <View style={[styles.mapCaptionDot, { backgroundColor: routeColor }]} />
           <Text style={styles.mapCaptionText}>{isFast ? '카카오 최단 경로 불러오는 중' : '그늘·노면온도 비교 중'}</Text>
@@ -168,6 +178,17 @@ const styles = StyleSheet.create({
   routeB: { position: 'absolute', left: 62, top: 190, width: 180, height: 7, borderRadius: 4 },
   routeC: { position: 'absolute', left: 238, top: 90, width: 7, height: 105, borderRadius: 4 },
   routeDot: { position: 'absolute', left: 230, top: 182, width: 16, height: 16, borderRadius: 8, borderWidth: 3, borderColor: colors.white },
+  fastRouteDot: { left: 52, top: 184 },
+  fastRoad: { position: 'absolute', height: 20, borderRadius: 10, backgroundColor: '#E1E4E8' },
+  fastRoadOne: { width: 176, left: 48, top: 156, transform: [{ rotate: '-25deg' }] },
+  fastRoadTwo: { width: 142, left: 192, top: 104, transform: [{ rotate: '-18deg' }] },
+  fastRoute: { position: 'absolute', height: 7, borderRadius: 4 },
+  fastRouteOne: { width: 176, left: 48, top: 162, transform: [{ rotate: '-25deg' }] },
+  fastRouteTwo: { width: 142, left: 192, top: 110, transform: [{ rotate: '-18deg' }] },
+  endpoint: { position: 'absolute', minWidth: 46, borderWidth: 2, borderRadius: 15, paddingHorizontal: 8, paddingVertical: 4, backgroundColor: colors.white, alignItems: 'center' },
+  fastStart: { left: 24, top: 190 },
+  fastEnd: { right: 18, top: 56 },
+  endpointText: { ...typography.caption, color: colors.text, fontWeight: '700' },
   scan: { position: 'absolute', top: 0, bottom: 0, width: 52, opacity: 0.13 },
   mapCaption: { position: 'absolute', left: spacing.sm, bottom: spacing.sm, flexDirection: 'row', alignItems: 'center', gap: 5, borderWidth: 1, borderRadius: 14, paddingHorizontal: spacing.sm, paddingVertical: 5, backgroundColor: 'rgba(255,255,255,0.9)' },
   mapCaptionDot: { width: 7, height: 7, borderRadius: 4 },

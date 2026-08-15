@@ -149,16 +149,17 @@ GET /v1/places/search?q=공원&lat=37.55&lng=126.91
 
 ### Kakao 최단 보행 경로 MVP 모드
 
-`ANALYSIS_PROVIDER=kakao_walk`이면 `shortest`의 geometry·distance·duration은 Kakao맵 도보 경로 API의 `route_mode=SHORTEST` 응답으로 채웁니다. 입력·출력 좌표계는 WGS84이며 Kakao의 `[x, y]`를 GeoJSON `[lng, lat]`로 유지합니다. 요청이 `walk_mode=fast`이면 이 live Kakao 최단 geometry를 `pawsafe` 빠른 산책길 추천에도 사용합니다. `walk_mode=cool`의 `pawsafe`, Heat Cost, `heat_segments`는 데이터팀의 보행 그래프와 Edge × Time Heat Cost가 연결되기 전까지 demo fixture입니다.
+공유 설정인 `ANALYSIS_PROVIDER=graph`에서 `KAKAO_REST_API_KEY`가 있으면 요청 모드에 따라 공급자를 분리합니다. `walk_mode=fast`는 Kakao맵 도보 경로 API의 `route_mode=SHORTEST` 응답을 사용하고, `walk_mode=cool`은 데이터팀 보행 그래프와 Edge × Time Heat Cost를 사용합니다. 입력·출력 좌표계는 WGS84이며 Kakao의 `[x, y]`는 GeoJSON `[lng, lat]`로 유지합니다.
 
-응답에는 `analysis_source=kakao_walk+mock_heat_fixture`와 `KAKAO_SHORTEST_WITH_DEMO_HEAT` warning이 포함됩니다. 따라서 이 모드의 Kakao 경로는 실제 보행 최단 경로이지만 열환경 비교는 검증된 모델 결과가 아닙니다.
+fast 응답에는 `analysis_source=kakao_walk+mock_heat_fixture`와 `KAKAO_SHORTEST_WITH_DEMO_HEAT` warning이 포함됩니다. 경로 geometry·distance·duration은 실제 Kakao 응답이며, 빠른 산책 화면에서는 열환경 수치를 표시하지 않습니다. cool 응답은 `analysis_source=graph`이며 최신 Heat Cost 스냅샷을 사용합니다.
 
 ### Graph 모드
 
 공유 기본 설정은 `ANALYSIS_PROVIDER=graph`, `HEAT_COST_PROVIDER=file`이며
 `backend/data/exports/walk_graph.gpkg`와 `edge_heat_cost.json`을 읽습니다.
 백엔드는 GeoPackage 선분의 정점쌍과 원본 `edge_id`를 유지하고, 요청 시각과
-가장 가까운 Asia/Seoul Heat Cost 스냅샷으로 `fast`/`cool` 경로를 계산합니다.
+가장 가까운 Asia/Seoul Heat Cost 스냅샷으로 `cool` 경로를 계산합니다. Kakao
+키가 없을 때는 `fast`도 그래프의 거리 최우선 가중치로 계산합니다.
 export를 교체해도 API 계약은 바뀌지 않으며 파일 변경 시 Heat Cost Provider가
 새 스냅샷을 다시 읽습니다.
 

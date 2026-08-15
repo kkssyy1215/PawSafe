@@ -9,6 +9,7 @@ from app.providers.analysis.external_analysis import ExternalAnalysisProvider
 from app.providers.analysis.graph_analysis import GraphAnalysisProvider
 from app.providers.analysis.kakao_walking_analysis import KakaoWalkingAnalysisProvider
 from app.providers.analysis.mock_analysis import MockAnalysisProvider
+from app.providers.analysis.walk_mode_analysis import WalkModeAnalysisProvider
 from app.providers.heat_cost.base import HeatCostProvider
 from app.providers.shortest_route.base import ShortestRouteProvider
 from app.providers.shortest_route.internal_graph import InternalGraphShortestRouteProvider
@@ -66,7 +67,7 @@ def create_analysis_provider(
         missing_policy=settings.heat_missing_policy,
         conservative_heat_cost=settings.conservative_missing_heat_cost,
     )
-    return GraphAnalysisProvider(
+    graph_provider = GraphAnalysisProvider(
         graph_data=graph_data,
         heat_provider=heat_provider,
         heat_repository=heat_repository,
@@ -84,4 +85,15 @@ def create_analysis_provider(
         walk_modes=walk_modes,
         shortest_route_source=settings.shortest_route_provider,
         pawsafe_route_source="internal_graph",
+    )
+    if not settings.kakao_rest_api_key:
+        return graph_provider
+    return WalkModeAnalysisProvider(
+        fast_provider=KakaoWalkingAnalysisProvider(
+            client,
+            api_key=settings.kakao_rest_api_key,
+            mock_scenarios_path=settings.resolve_path(settings.mock_scenarios_file_path),
+            timeout_seconds=settings.request_timeout_seconds,
+        ),
+        cool_provider=graph_provider,
     )
