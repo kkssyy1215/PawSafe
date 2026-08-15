@@ -1,0 +1,7 @@
+exports/*
+!exports/.gitkeep
+!exports/walk_graph.gpkg
+!exports/heat_edge_nodes.parquet
+!exports/coverage.geojson
+!exports/edge_heat_cost.json
+!exports/graph_export_version.txt

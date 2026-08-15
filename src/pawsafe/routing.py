@@ -21,9 +21,7 @@ def build_graph(edges: gpd.GeoDataFrame, cfg: dict):
     rows = []
 
     # MultiLineString을 LineString으로 분리
-    exploded = edges.explode(
-        index_parts=False
-    ).reset_index(drop=True)
+    exploded = edges.explode(index_parts=False).reset_index(drop=True)
 
     for _, row in exploded.iterrows():
         geom = row.geometry
@@ -41,15 +39,9 @@ def build_graph(edges: gpd.GeoDataFrame, cfg: dict):
 
         # 긴 도로의 시작·끝만 연결하지 않고,
         # 모든 중간 꼭짓점을 노드로 사용
-        for segment_index in range(
-            len(coordinates) - 1
-        ):
-            start_coordinate = coordinates[
-                segment_index
-            ]
-            end_coordinate = coordinates[
-                segment_index + 1
-            ]
+        for segment_index in range(len(coordinates) - 1):
+            start_coordinate = coordinates[segment_index]
+            end_coordinate = coordinates[segment_index + 1]
 
             u = _node_key(
                 start_coordinate[0],
@@ -66,13 +58,9 @@ def build_graph(edges: gpd.GeoDataFrame, cfg: dict):
             if u == v:
                 continue
 
-            segment_geometry = LineString(
-                [start_coordinate, end_coordinate]
-            )
+            segment_geometry = LineString([start_coordinate, end_coordinate])
 
-            segment_length = float(
-                segment_geometry.length
-            )
+            segment_length = float(segment_geometry.length)
 
             if segment_length <= 0:
                 continue
@@ -110,6 +98,7 @@ def build_graph(edges: gpd.GeoDataFrame, cfg: dict):
 
     return graph, pd.DataFrame(rows)
 
+
 def nearest_node(graph, xy):
     nodes = np.array(list(graph.nodes), dtype=float)
     i = np.argmin((nodes[:, 0] - xy[0]) ** 2 + (nodes[:, 1] - xy[1]) ** 2)
@@ -128,8 +117,7 @@ def route(graph, start_xy, end_xy, heat_by_edge: dict, heat_weight: float):
         normalized_heat = edge_heat / 100
 
         return data["length_m"] * (
-            (1 - heat_weight)
-            + heat_weight * (0.25 + 1.75 * normalized_heat)
+            (1 - heat_weight) + heat_weight * (0.25 + 1.75 * normalized_heat)
         )
 
     def weight(u, v, attrs):
@@ -157,7 +145,25 @@ def route(graph, start_xy, end_xy, heat_by_edge: dict, heat_weight: float):
         edge_id = selected["edge_id"]
         length_m = float(selected["length_m"])
         heat_cost = float(heat_by_edge.get(edge_id, 50))
-        geometry = selected["geometry"]
+        raw_geometry = selected["geometry"]
+        coordinates = list(raw_geometry.coords)
+
+        # 그래프 노드는 snap 값으로 묶이므로 원본 선의 좌표와 수 cm~수십 cm
+        # 차이가 날 수 있다. 경로 진행 방향(u -> v)에 맞춰 선을 뒤집고 양 끝을
+        # 그래프 노드에 맞추면, GeoJSON/QGIS에서 모든 구간이 하나로 이어진다.
+        forward_gap = Point(coordinates[0]).distance(Point(u)) + Point(
+            coordinates[-1]
+        ).distance(Point(v))
+        reverse_gap = Point(coordinates[-1]).distance(Point(u)) + Point(
+            coordinates[0]
+        ).distance(Point(v))
+
+        if reverse_gap < forward_gap:
+            coordinates.reverse()
+
+        coordinates[0] = u
+        coordinates[-1] = v
+        geometry = LineString(coordinates)
 
         edge_ids.append(edge_id)
         geoms.append(geometry)
@@ -165,27 +171,19 @@ def route(graph, start_xy, end_xy, heat_by_edge: dict, heat_weight: float):
         total_len += length_m
         exposure += length_m * heat_cost / 100
 
-        segments.append({
-            "edge_id": edge_id,
-            "length_m": length_m,
-            "heat_cost": heat_cost,
-            "geometry": geometry,
-        })
+        segments.append(
+            {
+                "edge_id": edge_id,
+                "length_m": length_m,
+                "heat_cost": heat_cost,
+                "geometry": geometry,
+            }
+        )
 
     coords = []
 
     for geom in geoms:
         current_coords = list(geom.coords)
-
-        if coords:
-            previous_point = Point(coords[-1])
-
-            if (
-                previous_point.distance(Point(current_coords[-1]))
-                < previous_point.distance(Point(current_coords[0]))
-            ):
-                current_coords.reverse()
-
         coords.extend(current_coords if not coords else current_coords[1:])
 
     return {
@@ -195,6 +193,8 @@ def route(graph, start_xy, end_xy, heat_by_edge: dict, heat_weight: float):
         "geometry": LineString(coords) if len(coords) > 1 else None,
         "segments": segments,
     }
+
+
 def route_all_modes(
     edges,
     edge_time,
@@ -220,9 +220,7 @@ def route_all_modes(
         np.argmin(abs(available_times - requested_time))
     ]
 
-    snapshot = edge_time[
-        pd.to_datetime(edge_time["timestamp"]) == matched_time
-    ]
+    snapshot = edge_time[pd.to_datetime(edge_time["timestamp"]) == matched_time]
 
     heat_by_edge = dict(zip(snapshot.edge_id, snapshot.heat_cost))
 
@@ -251,30 +249,36 @@ def route_all_modes(
             "mean_heat_cost": result["mean_heat_cost"],
         }
 
-        route_features.append({
-            "mode": mode,
-            "distance_m": result["distance_m"],
-            "mean_heat_cost": result["mean_heat_cost"],
-            "geometry": result["geometry"],
-        })
+        route_features.append(
+            {
+                "mode": mode,
+                "distance_m": result["distance_m"],
+                "mean_heat_cost": result["mean_heat_cost"],
+                "geometry": result["geometry"],
+            }
+        )
 
         for order, segment in enumerate(result["segments"], start=1):
-            segment_features.append({
-                "mode": mode,
-                "segment_order": order,
-                "edge_id": segment["edge_id"],
-                "length_m": segment["length_m"],
-                "heat_cost": segment["heat_cost"],
-                "geometry": segment["geometry"],
-            })
+            segment_features.append(
+                {
+                    "mode": mode,
+                    "segment_order": order,
+                    "edge_id": segment["edge_id"],
+                    "length_m": segment["length_m"],
+                    "heat_cost": segment["heat_cost"],
+                    "geometry": segment["geometry"],
+                }
+            )
 
-        segment_table = pd.DataFrame([
-            {
-                "length_m": segment["length_m"],
-                "heat_cost": segment["heat_cost"],
-            }
-            for segment in result["segments"]
-        ])
+        segment_table = pd.DataFrame(
+            [
+                {
+                    "length_m": segment["length_m"],
+                    "heat_cost": segment["heat_cost"],
+                }
+                for segment in result["segments"]
+            ]
+        )
 
         total_distance = float(segment_table["length_m"].sum())
 
@@ -292,22 +296,26 @@ def route_all_modes(
             ].sum()
         )
 
-        metric_rows.append({
-            "mode": mode,
-            "distance_m": total_distance,
-            "mean_heat_cost_100": result["mean_heat_cost"] * 100,
-            "high_heat_distance_m": high_heat_distance,
-            "high_heat_ratio_pct": (
-                high_heat_distance / total_distance * 100
-                if total_distance > 0 else 0
-            ),
-            "low_heat_distance_m": low_heat_distance,
-            "low_heat_ratio_pct": (
-                low_heat_distance / total_distance * 100
-                if total_distance > 0 else 0
-            ),
-            "edge_segment_count": len(result["segments"]),
-        })
+        metric_rows.append(
+            {
+                "mode": mode,
+                "distance_m": total_distance,
+                "mean_heat_cost_100": result["mean_heat_cost"] * 100,
+                "high_heat_distance_m": high_heat_distance,
+                "high_heat_ratio_pct": (
+                    high_heat_distance / total_distance * 100
+                    if total_distance > 0
+                    else 0
+                ),
+                "low_heat_distance_m": low_heat_distance,
+                "low_heat_ratio_pct": (
+                    low_heat_distance / total_distance * 100
+                    if total_distance > 0
+                    else 0
+                ),
+                "edge_segment_count": len(result["segments"]),
+            }
+        )
 
     route_gdf = gpd.GeoDataFrame(
         route_features,

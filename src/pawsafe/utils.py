@@ -16,14 +16,18 @@ def load_config(path: str | Path) -> dict:
     return cfg
 
 
-def find_column(df: pd.DataFrame, candidates: Iterable[str], required: bool = True) -> str | None:
+def find_column(
+    df: pd.DataFrame, candidates: Iterable[str], required: bool = True
+) -> str | None:
     normalized = {str(c).replace(" ", "").lower(): c for c in df.columns}
     for candidate in candidates:
         key = str(candidate).replace(" ", "").lower()
         if key in normalized:
             return normalized[key]
     if required:
-        raise KeyError(f"필수 컬럼을 찾지 못했습니다. 후보={list(candidates)}, 실제={list(df.columns)}")
+        raise KeyError(
+            f"필수 컬럼을 찾지 못했습니다. 후보={list(candidates)}, 실제={list(df.columns)}"
+        )
     return None
 
 

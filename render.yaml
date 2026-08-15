@@ -1,0 +1,34 @@
+services:
+  - type: web
+    name: pawsafe-api
+    runtime: docker
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /v1/meta/capabilities
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: ANALYSIS_PROVIDER
+        value: graph
+      - key: HEAT_COST_PROVIDER
+        value: file
+      - key: PLACE_PROVIDER
+        value: kakao
+      - key: SHORTEST_ROUTE_PROVIDER
+        value: internal_graph
+      - key: GRAPH_FILE_PATH
+        value: data/exports/walk_graph.gpkg
+      - key: HEAT_COST_FILE_PATH
+        value: data/exports/edge_heat_cost.json
+      - key: COVERAGE_FILE_PATH
+        value: data/exports/coverage.geojson
+      - key: WALK_MODE_CONFIG_PATH
+        value: app/config_data/walk_modes.live.yaml
+      - key: ALLOWED_ORIGINS
+        sync: false
+      - key: KAKAO_REST_API_KEY
+        sync: false
+      - key: KMA_SERVICE_KEY
+        sync: false
+      - key: ASOS_SERVICE_KEY
+        sync: false

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import math
+import threading
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, cast
@@ -31,6 +32,11 @@ class FileHeatCostProvider:
         self.data_version: str | None = None
         self._max_age = timedelta(minutes=max_age_minutes)
         self._source = "file"
+        self._path = path
+        self._data_version_override = data_version_override
+        self._timezone_name = timezone_name
+        self._lock = threading.Lock()
+        self._modified_ns = -1
         try:
             rows, top_level_version = self._read_rows(path)
             is_pipeline = self._looks_like_pipeline(rows)
@@ -57,6 +63,7 @@ class FileHeatCostProvider:
             self.data_version = data_version_override or next(iter(versions), None)
             self._records = records
             self.loaded = True
+            self._modified_ns = path.stat().st_mtime_ns
         except InvalidDataFileError:
             raise
         except Exception as exc:
@@ -77,6 +84,7 @@ class FileHeatCostProvider:
         raise InvalidDataFileError("heat_cost")
 
     def get_snapshot(self, departure_at: datetime) -> HeatCostSnapshot:
+        self._reload_if_changed()
         selected: dict[str, EdgeHeatRecord] = {}
         for record in self._records:
             current = selected.get(record.edge_id)
@@ -114,6 +122,28 @@ class FileHeatCostProvider:
                 else []
             ),
         )
+
+    def _reload_if_changed(self) -> None:
+        try:
+            modified_ns = self._path.stat().st_mtime_ns
+        except OSError as exc:
+            raise InvalidDataFileError("heat_cost") from exc
+        if modified_ns == self._modified_ns:
+            return
+        with self._lock:
+            if self._path.stat().st_mtime_ns == self._modified_ns:
+                return
+            fresh = type(self)(
+                self._path,
+                max_age_minutes=self._max_age.total_seconds() / 60,
+                data_version_override=self._data_version_override,
+                timezone_name=self._timezone_name,
+            )
+            self.data_version = fresh.data_version
+            self._source = fresh._source
+            self._records = fresh._records
+            self._modified_ns = fresh._modified_ns
+            self.loaded = fresh.loaded
 
     @staticmethod
     def _looks_like_pipeline(rows: list[dict[str, Any]]) -> bool:

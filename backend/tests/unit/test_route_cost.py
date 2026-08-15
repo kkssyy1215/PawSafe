@@ -31,8 +31,8 @@ def test_documented_cost_formula_for_all_modes() -> None:
     strategy = WeightedHeatRouteCostStrategy()
     edge = _edge()
     heat = _heat()
-    expected = {"fast": 97, "balanced": 90, "cool": 85}
-    weights = {"fast": (0.85, 0.15), "balanced": (0.5, 0.5), "cool": (0.25, 0.75)}
+    expected = {"fast": 97, "cool": 85}
+    weights = {"fast": (0.85, 0.15), "cool": (0.25, 0.75)}
     for mode, (alpha, beta) in weights.items():
         profile = WalkModeProfile(id=mode, alpha=alpha, beta=beta)
         assert strategy.calculate(edge, heat, profile) == expected[mode]

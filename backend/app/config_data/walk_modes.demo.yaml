@@ -6,12 +6,7 @@ modes:
     id: demo-fast-v1
     alpha: 0.85
     beta: 0.15
-  balanced:
-    id: demo-balanced-v1
-    alpha: 0.50
-    beta: 0.50
   cool:
     id: demo-cool-v1
     alpha: 0.25
     beta: 0.75
-

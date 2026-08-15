@@ -8,11 +8,11 @@ WORKDIR /app
 
 COPY pyproject.toml README.md ./
 COPY app ./app
+COPY data ./data
 RUN pip install --upgrade pip && pip install ".[dev]"
 
 COPY tests ./tests
 COPY docs ./docs
 
 EXPOSE 8000
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
-
+CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]

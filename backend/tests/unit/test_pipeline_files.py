@@ -36,9 +36,7 @@ def test_pipeline_heat_rows_are_normalized_to_contract(tmp_path: Path) -> None:
         timezone_name="Asia/Seoul",
         data_version_override="pipeline-test",
     )
-    snapshot = provider.get_snapshot(
-        datetime(2026, 8, 8, 15, tzinfo=ZoneInfo("Asia/Seoul"))
-    )
+    snapshot = provider.get_snapshot(datetime(2026, 8, 8, 15, tzinfo=ZoneInfo("Asia/Seoul")))
 
     record = snapshot.records["E1"]
     assert snapshot.source == "pipeline_file"

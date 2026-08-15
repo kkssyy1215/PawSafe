@@ -19,5 +19,5 @@ class WeightProfileResponse(BaseModel):
     is_demo: bool
 
 
-WalkMode = Literal["fast", "balanced", "cool"]
+WalkMode = Literal["fast", "cool"]
 ValidationStatus = Literal["not_validated", "validated", "partially_validated", "unknown"]

@@ -25,7 +25,7 @@ def graph_client() -> Iterator[TestClient]:
 
 @pytest.mark.parametrize(
     ("mode", "expected_distance", "same_route"),
-    [("fast", 1200, True), ("balanced", 1300, False), ("cool", 1400, False)],
+    [("fast", 1200, True), ("cool", 1400, False)],
 )
 def test_networkx_graph_route_modes(
     graph_client: TestClient,

@@ -97,17 +97,7 @@ async def test_kakao_walk_fast_recommends_the_live_shortest_geometry() -> None:
                 "status": "OK",
                 "route": {
                     "properties": {"totalDistance": 900, "totalTime": 480},
-                    "legs": [
-                        {
-                            "steps": [
-                                {
-                                    "path": {
-                                        "points": [[126.91, 37.55], [126.9, 37.555]]
-                                    }
-                                }
-                            ]
-                        }
-                    ],
+                    "legs": [{"steps": [{"path": {"points": [[126.91, 37.55], [126.9, 37.555]]}}]}],
                 },
             },
         )
