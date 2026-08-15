@@ -29,13 +29,13 @@ export const mockPlaces: PlaceSearchResult[] = [
 
 // The data-team pipeline covers Songpa. These are fixed, non-sensitive
 // coordinate fixtures used only when EXPO_PUBLIC_PLACE_DATASET=pipeline.
-// The pair mirrors the route shown in the data/model team's map reference.
+// The pair mirrors the connected route used by scripts/04_추천경로_생성.py.
 export const pipelineMockRouteOrigin: PlaceSearchResult = {
   id: 'pipeline_home',
   name: '송파 목업 출발지',
   address: '서울특별시 송파구 보행로 목업 출발점',
-  lat: 37.50167,
-  lng: 127.15485,
+  lat: 37.48508,
+  lng: 127.11261,
   is_in_coverage: true,
 };
 

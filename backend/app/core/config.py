@@ -51,7 +51,10 @@ class Settings(BaseSettings):
     asos_base_url: str = "https://apis.data.go.kr/1360000/AsosHourlyInfoService"
     asos_station_id: int = Field(default=108, gt=0)
 
-    allowed_origins: str = "http://localhost:8081,http://localhost:19006"
+    allowed_origins: str = (
+        "http://localhost:8081,http://127.0.0.1:8081,"
+        "http://localhost:19006,http://127.0.0.1:19006"
+    )
     request_timeout_seconds: float = Field(default=10.0, gt=0)
     place_search_timeout_seconds: float = Field(default=5.0, gt=0)
 

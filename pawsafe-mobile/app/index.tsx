@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { AccessibilityInfo, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { AppButton } from '@/src/components/common/AppButton';
@@ -22,9 +22,14 @@ export default function InputScreen() {
   const { state, dispatch } = useWalkFlow();
   const { savedPlaces, savePlace, removePlace } = useSavedPlaces();
   const [validationError, setValidationError] = useState<string | null>(null);
+  const stateStatus = useRef(state.status);
+  stateStatus.current = state.status;
   useFocusEffect(useCallback(() => {
-    if (state.status !== 'input') dispatch({ type: 'RESET' });
-  }, [dispatch, state.status]));
+    // Reset only when this screen regains focus. Depending directly on
+    // state.status reruns the focus effect during submit and clears the request
+    // before the analyzing screen can send it to the API.
+    if (stateStatus.current !== 'input') dispatch({ type: 'RESET' });
+  }, [dispatch]));
   useEffect(() => { AccessibilityInfo.announceForAccessibility('산책 조건 입력 화면'); }, []);
 
   if (state.status !== 'input') return <ScreenContainer><View /></ScreenContainer>;

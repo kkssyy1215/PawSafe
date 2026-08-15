@@ -42,6 +42,8 @@ def test_networkx_graph_route_modes(
     assert payload["is_demo"] is True
     assert payload["shortest"]["distance_m"] == 1200
     assert payload["pawsafe"]["distance_m"] == expected_distance
+    assert payload["shortest"]["direct_sun_minutes"] <= payload["shortest"]["duration_min"]
+    assert payload["pawsafe"]["direct_sun_minutes"] <= payload["pawsafe"]["duration_min"]
     assert payload["comparison"]["same_route"] is same_route
 
 

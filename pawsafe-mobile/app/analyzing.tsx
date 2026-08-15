@@ -16,8 +16,6 @@ export default function AnalyzingScreen() {
   const { state, dispatch } = useWalkFlow();
   const { analyze, cancel } = useRouteAnalysis();
   const appState = useRef<AppStateStatus>(AppState.currentState);
-  const mounted = useRef(true);
-  const running = useRef(false);
   const request = state.status === 'submitting' ? state.request : null;
   const walkMode = request?.walk_mode ?? 'cool';
   const showTemporaryResult = () => {
@@ -42,33 +40,34 @@ export default function AnalyzingScreen() {
     );
   }, [walkMode]);
   useEffect(() => {
-    mounted.current = true;
     if (!request) return;
+    let active = true;
+    let running = false;
     const run = async () => {
       // React Native Web can report an `unknown` AppState while the tab is
       // visible. It must not block the deterministic local mock flow; native
       // platforms still wait for an active app before starting a request.
-      if (running.current || (Platform.OS !== 'web' && appState.current !== 'active')) return;
-      running.current = true;
+      if (running || (Platform.OS !== 'web' && appState.current !== 'active')) return;
+      running = true;
       try {
         const result = await analyze(request);
-        if (!mounted.current) return;
+        if (!active) return;
         dispatch({ type: 'SUBMIT_SUCCESS', result });
         router.replace('/segments');
       } catch (error) {
-        if (!mounted.current || (error instanceof Error && error.name === 'AppError' && 'code' in error && error.code === 'CANCELLED')) return;
+        if (!active || (error instanceof Error && error.name === 'AppError' && 'code' in error && error.code === 'CANCELLED')) return;
         dispatch({ type: 'FAIL', error: error as import('@/src/api/errors').AppError });
         router.replace('/error');
-      } finally { running.current = false; }
+      } finally { running = false; }
     };
     void run();
     const subscription = AppState.addEventListener('change', (next) => {
       const wasActive = appState.current === 'active';
       appState.current = next;
-      if (wasActive && next !== 'active') { running.current = false; cancel(); }
+      if (wasActive && next !== 'active') { running = false; cancel(); }
       if (next === 'active') void run();
     });
-    return () => { mounted.current = false; subscription.remove(); cancel(); };
+    return () => { active = false; subscription.remove(); cancel(); };
   }, [analyze, cancel, dispatch, request]);
 
   return (

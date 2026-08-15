@@ -50,10 +50,19 @@ class RouteStatisticsService:
             if shade
             else None
         )
+        duration_min = max(1, round(total_distance / self._walking_speed))
         direct_values = [
             heat.direct_sun_minutes for _, heat in known_heat if heat.direct_sun_minutes is not None
         ]
-        direct_sun = sum(direct_values) if direct_values else None
+        # The live edge field describes recent accumulated sunlight at each
+        # location, so summing it over hundreds of edges can produce values far
+        # longer than the walk itself. Route exposure is the walking duration
+        # multiplied by the distance-weighted unshaded share.
+        direct_sun = (
+            duration_min * (1 - shade_ratio)
+            if shade_ratio is not None
+            else min(duration_min, sum(direct_values)) if direct_values else None
+        )
         digest = hashlib.sha256(
             "|".join(edge.edge_id for edge in path.edges).encode("utf-8")
         ).hexdigest()[:10]
@@ -63,7 +72,7 @@ class RouteStatisticsService:
             route_source=route_source,
             geometry=LineStringGeometry(coordinates=self._combine_geometry(path)),
             distance_m=round(total_distance),
-            duration_min=max(1, round(total_distance / self._walking_speed)),
+            duration_min=duration_min,
             heat_cost=round(heat_cost, 1),
             shade_ratio=round(shade_ratio, 3) if shade_ratio is not None else None,
             direct_sun_minutes=round(direct_sun, 1) if direct_sun is not None else None,

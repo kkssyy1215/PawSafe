@@ -16,7 +16,7 @@ describe('mock place coverage', () => {
   });
 
   it('keeps the data-team route coordinates as explicit pipeline fixtures', () => {
-    expect(pipelineMockRouteOrigin).toMatchObject({ lat: 37.50167, lng: 127.15485, is_in_coverage: true });
+    expect(pipelineMockRouteOrigin).toMatchObject({ lat: 37.48508, lng: 127.11261, is_in_coverage: true });
     expect(pipelineMockRouteDestination).toMatchObject({ lat: 37.48804, lng: 127.15297, is_in_coverage: true });
   });
 });
