@@ -58,3 +58,16 @@ def test_file_provider_rejects_naive_valid_at(tmp_path: Path) -> None:
     _write(path, "2026-08-12T10:00:00")
     with pytest.raises(InvalidDataFileError):
         FileHeatCostProvider(path, max_age_minutes=120)
+
+
+def test_file_provider_reloads_changed_snapshot(tmp_path: Path) -> None:
+    path = tmp_path / "heat.json"
+    first_time = "2026-08-12T18:30:00+09:00"
+    second_time = "2026-08-12T19:30:00+09:00"
+    _write(path, first_time)
+    provider = FileHeatCostProvider(path, max_age_minutes=120)
+
+    _write(path, second_time)
+    snapshot = provider.get_snapshot(datetime.fromisoformat(second_time))
+
+    assert snapshot.valid_at == datetime.fromisoformat(second_time)

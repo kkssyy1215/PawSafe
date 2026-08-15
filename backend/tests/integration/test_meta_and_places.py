@@ -46,6 +46,56 @@ def test_place_search_contract(client: TestClient) -> None:
     assert all("is_in_coverage" in item for item in payload["items"])
 
 
+def test_place_search_origin_hint_sorts_mock_results_by_distance(client: TestClient) -> None:
+    response = client.get(
+        "/v1/places/search",
+        params={"q": "망원", "lat": 37.556, "lng": 126.907},
+    )
+    assert response.status_code == 200
+    assert [item["id"] for item in response.json()["items"][:2]] == [
+        "place_002",
+        "place_001",
+    ]
+
+
+def test_place_search_q_only_keeps_backwards_compatible_fixture_order(
+    client: TestClient,
+) -> None:
+    response = client.get("/v1/places/search", params={"q": "망원"})
+    assert response.status_code == 200
+    assert [item["id"] for item in response.json()["items"][:2]] == [
+        "place_001",
+        "place_002",
+    ]
+
+
+def test_place_search_requires_lat_and_lng_together(client: TestClient) -> None:
+    response = client.get(
+        "/v1/places/search",
+        params={"q": "망원", "lat": 37.556},
+        headers={"X-Request-ID": "req_place_hint"},
+    )
+    assert response.status_code == 422
+    assert response.json() == {
+        "error": {
+            "code": "VALIDATION_ERROR",
+            "message": "검색 위치의 위도와 경도를 함께 입력해 주세요.",
+            "retryable": False,
+            "details": {"fields": [{"field": "lng", "type": "missing"}]},
+            "request_id": "req_place_hint",
+        }
+    }
+
+
+def test_place_search_origin_hint_validates_coordinate_bounds(client: TestClient) -> None:
+    response = client.get(
+        "/v1/places/search",
+        params={"q": "망원", "lat": 91, "lng": 126.907},
+    )
+    assert response.status_code == 422
+    assert response.json()["error"]["code"] == "VALIDATION_ERROR"
+
+
 def test_reverse_geocode_recomputes_coverage(client: TestClient) -> None:
     inside = client.post("/v1/places/reverse-geocode", json={"lat": 37.55, "lng": 126.91})
     outside = client.post("/v1/places/reverse-geocode", json={"lat": 38.0, "lng": 127.0})
@@ -58,5 +108,21 @@ def test_openapi_is_generated(client: TestClient) -> None:
     document = client.get("/openapi.json").json()
     assert "/v1/route-analyses" in document["paths"]
     assert "/v1/places/search" in document["paths"]
+    assert "/v1/weather/current" in document["paths"]
+    assert "/v1/weather/asos/reference" in document["paths"]
+    place_parameters = {
+        parameter["name"]: parameter
+        for parameter in document["paths"]["/v1/places/search"]["get"]["parameters"]
+    }
+    assert set(place_parameters) == {"q", "lat", "lng"}
+    assert place_parameters["lat"]["required"] is False
+    assert place_parameters["lng"]["required"] is False
     error_schema = document["paths"]["/v1/route-analyses"]["post"]["responses"]["422"]
     assert error_schema["content"]["application/json"]["schema"]["$ref"].endswith("/ErrorResponse")
+
+
+def test_weather_requires_kma_configuration(client: TestClient) -> None:
+    response = client.get("/v1/weather/current")
+
+    assert response.status_code == 503
+    assert response.json()["error"]["details"] == {"component": "kma_weather"}

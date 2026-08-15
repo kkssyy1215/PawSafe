@@ -67,39 +67,6 @@
         "geometry": {"type": "LineString", "coordinates": [[126.91, 37.55], [126.905, 37.5515]]}
       }]
     },
-    "balanced": {
-      "analysis_id": "demo_analysis_balanced", "status": "completed", "is_demo": true,
-      "analysis_source": "mock_fixture", "validation_status": "not_validated",
-      "requested_departure_at": "2026-08-12T18:30:00+09:00",
-      "generated_at": "2026-08-12T18:29:10+09:00", "data_valid_at": null,
-      "graph_version": "demo-graph-v1", "heat_data_version": null,
-      "weight_profile": {"id": "demo-balanced-v1", "is_demo": true},
-      "warnings": [{"code": "DEMO_RESULT", "message": "현재 결과는 앱 흐름 검증을 위한 MVP 예시 데이터입니다."}],
-      "shortest": {
-        "route_id": "shortest_001", "label": "일반 경로", "route_source": "mock_fixture",
-        "geometry": {"type": "LineString", "coordinates": [[126.91, 37.55], [126.905, 37.5515], [126.9, 37.555]]},
-        "distance_m": 1200, "duration_min": 17, "heat_cost": 72, "shade_ratio": 0.21,
-        "direct_sun_minutes": 13, "edge_count": 2
-      },
-      "pawsafe": {
-        "route_id": "pawsafe_balanced_001", "label": "PawSafe 예시 경로", "route_source": "mock_fixture",
-        "geometry": {"type": "LineString", "coordinates": [[126.91, 37.55], [126.905, 37.554], [126.9, 37.555]]},
-        "distance_m": 1300, "duration_min": 19, "heat_cost": 49, "shade_ratio": 0.48,
-        "direct_sun_minutes": 6, "edge_count": 2
-      },
-      "comparison": {
-        "same_route": false, "distance_delta_m": 100, "duration_delta_min": 2,
-        "heat_cost_delta": -23, "heat_reduction_percent": 31.9,
-        "shade_ratio_delta_percentage_point": 27, "direct_sun_minutes_delta": -7
-      },
-      "heat_segments": [{
-        "edge_id": "demo_edge_05", "display_name": "주택가 혼합 그늘 구간", "level": "medium",
-        "heat_cost": 50, "shade_ratio": 0.46, "direct_sun_minutes": 3,
-        "surface_type": "unknown", "confidence": null, "data_valid_at": null,
-        "validation_status": "not_validated",
-        "geometry": {"type": "LineString", "coordinates": [[126.91, 37.55], [126.905, 37.554]]}
-      }]
-    },
     "same_route": {
       "analysis_id": "demo_analysis_same", "status": "completed", "is_demo": true,
       "analysis_source": "mock_fixture", "validation_status": "not_validated",
@@ -129,7 +96,7 @@
       "requested_departure_at": "2026-08-12T18:30:00+09:00",
       "generated_at": "2026-08-12T18:29:10+09:00", "data_valid_at": null,
       "graph_version": "demo-graph-v1", "heat_data_version": null,
-      "weight_profile": {"id": "demo-balanced-v1", "is_demo": true},
+      "weight_profile": {"id": "demo-cool-v1", "is_demo": true},
       "warnings": [{"code": "NO_HEAT_IMPROVEMENT", "message": "선택한 조건에서는 Heat Cost가 더 낮은 대체 경로가 없습니다."}],
       "shortest": {"route_id": "shortest_no_gain", "label": "일반 경로", "route_source": "mock_fixture", "geometry": {"type": "LineString", "coordinates": [[126.91, 37.55], [126.905, 37.5515], [126.9, 37.555]]}, "distance_m": 1200, "duration_min": 17, "heat_cost": 72, "shade_ratio": 0.21, "direct_sun_minutes": 13, "edge_count": 2},
       "pawsafe": {"route_id": "pawsafe_no_gain", "label": "PawSafe 예시 경로", "route_source": "mock_fixture", "geometry": {"type": "LineString", "coordinates": [[126.91, 37.55], [126.905, 37.554], [126.9, 37.555]]}, "distance_m": 1300, "duration_min": 19, "heat_cost": 74, "shade_ratio": 0.20, "direct_sun_minutes": 14, "edge_count": 2},

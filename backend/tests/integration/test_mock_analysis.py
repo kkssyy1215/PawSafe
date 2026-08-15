@@ -30,7 +30,7 @@ def test_mock_cool_analysis_matches_expo_contract(
 
 @pytest.mark.parametrize(
     ("walk_mode", "distance"),
-    [("fast", 1200), ("balanced", 1300), ("cool", 1400)],
+    [("fast", 1200), ("cool", 1400)],
 )
 def test_all_walk_mode_scenarios(
     client: TestClient,

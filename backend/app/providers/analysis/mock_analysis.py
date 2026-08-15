@@ -15,7 +15,7 @@ class MockAnalysisProvider:
         try:
             payload = json.loads(path.read_text(encoding="utf-8"))
             self._scenarios: dict[str, dict[str, Any]] = payload["scenarios"]
-            required = {"cool", "balanced", "fast", "same_route", "no_improvement"}
+            required = {"cool", "fast", "same_route", "no_improvement"}
             if not required.issubset(self._scenarios):
                 raise ValueError("missing mock scenario")
         except Exception as exc:

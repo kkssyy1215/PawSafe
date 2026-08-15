@@ -51,9 +51,16 @@ class RouteStatisticsService:
             else None
         )
         direct_values = [
-            heat.direct_sun_minutes for _, heat in known_heat if heat.direct_sun_minutes is not None
+            (edge.distance_m, heat.direct_sun_minutes)
+            for edge, heat in known_heat
+            if heat.direct_sun_minutes is not None
         ]
-        direct_sun = sum(direct_values) if direct_values else None
+        direct_sun = (
+            sum(distance * value for distance, value in direct_values)
+            / sum(distance for distance, _ in direct_values)
+            if direct_values
+            else None
+        )
         digest = hashlib.sha256(
             "|".join(edge.edge_id for edge in path.edges).encode("utf-8")
         ).hexdigest()[:10]

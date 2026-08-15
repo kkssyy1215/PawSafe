@@ -7,7 +7,7 @@ from fastapi import APIRouter, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 
-from app.api.v1 import coverage, meta, places, route_analyses
+from app.api.v1 import coverage, meta, places, route_analyses, weather
 from app.container import AppContainer, build_container
 from app.core.config import Settings, get_settings
 from app.core.exception_handlers import install_exception_handlers
@@ -93,6 +93,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     api_router.include_router(coverage.router)
     api_router.include_router(places.router)
     api_router.include_router(route_analyses.router)
+    api_router.include_router(weather.router)
     application.include_router(api_router)
     return application
 

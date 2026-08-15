@@ -4,6 +4,8 @@ import json
 from pathlib import Path
 
 from app.core.errors import InvalidDataFileError, PlaceNotFoundError
+from app.core.geo import haversine_m
+from app.schemas.location import CoordinateInput
 from app.schemas.place import Place
 
 
@@ -15,13 +17,28 @@ class MockPlaceSearchProvider:
         except Exception as exc:
             raise InvalidDataFileError("mock_places") from exc
 
-    async def search(self, query: str) -> list[Place]:
+    async def search(
+        self,
+        query: str,
+        *,
+        origin: CoordinateInput | None = None,
+    ) -> list[Place]:
         normalized = query.casefold().strip()
-        return [
+        matches = [
             place
             for place in self._places
             if normalized in f"{place.name} {place.address}".casefold()
-        ][:10]
+        ]
+        if origin is not None:
+            matches.sort(
+                key=lambda place: haversine_m(
+                    origin.lat,
+                    origin.lng,
+                    place.lat,
+                    place.lng,
+                )
+            )
+        return matches[:10]
 
     async def reverse_geocode(self, lat: float, lng: float) -> Place:
         if not self._places:

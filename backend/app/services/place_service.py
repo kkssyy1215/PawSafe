@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from app.providers.places.base import PlaceSearchProvider
+from app.schemas.location import CoordinateInput
 from app.schemas.place import Place
 from app.services.coverage_service import CoverageService
 
@@ -10,8 +11,13 @@ class PlaceService:
         self._provider = provider
         self._coverage = coverage
 
-    async def search(self, query: str) -> list[Place]:
-        items = await self._provider.search(query)
+    async def search(
+        self,
+        query: str,
+        *,
+        origin: CoordinateInput | None = None,
+    ) -> list[Place]:
+        items = await self._provider.search(query, origin=origin)
         return [
             item.model_copy(update={"is_in_coverage": self._coverage.contains(item)})
             for item in items

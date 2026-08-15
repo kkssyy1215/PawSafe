@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from collections.abc import Iterator
 
 import pytest
@@ -7,6 +8,7 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from app.core.config import Settings
+from app.core.logging import configure_logging
 from app.main import create_app
 
 
@@ -61,3 +63,10 @@ def test_access_log_contains_no_query_or_body(
     assert "마포나루길" not in log_output
     assert "37.55" not in log_output
     assert "126.91" not in log_output
+
+
+def test_external_http_client_info_logs_are_disabled() -> None:
+    configure_logging("INFO")
+
+    assert logging.getLogger("httpx").getEffectiveLevel() >= logging.WARNING
+    assert logging.getLogger("httpcore").getEffectiveLevel() >= logging.WARNING

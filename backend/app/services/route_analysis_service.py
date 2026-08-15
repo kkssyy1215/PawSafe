@@ -3,10 +3,10 @@ from __future__ import annotations
 import asyncio
 
 from app.core.errors import AnalysisTimeoutError, SameLocationError
+from app.core.geo import haversine_m
 from app.providers.analysis.base import AnalysisProvider
 from app.schemas.route import RouteAnalysisRequest, RouteAnalysisResponse
 from app.services.coverage_service import CoverageService
-from app.services.node_matching_service import haversine_m
 
 
 class RouteAnalysisService:

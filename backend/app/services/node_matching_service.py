@@ -6,22 +6,9 @@ from dataclasses import dataclass
 from shapely import box
 
 from app.core.errors import NoWalkableNodeError
+from app.core.geo import haversine_m
 from app.repositories.graph_repository import GraphData, NodeRecord
 from app.schemas.location import CoordinateInput
-
-EARTH_RADIUS_M = 6_371_000.0
-
-
-def haversine_m(lat_a: float, lng_a: float, lat_b: float, lng_b: float) -> float:
-    lat1 = math.radians(lat_a)
-    lat2 = math.radians(lat_b)
-    delta_lat = math.radians(lat_b - lat_a)
-    delta_lng = math.radians(lng_b - lng_a)
-    value = (
-        math.sin(delta_lat / 2) ** 2
-        + math.cos(lat1) * math.cos(lat2) * math.sin(delta_lng / 2) ** 2
-    )
-    return EARTH_RADIUS_M * 2 * math.atan2(math.sqrt(value), math.sqrt(1 - value))
 
 
 @dataclass(frozen=True)

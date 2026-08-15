@@ -49,6 +49,16 @@ npx expo start --go --tunnel
 
 개발 서버 캐시를 초기화해야 하면 `npx expo start --go --clear`를 실행합니다. `expo-dev-client`가 설치되어 있어 Expo CLI의 무옵션 기본값은 development build가 될 수 있으므로, Expo Go에는 `npm start` 또는 `--go`를 사용합니다.
 
+### 컴퓨터 브라우저에서 바로 보기
+
+휴대폰 없이 컴퓨터에서 UI를 확인하려면 별도 터미널에서 다음을 실행합니다.
+
+```bash
+npm run web
+```
+
+브라우저에서 `http://localhost:8081`을 열고 파일을 저장하면 Fast Refresh로 화면이 자동 갱신됩니다. 웹에서는 네이티브 지도 대신 자격증명 없이 동작하는 MVP 목업 지도를 사용합니다. 화면이 갱신되지 않으면 `npx expo start --web --clear`로 캐시를 초기화합니다.
+
 ### Android Emulator
 
 Android Studio에서 emulator를 먼저 실행한 뒤 다음 중 하나를 사용합니다.

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import threading
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
@@ -20,8 +21,14 @@ class FileHeatCostProvider:
         self.loaded = False
         self.data_version: str | None = None
         self._max_age = timedelta(minutes=max_age_minutes)
+        self._path = path
+        self._lock = threading.Lock()
+        self._modified_ns = -1
+        self._load()
+
+    def _load(self) -> None:
         try:
-            rows, top_level_version = self._read_rows(path)
+            rows, top_level_version = self._read_rows(self._path)
             records = [EdgeHeatRecord.model_validate(row) for row in rows]
             if not records:
                 raise ValueError("empty heat file")
@@ -37,11 +44,23 @@ class FileHeatCostProvider:
                 raise ValueError("mixed data versions")
             self.data_version = next(iter(versions), None)
             self._records = records
+            self._modified_ns = self._path.stat().st_mtime_ns
             self.loaded = True
         except InvalidDataFileError:
             raise
         except Exception as exc:
             raise InvalidDataFileError("heat_cost") from exc
+
+    def _reload_if_changed(self) -> None:
+        try:
+            modified_ns = self._path.stat().st_mtime_ns
+        except OSError as exc:
+            raise InvalidDataFileError("heat_cost") from exc
+        if modified_ns == self._modified_ns:
+            return
+        with self._lock:
+            if self._path.stat().st_mtime_ns != self._modified_ns:
+                self._load()
 
     @staticmethod
     def _read_rows(path: Path) -> tuple[list[dict[str, Any]], str | None]:
@@ -58,6 +77,7 @@ class FileHeatCostProvider:
         raise InvalidDataFileError("heat_cost")
 
     def get_snapshot(self, departure_at: datetime) -> HeatCostSnapshot:
+        self._reload_if_changed()
         selected: dict[str, EdgeHeatRecord] = {}
         for record in self._records:
             current = selected.get(record.edge_id)

@@ -15,6 +15,8 @@ from app.providers.places.base import PlaceSearchProvider
 from app.providers.places.factory import create_place_provider
 from app.providers.shortest_route.base import ShortestRouteProvider
 from app.providers.shortest_route.factory import create_shortest_route_provider
+from app.providers.weather.asos_weather import AsosWeatherProvider
+from app.providers.weather.kma_weather import KmaWeatherProvider
 from app.repositories.coverage_repository import CoverageData, CoverageRepository
 from app.repositories.graph_repository import GraphData, GraphRepository
 from app.services.coverage_service import CoverageService
@@ -34,6 +36,8 @@ class AppContainer:
     shortest_route_provider: ShortestRouteProvider | None
     walk_modes: WalkModeConfig | None
     place_provider: PlaceSearchProvider
+    weather_provider: KmaWeatherProvider | None
+    asos_weather_provider: AsosWeatherProvider | None
     analysis_provider: AnalysisProvider
     place_service: PlaceService
     route_analysis_service: RouteAnalysisService
@@ -72,6 +76,29 @@ def build_container(settings: Settings) -> AppContainer:
         readiness_error = exc
 
     place_provider = create_place_provider(settings, async_client)
+    weather_provider = (
+        KmaWeatherProvider(
+            async_client,
+            settings.kma_service_key,
+            base_url=settings.kma_base_url,
+            grid_x=settings.kma_grid_x,
+            grid_y=settings.kma_grid_y,
+            timeout_seconds=settings.request_timeout_seconds,
+        )
+        if settings.kma_service_key
+        else None
+    )
+    asos_weather_provider = (
+        AsosWeatherProvider(
+            async_client,
+            settings.asos_service_key,
+            base_url=settings.asos_base_url,
+            station_id=settings.asos_station_id,
+            timeout_seconds=settings.request_timeout_seconds,
+        )
+        if settings.asos_service_key
+        else None
+    )
     place_service = PlaceService(place_provider, coverage_service)
     analysis_provider = create_analysis_provider(
         settings,
@@ -99,6 +126,8 @@ def build_container(settings: Settings) -> AppContainer:
         shortest_route_provider=shortest_provider,
         walk_modes=walk_modes,
         place_provider=place_provider,
+        weather_provider=weather_provider,
+        asos_weather_provider=asos_weather_provider,
         analysis_provider=analysis_provider,
         place_service=place_service,
         route_analysis_service=route_analysis_service,

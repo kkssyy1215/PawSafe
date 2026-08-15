@@ -1,5 +1,7 @@
 # PawSafe API
 
+외부 데이터 출처와 재배포 조건은 [데이터 출처 문서](../DATA_ATTRIBUTION.md)를 따릅니다.
+
 PawSafe 모바일 앱이 출발지, 목적지, 출발 시각, 산책 모드를 보내면 일반 최단경로와 상대 Heat Cost를 반영한 경로를 비교해 주는 FastAPI 백엔드입니다. 기본 설정은 완전히 결정적인(deterministic) 데모 fixture를 사용합니다.
 
 이 서버는 모델 학습 서버가 아닙니다. K-means/GMM 학습, 실시간 그림자·노면온도 추정, 군집 평가, 실측 검증은 구현하지 않습니다. Heat Cost는 절대 온도나 안전 판정이 아니라 같은 조건에서 경로를 비교하는 상대 지표입니다.
@@ -48,8 +50,10 @@ EXPO_PUBLIC_API_BASE_URL=http://192.168.0.10:8000
 | `GET` | `/health` | 데이터/Provider 로딩 상태 |
 | `GET` | `/v1/capabilities` | 데모·파이프라인 기능 공개 |
 | `GET` | `/v1/coverage` | 분석 영역 GeoJSON |
-| `GET` | `/v1/places/search?q=망원` | 장소 검색 |
+| `GET` | `/v1/places/search?q=망원&lat=37.55&lng=126.91` | 장소 검색; 좌표는 선택적 근접 검색 힌트 |
 | `POST` | `/v1/places/reverse-geocode` | 좌표를 장소 이름으로 변환 |
+| `GET` | `/v1/weather/current` | 기상청 초단기실황 조회 |
+| `GET` | `/v1/weather/asos/reference` | 서울 108 ASOS 전일 동일 시간자료 조회 |
 | `POST` | `/v1/route-analyses` | 일반/PawSafe 경로 비교 |
 
 전체 필드와 null/enum 규칙은 [API 계약](docs/API_CONTRACT.md)을 참고합니다.
@@ -78,6 +82,10 @@ HEAT_COST_FILE_PATH=data/exports/edge_heat_cost.parquet
 
 Graph 또는 Heat Cost 파일이 잘못되었거나 없으면 서버는 분석 요청에 `INVALID_DATA_FILE` 또는 `PIPELINE_NOT_READY` 503을 반환합니다. Mock으로 조용히 대체하지 않습니다. 보행 그래프와 산책 모드 설정은 lifespan 시작 시 한 번만 로드합니다.
 
+`pawsafe_pipeline/update_live_heat.py --watch`는 실제 송파 보행 그래프와 최신 Heat Cost를
+`data/exports/`에 생성합니다. Heat Cost JSON은 원자적으로 교체되며 File Provider가 변경을
+감지해 서버 재시작 없이 다시 읽습니다. 그래프 자체가 변경된 경우에는 서버를 재시작해야 합니다.
+
 ### External 모드
 
 ```env
@@ -88,6 +96,26 @@ ANALYSIS_EXTERNAL_URL=https://analysis.example/v1/route-analyses
 데이터팀 분석 서비스의 응답을 동일한 Pydantic 계약으로 검증합니다. timeout과 외부 오류는 표준 오류로 변환하고 원본 응답은 앱에 노출하지 않습니다.
 
 장소 검색은 `PLACE_PROVIDER=kakao`와 `KAKAO_REST_API_KEY`로 전환합니다. 키가 없으면 준비되지 않은 구성으로 처리하며 키는 응답·로그에 포함하지 않습니다.
+
+### 기상청 초단기실황
+
+공공데이터포털에서 발급받은 일반인증키는 백엔드 `.env`에만 저장합니다.
+
+```env
+KMA_SERVICE_KEY=발급받은_일반인증키
+KMA_GRID_X=62
+KMA_GRID_Y=126
+```
+
+송파구 기본 격자는 `(62, 126)`입니다. 서버를 재시작한 뒤 다음 요청으로 기온, 습도,
+풍속, 1시간 강수량을 확인할 수 있습니다.
+
+```bash
+curl http://127.0.0.1:8000/v1/weather/current
+```
+
+인증키는 Expo 환경 변수나 모바일 번들에 넣지 않습니다. 이 응답은 아직 Heat Cost를
+자동 재계산하지 않으며, 일사량은 단기예보 응답에 없어 기존 ASOS 입력을 유지해야 합니다.
 
 ## 주요 환경 변수
 
@@ -105,6 +133,8 @@ ANALYSIS_EXTERNAL_URL=https://analysis.example/v1/route-analyses
 | `MAX_ROUTE_SEARCH_DISTANCE_M` | `10000` | 입력 좌표 직선거리 상한 |
 | `HEAT_MISSING_POLICY` | `exclude` | `exclude`, `conservative`, `regional_median` |
 | `LOG_PRECISE_LOCATIONS` | `false` | 정확한 위치 로깅은 구현상 항상 금지; opt-in 시에도 sanitizer는 소수 2자리만 허용 |
+| `KMA_SERVICE_KEY` | 없음 | 공공데이터포털 기상청 일반인증키 |
+| `KMA_GRID_X`, `KMA_GRID_Y` | `62`, `126` | 초단기실황 조회 격자(송파구 기본값) |
 
 ## 실제 데이터 교체
 
@@ -153,4 +183,3 @@ docker run --env-file .env -p 8000:8000 pawsafe-api
 ## 현재 한계
 
 실제 Heat Cost, 실제 보행 그래프, 실측 검증, 검증된 가중치, 운영용 Kakao/외부 분석 연결, rate limiter, 지속 저장소, 실제 데이터 갱신 파이프라인은 아직 준비되지 않았습니다. 현재 fixture는 해커톤 사용자 흐름 검증용 예시입니다. 자세한 상태는 [구현 상태](docs/IMPLEMENTATION_STATUS.md)를 참고합니다.
-

@@ -4,7 +4,7 @@
 
 - FastAPI 앱 factory와 lifespan resource loading/cleanup
 - Pydantic v2 settings와 strict API models
-- deterministic Mock route scenarios: cool improvement, fast near shortest, balanced tradeoff, same route, no improvement, out-of-coverage, no-route, timeout
+- deterministic Mock route scenarios: cool improvement, fast near shortest, same route, no improvement, out-of-coverage, no-route, timeout
 - Mock/Kakao 장소 검색과 reverse geocode Provider 구조
 - GeoJSON/GraphML/GeoPackage/Parquet graph repository 구조
 - Mock/file/external Heat Cost Provider 구조

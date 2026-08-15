@@ -78,11 +78,10 @@
       "type": "Feature",
       "properties": {
         "feature_type": "edge", "edge_id": "demo_edge_06", "from_node": "n5",
-        "to_node": "n4", "distance_m": 650, "display_name": "망원동 균형 구간",
+        "to_node": "n4", "distance_m": 650, "display_name": "망원동 우회 구간",
         "walkable": true, "bidirectional": true
       },
       "geometry": {"type": "LineString", "coordinates": [[126.905000, 37.554000], [126.900000, 37.555000]]}
     }
   ]
 }
-

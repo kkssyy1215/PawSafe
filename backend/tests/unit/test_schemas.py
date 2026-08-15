@@ -28,11 +28,19 @@ def test_route_request_requires_timezone() -> None:
         RouteAnalysisRequest.model_validate(_request("2026-08-12T18:30:00"))
 
 
-@pytest.mark.parametrize("walk_mode", ["fast", "balanced", "cool"])
+@pytest.mark.parametrize("walk_mode", ["fast", "cool"])
 def test_route_request_accepts_walk_modes(walk_mode: str) -> None:
     payload = _request()
     payload["walk_mode"] = walk_mode
     assert RouteAnalysisRequest.model_validate(payload).walk_mode == walk_mode
+
+
+def test_route_request_rejects_balanced_walk_mode() -> None:
+    payload = _request()
+    payload["walk_mode"] = "balanced"
+
+    with pytest.raises(ValidationError):
+        RouteAnalysisRequest.model_validate(payload)
 
 
 def test_location_rejects_blank_and_out_of_range() -> None:

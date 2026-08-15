@@ -244,7 +244,7 @@ class GraphRepository:
                 )
             edge = EdgeRecord(
                 edge_id=edge_id,
-                heat_edge_id=edge_id,
+                heat_edge_id=str(properties.get("heat_edge_id", edge_id)),
                 from_node=from_node,
                 to_node=to_node,
                 distance_m=float(properties["distance_m"]),

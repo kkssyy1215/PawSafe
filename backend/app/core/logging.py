@@ -15,6 +15,10 @@ from app.core.request_id import current_request_id
 
 def configure_logging(level: str) -> None:
     logging.basicConfig(format="%(message)s", stream=sys.stdout, level=level.upper(), force=True)
+    # httpx INFO 로그에는 query string 전체가 들어가 공공데이터 ServiceKey가
+    # 노출될 수 있으므로 외부 요청 URL 로깅을 차단한다.
+    logging.getLogger("httpx").setLevel(logging.WARNING)
+    logging.getLogger("httpcore").setLevel(logging.WARNING)
     structlog.configure(
         processors=[
             structlog.contextvars.merge_contextvars,

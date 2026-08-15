@@ -17,7 +17,6 @@ total_cost = alpha * distance_m + beta * heat_exposure_cost
 | mode | alpha | beta | 데모 의도 |
 |---|---:|---:|---|
 | `fast` | 0.85 | 0.15 | 거리를 크게 우선 |
-| `balanced` | 0.50 | 0.50 | 거리와 상대 Heat Cost 절충 |
 | `cool` | 0.25 | 0.75 | 상대 Heat Cost를 더 크게 반영 |
 
 ## 경로 통계
@@ -36,4 +35,3 @@ total_cost = alpha * distance_m + beta * heat_exposure_cost
 4. `WALK_MODE_CONFIG_PATH`를 새 파일로 바꿉니다.
 5. 경로 회귀 fixture, 실제 heat snapshot, 거리 상한, no-improvement 결과를 재검증합니다.
 6. `is_demo=false`는 실제 검증과 승인 이후에만 설정합니다.
-

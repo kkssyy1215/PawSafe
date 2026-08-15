@@ -7,6 +7,7 @@ from app.core.errors import PipelineNotReadyError
 from app.providers.places.base import PlaceSearchProvider
 from app.providers.places.kakao_places import KakaoPlaceSearchProvider
 from app.providers.places.mock_places import MockPlaceSearchProvider
+from app.schemas.location import CoordinateInput
 from app.schemas.place import Place
 
 
@@ -14,8 +15,13 @@ class UnavailablePlaceSearchProvider:
     def __init__(self, component: str) -> None:
         self._component = component
 
-    async def search(self, query: str) -> list[Place]:
-        del query
+    async def search(
+        self,
+        query: str,
+        *,
+        origin: CoordinateInput | None = None,
+    ) -> list[Place]:
+        del query, origin
         raise PipelineNotReadyError(self._component)
 
     async def reverse_geocode(self, lat: float, lng: float) -> Place:
