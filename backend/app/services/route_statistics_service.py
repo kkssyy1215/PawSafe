@@ -61,7 +61,9 @@ class RouteStatisticsService:
         direct_sun = (
             duration_min * (1 - shade_ratio)
             if shade_ratio is not None
-            else min(duration_min, sum(direct_values)) if direct_values else None
+            else min(duration_min, sum(direct_values))
+            if direct_values
+            else None
         )
         digest = hashlib.sha256(
             "|".join(edge.edge_id for edge in path.edges).encode("utf-8")
