@@ -1,37 +1,61 @@
-# 데이터분석·모델구현팀 연동 안내
+# 데이터 파이프라인 연동 안내
 
-이 저장소에는 팀이 작성한 Python 모델 **소스 코드만** 연동되어 있습니다.
-원본 지리 데이터, 기상 파일, 포장재 파일, IoT 엑셀, 전처리 결과, 모델 가중치는
-공개 저장소에 넣지 않습니다.
+PawSafe는 소스·공유 입력·로컬 산출물·앱 실행 export를 분리합니다.
 
-## 포함된 코드
+## 저장소에 포함되는 파일
 
-- `src/pawsafe/preprocess.py`: 좌표계 통일, 보행로·건물·가로수·기상·포장재 입력 처리
-- `src/pawsafe/shadow.py`: 태양 위치와 건물·가로수 그림자 비율 계산
-- `src/pawsafe/features.py`: 일사·그늘·열저장 상대 피처 생성
-- `src/pawsafe/clustering.py`: K-means/GMM 비교와 상대 Heat Cost 산출
-- `src/pawsafe/routing.py`: Edge 그래프와 Fast/Cool 경로 계산
-- `src/pawsafe/pipeline.py`: 위 단계를 순서대로 실행하고 앱 전달용 결과를 생성
+- `src/pawsafe/`: 전처리, 그림자, 피처, 군집, 경로, 실시간 갱신 코드
+- `data/live/edge_time_features_absorptivity_updated_v2.csv`: 승인된 v2 입력 스냅샷
+- `data/live/kma_weather.csv`, `asos_hourly.csv`: 가공된 기상 누적 스냅샷
+- `backend/data/exports/`: 앱·API 실행에 필요한 그래프, coverage, Heat Cost
 
-## 로컬 실행 원칙
+## 로컬에만 두는 파일
 
-1. 승인된 원본 입력을 각자 로컬의 `data/raw/`에 둡니다. 이 폴더의 파일은 Git에
-   올라가지 않습니다.
-2. `config.json`의 파일 경로와 좌표계 설정을 확인합니다.
-3. `python scripts/00_실행환경_확인.py`로 필수 입력만 점검합니다.
-4. 분석 실행은 `python scripts/01_전체_전처리_군집화_실행.py`를 사용합니다.
-5. 생성되는 `data/processed/`, `outputs/`와 모델 파일은 로컬 검토용이며 공개
-   커밋 대상이 아닙니다.
+- `data/raw/`: 재배포 권한을 확인하지 않은 원천 지리·포장재·IoT 자료
+- `data/processed/`: 전처리 GeoPackage·Parquet
+- `outputs/`: 학습 모델과 검토용 GeoJSON
+- `backend/.env`: KMA·ASOS·Kakao API 키
 
-모델의 Heat Cost는 실제 노면온도(℃)나 절대적인 안전 판정이 아니라, 입력 자료에
-대한 상대 열노출 점수입니다. 실제 서비스에서는 백엔드가 버전이 지정된 결과를
-읽어 모바일 앱에 전달해야 합니다. Python 모델을 모바일 앱에 직접 번들하지
-않습니다.
+이 파일들은 `.gitignore`로 제외합니다. 새 원천 자료를 공유하려면 먼저
+`DATA_ATTRIBUTION.md`에 원천 URL과 이용조건을 기록합니다.
 
-## 앱·백엔드 연결 계약
+## 전체 모델 생성
 
-현재 모바일 앱은 Fast 모드에서 Kakao 보행 API 경로를 사용하고, Cool 모드는
-백엔드의 상대 Heat Cost 결과가 준비되면 연결할 수 있도록 provider 경계를 둡니다.
-모델팀이 결과를 전달할 때는 `edge_id`, 좌표, 시각, `heat_cost`, 모델 버전과
-검증 상태를 함께 제공해 주세요. 자세한 GeoJSON/JSON 전달 형태는
-[`docs/NATIVE_APP_HANDOFF.md`](NATIVE_APP_HANDOFF.md)를 참고합니다.
+```bash
+make setup
+.venv/bin/python scripts/00_실행환경_확인.py
+.venv/bin/python scripts/01_전체_전처리_군집화_실행.py
+```
+
+`config.json`의 원천 경로와 CRS를 먼저 확인합니다. 전체 생성에는 Git에 없는
+승인된 원천 자료가 필요하므로 일반 기여자는 저장소 clone만으로 재학습할 수
+없습니다. 앱과 백엔드 실행에는 재학습이 필요하지 않습니다.
+
+## 실시간 갱신 흐름
+
+```text
+KMA·ASOS JSON
+  → data/live/*.csv 누적
+  → v2 Edge 피처 + 고정 모델로 Heat Cost 재계산
+  → backend/data/exports/edge_heat_cost.json 교체
+  → FastAPI가 변경된 스냅샷 자동 로딩
+```
+
+갱신 전 다음 로컬 산출물이 필요합니다.
+
+- `data/processed/edges_static.gpkg`
+- `outputs/heat_cluster_model.joblib`
+
+백엔드를 실행한 뒤 한 번 갱신하려면 `make update-weather`, 매시간 유지하려면
+`make update-weather-watch`를 사용합니다.
+
+## 데이터 계약
+
+- Edge key: `edge_id`, `from_node`, `to_node`
+- geometry: WGS84 GeoJSON `[longitude, latitude]`
+- timezone: `Asia/Seoul`
+- Heat Cost: 0~100 상대 지표
+- validation: 실측 승인 전 `not_validated`
+
+모바일 앱은 Python 모델이나 원본 파일을 직접 읽지 않고 FastAPI JSON만
+사용합니다. 자세한 응답 형식은 `backend/docs/API_CONTRACT.md`를 기준으로 합니다.

@@ -1,52 +1,41 @@
-# Implementation Status
+# Backend implementation status
 
-## 완료
+기준일: 2026-08-15
 
-- FastAPI 앱 factory와 lifespan resource loading/cleanup
-- Pydantic v2 settings와 strict API models
-- deterministic Mock route scenarios: cool improvement, fast near shortest, balanced tradeoff, same route, no improvement, out-of-coverage, no-route, timeout
-- Mock/Kakao 장소 검색과 reverse geocode Provider 구조
-- Kakao 도보 API `SHORTEST` baseline Provider와 demo Heat Cost 조합
-- GeoJSON/GraphML/GeoPackage/Parquet graph repository 구조
-- 데이터팀 edge-only GeoPackage(`edges_static.gpkg`)를 정점쌍으로 분할하고 원본 `edge_id`를 Heat Cost 키로 보존하는 파이프라인 어댑터
-- Mock/file/external Heat Cost Provider 구조
-- 데이터팀 `edge_time_features.parquet`의 timestamp/Heat Cost alias·Asia/Seoul 시간대·상대 지표 경고 연결
-- 비공개 pipeline boundary GeoPackage를 WGS84 coverage로 읽는 어댑터
-- internal NetworkX Dijkstra와 external shortest-route Provider 구조
-- Graph route analysis, STRtree 후보 검색 + haversine node matching, mode cost, 통계, comparison, GeoJSON
-- coverage 검증
-- 표준 오류 envelope와 request ID
-- CORS allowlist와 gzip
-- 위치/주소/키 비로깅 원칙과 privacy sanitizer
-- Expo API 계약/OpenAPI
-- unit/integration/security-oriented tests
-- Docker Python 3.12 실행 환경
+## 현재 동작
 
-## 의도적으로 제외
+- FastAPI lifespan에서 그래프·coverage·Heat Cost 파일 로딩
+- `backend/data/exports/`의 송파 보행 그래프와 3,797개 Edge Heat Cost 사용
+- `fast` 거리 최우선 경로와 `cool` 상대 Heat Cost 우선 경로 계산
+- Heat Cost 파일 변경 시 서버 재시작 없이 새 스냅샷 로딩
+- KMA 초단기실황과 ASOS 전날 동일 시간 관측 API
+- Mock, Graph, Kakao 최단 경로, 외부 Provider 경계
+- 장소 검색·역지오코딩 Provider와 coverage 검증
+- 표준 오류 envelope, request ID, CORS, gzip, 민감정보 로그 제거
+- Docker·Render 실행 구성
+- pytest 51개, Ruff, strict mypy 검증
 
-- K-means/GMM 학습과 모델 파일
-- PySolar, 뉴턴 냉각 모델, 실시간 그림자 분석
-- Silhouette/Davies-Bouldin 평가
-- 임의/random Heat Cost 생성
-- 절대 노면온도 예측
-- 안전/화상 위험 분류
+공유 기본 설정은 `ANALYSIS_PROVIDER=graph`, `HEAT_COST_PROVIDER=file`입니다.
+Mock fixture는 API 키나 실시간 데이터 없이 UI와 오류 흐름을 재현하는 테스트
+fallback으로 유지합니다.
 
-## 수신 데이터와 실제 전환 전 TODO
+## 데이터 상태
 
-- 잠실 환경별 IoT 관측 workbook 수신 완료(원본은 개인정보/재배포 권한 확인 전이므로 비공개 보관)
-- 현장 재실측은 MVP 데이터 인계 범위에서 생략 가능하나, edge/time 매핑과 검증 상태 확정은 필요
+- graph: `backend/data/exports/walk_graph.gpkg`
+- Heat Cost: `backend/data/exports/edge_heat_cost.json`
+- coverage: `backend/data/exports/coverage.geojson`
+- weight profile: `backend/app/config_data/walk_modes.live.yaml`
+- 응답 상태: `analysis_source=graph`, `is_demo=false`,
+  `validation_status=not_validated`
 
-- 데이터팀 export가 로컬 비공개 경로에 연결되어 Graph Provider를 통한 실제 경로 계산 가능(현재 송파 범위)
-- edge ID/CRS/timezone/version 계약 최종 승인
-- 실측 검증과 검증 상태
-- 검증된 walk-mode 가중치
-- 운영 Kakao/외부 분석 credentials 및 staging smoke test
-- 대규모 graph용 공간 index와 메모리/latency profiling
-- edge geometry 단순화 한도 결정
-- API gateway rate limiting과 관측성
-- 원자적 데이터 갱신/rollback pipeline
-- HTTPS 배포와 Expo 물리 기기 E2E 확인
+Heat Cost는 상대 경로 비교 지표이며 실측 노면온도나 절대 안전·화상 위험
+판정이 아닙니다.
 
-현재 `demo_*` fixture와 `demo-weight-v1`은 해커톤 흐름 검증용 예시입니다. 연결된
-데이터팀 파이프라인도 `validation_status=not_validated`이며 Heat Cost는 상대
-열노출 지표일 뿐 실측 노면온도(℃)나 절대 안전 판정이 아닙니다.
+## 남은 운영 작업
+
+- 실측 표면온도 기반 검증과 validation status 승인
+- fast/cool 가중치의 평가·승인·버전 운영
+- Render/Vercel HTTPS 배포와 운영 credential 설정
+- rate limiting, 관측성, 데이터 갱신 rollback
+- 대규모 그래프 latency·memory profiling
+- Expo 물리 기기 E2E와 배포 환경 smoke test

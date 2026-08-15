@@ -1,5 +1,7 @@
 # PawSafe
 
+[![CI](https://github.com/kkssyy1215/PawSafe/actions/workflows/ci.yml/badge.svg)](https://github.com/kkssyy1215/PawSafe/actions/workflows/ci.yml)
+
 PawSafe는 일반 보행 경로와 상대적인 Heat Cost가 낮은 산책 경로를 비교하는
 Expo 앱과 FastAPI 백엔드입니다. 현재 저장소의 공유 기준은 이 루트 하나입니다.
 
@@ -36,7 +38,8 @@ Python 3.12 이상과 Node.js 20.19 이상이 필요합니다. macOS에서는 �
 준비합니다.
 
 ```bash
-cd /Users/kkssyy/Projects/PawSafe
+git clone https://github.com/kkssyy1215/PawSafe.git
+cd PawSafe
 make setup
 ```
 
@@ -73,6 +76,12 @@ make web-mock
 [`DEPLOYMENT.md`](DEPLOYMENT.md)를 참고합니다.
 
 ## 기상값과 Heat Cost 갱신
+
+저장소에 포함된 `backend/data/exports/`만으로 앱과 API는 바로 실행할 수 있습니다.
+다만 Heat Cost를 다시 계산하려면 재배포 권한 때문에 Git에서 제외한 원본 지리
+자료와 학습 산출물(`data/processed/`, `outputs/`)이 로컬에 준비되어 있어야 합니다.
+필요한 파일과 생성 순서는
+[`docs/DATA_PIPELINE_HANDOFF.md`](docs/DATA_PIPELINE_HANDOFF.md)를 따릅니다.
 
 백엔드가 실행 중인 상태에서 한 번 갱신합니다.
 
@@ -117,7 +126,8 @@ git switch -c feature/<작업명>
 ```
 
 기능 변경 후 `make test`를 통과시키고 Pull Request를 만든 뒤 `main`에
-병합합니다. API 계약은 [`backend/docs/API_CONTRACT.md`](backend/docs/API_CONTRACT.md),
+병합합니다. 자세한 절차는 [`CONTRIBUTING.md`](CONTRIBUTING.md), API 계약은
+[`backend/docs/API_CONTRACT.md`](backend/docs/API_CONTRACT.md),
 데이터 설명은 [`docs/DATA_PIPELINE_HANDOFF.md`](docs/DATA_PIPELINE_HANDOFF.md),
 저작권·출처 표기는 [`DATA_ATTRIBUTION.md`](DATA_ATTRIBUTION.md)를 참고합니다.
 
@@ -129,4 +139,5 @@ git switch -c feature/<작업명>
 
 원본 IoT 문서와 개인 API 키는 공개 저장소에 포함하지 않습니다. 공개된 데이터
 파일과 지도·기상 API의 출처 및 라이선스는 [`DATA_ATTRIBUTION.md`](DATA_ATTRIBUTION.md)에
-정리되어 있습니다.
+정리되어 있습니다. 저장소 코드의 현재 이용조건은 [`LICENSE.md`](LICENSE.md)를
+따르며 제3자 데이터의 이용조건을 대체하지 않습니다.
