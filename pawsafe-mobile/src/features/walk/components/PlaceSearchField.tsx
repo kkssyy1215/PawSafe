@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import type { Place, PlaceSearchResult } from '@/src/api/contracts';
 import { AppTextField } from '@/src/components/common/AppTextField';
 import { Notice } from '@/src/components/common/Notice';
@@ -22,12 +23,14 @@ export function PlaceSearchField({ label, field, selected, onSelect, placeholder
     [resultFilter, results],
   );
   const prefix = field === 'origin' ? 'origin' : 'destination';
+  const pinColor = field === 'origin' ? colors.greenStrong : colors.mutedText;
+  const pinIcon = field === 'origin' ? 'location' : 'location-outline';
   if (selected) {
     return (
       <View style={styles.group}>
         <Text style={styles.label}>{label}</Text>
         <View accessible accessibilityLabel={`${label}, ${selected.name}, ${selected.address}`} style={styles.selected}>
-          <View style={[styles.pin, field === 'origin' && styles.originPin]}><Text style={styles.pinText}>{field === 'origin' ? '●' : '◎'}</Text></View>
+          <View style={styles.pin}><Ionicons name={pinIcon} size={22} color={pinColor} /></View>
           <View style={styles.selectedText}>
             <Text style={styles.placeName} numberOfLines={1}>{selected.name}</Text>
             <Text style={styles.address} numberOfLines={1}>{selected.address}</Text>
@@ -43,7 +46,7 @@ export function PlaceSearchField({ label, field, selected, onSelect, placeholder
     <View style={styles.group}>
       <Text nativeID={`${prefix}-label`} style={styles.label}>{label}</Text>
       <View style={styles.inputShell}>
-        <View style={styles.pin}><Text style={styles.pinText}>{field === 'origin' ? '●' : '◎'}</Text></View>
+        <View style={styles.pin}><Ionicons name={pinIcon} size={22} color={pinColor} /></View>
         <AppTextField
           testID={`${prefix}-search-input`}
           accessibilityLabel={`${label} 검색`}
@@ -88,9 +91,7 @@ const styles = StyleSheet.create({
   inputShell: { minHeight: 52, flexDirection: 'row', alignItems: 'center', gap: spacing.sm, borderWidth: 1, borderColor: colors.border, borderRadius: 12, backgroundColor: colors.surface, paddingHorizontal: spacing.sm },
   input: { flex: 1, minHeight: 50, borderWidth: 0, paddingHorizontal: 0 },
   selected: { minHeight: 52, flexDirection: 'row', alignItems: 'center', gap: spacing.sm, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface, borderRadius: 12, paddingHorizontal: spacing.sm, paddingVertical: spacing.xs },
-  pin: { width: 30, height: 30, borderRadius: 9, alignItems: 'center', justifyContent: 'center', backgroundColor: '#F0F3EF' },
-  originPin: { backgroundColor: colors.greenSoft },
-  pinText: { color: colors.greenStrong, fontSize: 14, fontWeight: '700' },
+  pin: { width: 32, height: 32, alignItems: 'center', justifyContent: 'center' },
   selectedText: { flex: 1, minWidth: 0 },
   placeName: { ...typography.body, color: colors.text, fontWeight: '700' },
   address: { ...typography.caption, color: colors.mutedText, fontSize: 11 },
