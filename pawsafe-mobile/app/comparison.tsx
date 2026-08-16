@@ -37,7 +37,6 @@ export default function ComparisonScreen() {
           <PawSafeMap origin={request.origin} destination={request.destination} shortest={result.shortest} selectedRoute="shortest" walkMode="fast" showRouteLegend={false} />
           <FastRouteResultCard route={result.shortest} />
           <View style={styles.actions}>
-            <AppButton testID="walking-direction-button" onPress={() => router.push('/live')}>산책길 보기</AppButton>
             <AppButton testID="restart-button" variant="secondary" onPress={() => { dispatch({ type: 'RESET' }); router.dismissAll(); router.replace('/'); }}>다른 산책길 찾아보기</AppButton>
           </View>
         </ScrollView>

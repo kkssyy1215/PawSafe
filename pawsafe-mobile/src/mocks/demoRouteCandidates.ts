@@ -47,24 +47,50 @@ export const pipelineDemoRouteCandidates = [heatDifferenceDemoRoute, ...csvDemoR
 
 type DemoEndpoint = 'origin' | 'destination';
 
-// The user sees these real-looking addresses while the app keeps the fixed,
-// graph-connected coordinates from the model team's route candidates.
-// Add the remaining agreed addresses here without changing route/node data.
-const placeDisplayOverrides: Record<string, { name: string; address: string }> = {
-  'HEAT_DIFF_001:origin': {
-    name: '위례광장로 185',
-    address: '서울특별시 송파구 위례광장로 185',
-  },
+// Kakao coord2address results for the model team's graph-connected coordinates.
+// Display text may change, but route/node coordinates must remain fixed.
+const placeAddressOverrides: Record<string, string> = {
+  'HEAT_DIFF_001:origin': '서울특별시 송파구 위례광장로 185',
+  'HEAT_DIFF_001:destination': '서울 송파구 장지동 900-2',
+  'DEMO_001:origin': '서울 송파구 잠실동 253',
+  'DEMO_001:destination': '서울 송파구 신천동 32',
+  'DEMO_002:origin': '서울 송파구 잠실동 256',
+  'DEMO_002:destination': '서울 송파구 잠실동 49',
+  'DEMO_003:origin': '서울 송파구 잠실동 253',
+  'DEMO_003:destination': '서울 송파구 신천동 34',
+  'DEMO_004:origin': '서울 송파구 잠실동 253',
+  'DEMO_004:destination': '서울 송파구 신천동 29',
+  'DEMO_005:origin': '서울 송파구 잠실동 253',
+  'DEMO_005:destination': '서울특별시 송파구 올림픽로 300',
+  'DEMO_006:origin': '서울 송파구 문정동 3-3',
+  'DEMO_006:destination': '서울 송파구 거여동 산 71-25',
+  'DEMO_007:origin': '서울 송파구 문정동 3-3',
+  'DEMO_007:destination': '서울 송파구 거여동 657-12',
+  'DEMO_008:origin': '서울 송파구 문정동 18-3',
+  'DEMO_008:destination': '서울 송파구 거여동 572-1',
+  'DEMO_009:origin': '서울 송파구 문정동 119-4',
+  'DEMO_009:destination': '서울 송파구 거여동 산 71-25',
+  'DEMO_010:origin': '서울 송파구 문정동 3-3',
+  'DEMO_010:destination': '서울 송파구 거여동 20-14',
+  'DEMO_011:origin': '서울 송파구 문정동 646-1',
+  'DEMO_011:destination': '서울 송파구 장지동 859-1',
+  'DEMO_012:origin': '서울 송파구 문정동 500',
+  'DEMO_012:destination': '서울 송파구 장지동 859-1',
+  'DEMO_013:origin': '서울 송파구 문정동 646-1',
+  'DEMO_013:destination': '서울 송파구 장지동 859',
+  'DEMO_014:origin': '서울 송파구 문정동 471',
+  'DEMO_014:destination': '서울 송파구 장지동 859-1',
+  'DEMO_015:origin': '서울 송파구 문정동 500',
+  'DEMO_015:destination': '서울 송파구 장지동 859',
 };
 
 function placeDisplay(candidate: DemoRouteCandidate, endpoint: DemoEndpoint) {
-  const override = placeDisplayOverrides[`${candidate.id}:${endpoint}`];
-  if (override) return override;
-  const endpointLabel = endpoint === 'origin' ? '출발지' : '목적지';
-  const point = endpoint === 'origin' ? candidate.origin : candidate.destination;
+  const address = placeAddressOverrides[`${candidate.id}:${endpoint}`];
+  if (!address) throw new Error(`목업 주소 매핑 누락: ${candidate.id}:${endpoint}`);
+  const normalizedAddress = address.replace(/^서울 송파구 /, '서울특별시 송파구 ');
   return {
-    name: `${candidate.id} ${endpointLabel}`,
-    address: `서울특별시 송파구 ${candidate.id} 목업 ${endpointLabel} · ${point.lat.toFixed(6)}, ${point.lng.toFixed(6)}`,
+    name: normalizedAddress.replace(/^서울특별시 송파구 /, ''),
+    address: normalizedAddress,
   };
 }
 

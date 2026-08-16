@@ -25,13 +25,13 @@ describe('mock place coverage', () => {
     expect(csvDemoRouteCandidates).toHaveLength(15);
     expect(pipelineDemoPlaces).toHaveLength(32);
 
-    const matches = pipelineDemoPlaces.filter((place) => place.name.includes('DEMO_001'));
-    expect(matches).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ name: 'DEMO_001 출발지', lat: 37.510356341, lng: 127.079320701, is_in_coverage: true }),
-        expect.objectContaining({ name: 'DEMO_001 목적지', lat: 37.511922376, lng: 127.104658454, is_in_coverage: true }),
-      ]),
-    );
+    expect(pipelineDemoPlaces.find(({ id }) => id === 'demo_001_origin')).toMatchObject({
+      name: '잠실동 253', address: '서울특별시 송파구 잠실동 253', lat: 37.510356341, lng: 127.079320701, is_in_coverage: true,
+    });
+    expect(pipelineDemoPlaces.find(({ id }) => id === 'demo_001_destination')).toMatchObject({
+      name: '신천동 32', address: '서울특별시 송파구 신천동 32', lat: 37.511922376, lng: 127.104658454, is_in_coverage: true,
+    });
+    expect(pipelineDemoPlaces.every((place) => place.address.includes('송파구') && !place.address.includes('목업'))).toBe(true);
   });
 
   it('keeps the separately supplied heat-difference route selectable', () => {
