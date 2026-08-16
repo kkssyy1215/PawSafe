@@ -3,14 +3,14 @@ import type { WalkMode } from '@/src/api/contracts';
 import { colors, spacing, typography } from '@/src/theme/theme';
 
 const modes: { id: WalkMode; title: string; description: string; icon: string; recommended?: boolean }[] = [
-  { id: 'fast', title: '빠른 산책', description: '가장 거리가 짧은 경로 우선', icon: '↯' },
-  { id: 'cool', title: '시원한 산책', description: '직사광선과 지면 열노출을 최소화', icon: '☼', recommended: true },
+  { id: 'fast', title: '빠른 산책', description: '가장 거리가 짧은 경로 우선', icon: '⚡' },
+  { id: 'cool', title: '시원한 산책', description: '직사광선과 지면 열노출을 최소화', icon: '♨', recommended: true },
 ];
 
 export function WalkModeSelector({ value, onChange }: { value: WalkMode; onChange: (mode: WalkMode) => void }) {
   return (
     <View accessibilityRole="radiogroup" style={styles.group}>
-      <Text style={styles.label}>산책 유형</Text>
+      <Text style={styles.label}>산책 스타일 선택</Text>
       {modes.map((mode) => {
         const selected = value === mode.id;
         return (

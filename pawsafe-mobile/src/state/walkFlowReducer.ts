@@ -1,10 +1,9 @@
-import { createDefaultDeparture } from '@/src/features/walk/utils/dateTime';
 import type { WalkFlowAction, WalkFlowState } from './walkFlowTypes';
 
 export function createInitialWalkFlowState(): WalkFlowState {
   return {
     status: 'input',
-    form: { origin: null, destination: null, departureAt: createDefaultDeparture(), walkMode: 'cool' },
+    form: { origin: null, destination: null, walkMode: 'cool' },
   };
 }
 
@@ -12,25 +11,25 @@ export function walkFlowReducer(state: WalkFlowState, action: WalkFlowAction): W
   switch (action.type) {
     case 'SET_PLACE':
       return state.status === 'input' ? { ...state, form: { ...state.form, [action.field]: action.place } } : state;
-    case 'SET_DEPARTURE':
-      return state.status === 'input' ? { ...state, form: { ...state.form, departureAt: action.value } } : state;
     case 'SET_WALK_MODE':
       return state.status === 'input' ? { ...state, form: { ...state.form, walkMode: action.value } } : state;
     case 'BEGIN_SUBMIT':
       return { status: 'submitting', request: action.request };
     case 'SUBMIT_SUCCESS':
       return state.status === 'submitting'
-        ? { status: 'segmentReview', request: state.request, result: action.result, selectedSegmentId: null }
+        ? { status: 'comparison', request: state.request, result: action.result, selectedRoute: state.request.walk_mode === 'fast' ? 'shortest' : 'pawsafe' }
         : state;
     case 'SELECT_SEGMENT':
       return state.status === 'segmentReview' ? { ...state, selectedSegmentId: action.id } : state;
+    case 'SELECT_ROUTE':
+      return state.status === 'comparison' || state.status === 'segmentReview' ? { ...state, selectedRoute: action.route } : state;
     case 'SHOW_COMPARISON':
       return state.status === 'segmentReview'
-        ? { status: 'comparison', request: state.request, result: state.result }
+        ? { status: 'comparison', request: state.request, result: state.result, selectedRoute: state.selectedRoute }
         : state;
     case 'SHOW_SEGMENTS':
       return state.status === 'comparison'
-        ? { status: 'segmentReview', request: state.request, result: state.result, selectedSegmentId: null }
+        ? { status: 'segmentReview', request: state.request, result: state.result, selectedSegmentId: null, selectedRoute: state.selectedRoute }
         : state;
     case 'FAIL':
       return { status: 'error', request: 'request' in state ? state.request : undefined, error: action.error };

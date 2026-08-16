@@ -12,7 +12,7 @@ const request: RouteAnalysisRequest = {
 describe('comparison copy', () => {
   it('describes the deterministic cool improvement without an absolute safety claim', () => {
     const result = getMockRouteScenario(request);
-    expect(getResultHeadline(result)).toBe('200m 더 걷고, Heat Cost는 43% 낮은 예시 경로예요.');
+    expect(getResultHeadline(result)).toBe('200m 더 걸어도,\n우리 강아지가 걷기 좋은 길이에요.');
     expect(isDemoResult(result)).toBe(true);
   });
 
@@ -21,7 +21,7 @@ describe('comparison copy', () => {
       ...request,
       destination: { ...request.destination, id: 'scenario_same_route' },
     });
-    expect(getResultHeadline(result)).toBe('현재 조건에서는 두 경로가 같습니다.');
+    expect(getResultHeadline(result)).toBe('현재 조건에서는 두 경로가 같아요.');
   });
 
   it('does not always claim improvement', () => {
@@ -29,6 +29,6 @@ describe('comparison copy', () => {
       ...request,
       destination: { ...request.destination, id: 'scenario_no_improvement' },
     });
-    expect(getResultHeadline(result)).toBe('현재 조건에서는 PawSafe 경로의 상대 열노출 개선이 확인되지 않았습니다.');
+    expect(getResultHeadline(result)).toBe('현재 조건에서는 더 시원한 우회 경로가 없어요.');
   });
 });

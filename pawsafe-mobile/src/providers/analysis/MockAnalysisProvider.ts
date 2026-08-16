@@ -20,6 +20,6 @@ export class MockAnalysisProvider implements AnalysisProvider {
     if (scenarioId === 'scenario_out_of_coverage') throw new AppError('OUT_OF_COVERAGE', 'Demo scenario', false);
     if (scenarioId === 'scenario_no_route') throw new AppError('NO_ROUTE', 'Demo scenario', false);
     if (scenarioId === 'scenario_timeout') throw new AppError('ANALYSIS_TIMEOUT', 'Demo scenario', true);
-    return getMockRouteScenario(request);
+    return getMockRouteScenario({ ...request, departure_at: request.departure_at ?? new Date().toISOString() });
   }
 }

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from typing import Literal
+from zoneinfo import ZoneInfo
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -15,7 +16,10 @@ class RouteAnalysisRequest(BaseModel):
 
     origin: LocationInput
     destination: LocationInput
-    departure_at: datetime
+    departure_at: datetime = Field(
+        default_factory=lambda: datetime.now(ZoneInfo("Asia/Seoul")),
+        description="생략하면 요청 시점의 한국 표준시를 사용합니다.",
+    )
     walk_mode: WalkMode
 
     @field_validator("departure_at")

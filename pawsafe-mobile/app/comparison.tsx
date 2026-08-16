@@ -1,16 +1,13 @@
 import { useCallback } from 'react';
 import { AccessibilityInfo, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { router, useFocusEffect, type RelativePathString } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { AppButton } from '@/src/components/common/AppButton';
-import { Notice } from '@/src/components/common/Notice';
 import { ScreenContainer } from '@/src/components/common/ScreenContainer';
 import { PawSafeMap } from '@/src/components/map/PawSafeMap';
 import { DemoNotice } from '@/src/features/walk/components/DemoNotice';
 import { RelativeHeatNotice } from '@/src/features/walk/components/RelativeHeatNotice';
 import { ResultHeadline } from '@/src/features/walk/components/ResultHeadline';
-import { RouteComparisonCard } from '@/src/features/walk/components/RouteComparisonCard';
 import { RouteSummaryCard } from '@/src/features/walk/components/RouteSummaryCard';
-import { RouteEndpointsCard } from '@/src/features/walk/components/RouteEndpointsCard';
 import { useWalkFlow } from '@/src/state/WalkFlowContext';
 import { colors, spacing, typography } from '@/src/theme/theme';
 import { getWalkModeLabel } from '@/src/features/walk/utils/walkModeCopy';
@@ -29,24 +26,26 @@ export default function ComparisonScreen() {
     <ScreenContainer>
       <ScrollView contentContainerStyle={styles.content}>
         <ResultHeadline result={result} />
+        <PawSafeMap origin={request.origin} destination={request.destination} shortest={result.shortest} pawsafe={result.pawsafe} selectedRoute={resultState.selectedRoute} walkMode="cool" showRouteLegend />
+        <View accessibilityRole="radiogroup" style={styles.routeCards}>
+          <RouteSummaryCard route={result.shortest} tone="shortest" selected={resultState.selectedRoute === 'shortest'} onPress={() => dispatch({ type: 'SELECT_ROUTE', route: 'shortest' })} />
+          <RouteSummaryCard route={result.pawsafe} tone="pawsafe" selected={resultState.selectedRoute === 'pawsafe'} onPress={() => dispatch({ type: 'SELECT_ROUTE', route: 'pawsafe' })} />
+        </View>
+        <Text style={styles.explanation}>{result.comparison.distance_delta_m > 0 ? `PawSafe 추천은 일반 경로보다 ${Math.round(result.comparison.distance_delta_m)}m 더 걷지만, 현재 기상환경에서 뜨거운 노면 노출을 줄이는 경로예요.` : '현재 기상환경에서 두 경로의 거리와 열노출을 비교했어요.'}</Text>
         {result.is_demo || result.analysis_source === 'graph' ? <DemoNotice analysisSource={result.analysis_source} /> : null}
-        {result.comparison.same_route ? <Notice tone="warning">두 경로의 선이 지도에서 겹칩니다.</Notice> : null}
-        <RouteEndpointsCard origin={request.origin} destination={request.destination} />
-        <PawSafeMap origin={request.origin} destination={request.destination} shortest={result.shortest} pawsafe={result.pawsafe} walkMode={request.walk_mode} showRouteLegend />
-        <View style={styles.routeCards}><RouteSummaryCard route={result.shortest} tone="shortest" /><RouteSummaryCard route={result.pawsafe} tone="pawsafe" walkMode={request.walk_mode} /></View>
-        <RouteComparisonCard comparison={result.comparison} />
         <RelativeHeatNotice />
         <Text style={styles.version}>그래프 {result.graph_version} · {result.data_valid_at ? `데이터 ${new Date(result.data_valid_at).toLocaleString('ko-KR')}` : 'MVP 예시 시나리오'}</Text>
         <View style={styles.actions}>
-          <AppButton variant="secondary" onPress={() => { if (state.status === 'comparison') dispatch({ type: 'SHOW_SEGMENTS' }); router.back(); }}>구간 다시 보기</AppButton>
-          <AppButton testID="restart-button" onPress={() => { dispatch({ type: 'RESET' }); router.dismissAll(); router.replace('/'); }}>다른 조건으로 검색</AppButton>
-          <AppButton onPress={() => router.push('/live' as RelativePathString)}>산책 시작</AppButton>
+          <AppButton testID="walking-direction-button" onPress={() => router.push('/live')}>산책길 보기</AppButton>
+          <AppButton testID="restart-button" variant="secondary" onPress={() => { dispatch({ type: 'RESET' }); router.dismissAll(); router.replace('/'); }}>다른 산책길 찾아보기</AppButton>
+          <AppButton variant="quiet" onPress={() => { if (state.status === 'comparison') dispatch({ type: 'SHOW_SEGMENTS' }); router.push('/segments'); }}>구간별 열환경 자세히 보기</AppButton>
         </View>
       </ScrollView>
     </ScreenContainer>
   );
 }
 const styles = StyleSheet.create({
-  content: { padding: spacing.lg, paddingBottom: spacing.xxl, gap: spacing.lg }, routeCards: { flexDirection: 'row', gap: spacing.sm, alignItems: 'stretch' }, actions: { gap: spacing.sm },
+  content: { padding: spacing.lg, paddingBottom: spacing.xxl, gap: spacing.lg }, routeCards: { flexDirection: 'row', gap: 0, alignItems: 'stretch' }, actions: { gap: spacing.sm },
+  explanation: { ...typography.caption, color: colors.mutedText, lineHeight: 20 },
   version: { ...typography.caption, color: colors.mutedText, textAlign: 'center' }, missing: { justifyContent: 'center', padding: spacing.xl, gap: spacing.lg }, missingText: { ...typography.body, color: colors.text, textAlign: 'center' },
 });

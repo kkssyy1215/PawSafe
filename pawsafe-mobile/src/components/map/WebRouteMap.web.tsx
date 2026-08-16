@@ -24,10 +24,12 @@ interface ProjectedPoint {
 export function WebRouteMap({
   origin,
   destination,
+  currentLocation,
   shortest,
   pawsafe,
   segments,
   selectedSegmentId,
+  selectedRoute,
   walkMode = 'cool',
   onSegmentPress,
 }: RouteMapProps) {
@@ -37,6 +39,7 @@ export function WebRouteMap({
     const segmentCoordinates = segments?.flatMap((segment) => segment.geometry.coordinates) ?? [];
     const allCoordinates: GeoJsonCoordinate[] = [
       [origin.lng, origin.lat],
+      ...(currentLocation ? [[currentLocation.lng, currentLocation.lat] as GeoJsonCoordinate] : []),
       ...shortestCoordinates,
       ...pawsafeCoordinates,
       ...segmentCoordinates,
@@ -56,8 +59,9 @@ export function WebRouteMap({
       }) ?? [],
       origin: project([origin.lng, origin.lat]),
       destination: project([destination.lng, destination.lat]),
+      currentLocation: currentLocation ? project([currentLocation.lng, currentLocation.lat]) : null,
     };
-  }, [destination.lat, destination.lng, origin.lat, origin.lng, pawsafe?.geometry.coordinates, segments, shortest?.geometry.coordinates]);
+  }, [currentLocation, destination.lat, destination.lng, origin.lat, origin.lng, pawsafe?.geometry.coordinates, segments, shortest?.geometry.coordinates]);
 
   if (!geometry.shortestPath && !geometry.pawsafePath && geometry.segmentPaths.length === 0) {
     return <View style={styles.empty}><Text style={styles.emptyTitle}>표시할 경로 좌표가 없습니다</Text><Text style={styles.emptyText}>다른 출발지와 목적지로 다시 검색해 주세요.</Text></View>;
@@ -88,10 +92,10 @@ export function WebRouteMap({
         <path d="M -20 350 C 130 302 222 350 344 315 C 446 286 520 300 610 356 L 610 460 L -20 460 Z" fill="#E8F0E5" />
         <path d="M 755 448 C 740 365 782 325 920 286" fill="none" stroke="#D7E9F0" strokeWidth="44" opacity="0.8" />
 
-        {geometry.shortestPath ? <path d={geometry.shortestPath} fill="none" stroke="#A0A69F" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="8 11" opacity="0.8" /> : null}
+        {geometry.shortestPath ? <path d={geometry.shortestPath} fill="none" stroke={colors.routeBaseline} strokeWidth={selectedRoute === 'pawsafe' ? 6 : 9} strokeLinecap="round" strokeLinejoin="round" opacity={selectedRoute === 'pawsafe' ? 0.72 : 1} /> : null}
         {geometry.pawsafePath ? <>
           <path d={geometry.pawsafePath} fill="none" stroke="#FFFFFF" strokeWidth="17" strokeLinecap="round" strokeLinejoin="round" filter="url(#route-shadow)" />
-          <path d={geometry.pawsafePath} fill="none" stroke={`url(#route-${walkMode})`} strokeWidth="9" strokeLinecap="round" strokeLinejoin="round" />
+          <path d={geometry.pawsafePath} fill="none" stroke={`url(#route-${walkMode})`} strokeWidth={selectedRoute === 'shortest' ? 6 : 9} strokeLinecap="round" strokeLinejoin="round" opacity={selectedRoute === 'shortest' ? 0.72 : 1} />
         </> : null}
         {geometry.segmentPaths.map(({ segment, path }) => selectedSegmentId === segment.edge_id && path ? <g key={`selected-${segment.edge_id}`}>
           <path d={path} fill="none" stroke="#FFFFFF" strokeWidth="15" strokeLinecap="round" strokeLinejoin="round" />
@@ -106,6 +110,7 @@ export function WebRouteMap({
 
         <MapMarker point={geometry.origin} label="출발" tone="start" />
         <MapMarker point={geometry.destination} label="도착" tone="end" />
+        {geometry.currentLocation ? <g transform={`translate(${geometry.currentLocation.x} ${geometry.currentLocation.y})`}><circle r="18" fill="#FFFFFF" /><circle r="11" fill="#2D7FF9" /><circle r="4" fill="#FFFFFF" /></g> : null}
       </svg>
       <View pointerEvents="none" style={styles.topBadge}>
         <View style={[styles.badgeDot, { backgroundColor: routeColor }]} />

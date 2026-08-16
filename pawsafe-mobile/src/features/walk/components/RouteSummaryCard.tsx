@@ -1,27 +1,54 @@
-import { StyleSheet, Text, View } from 'react-native';
-import type { RouteStats, WalkMode } from '@/src/api/contracts';
-import { AppCard } from '@/src/components/common/AppCard';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import type { RouteStats } from '@/src/api/contracts';
 import { formatDistance } from '@/src/features/walk/utils/formatDistance';
 import { formatDuration } from '@/src/features/walk/utils/formatDuration';
-import { formatPercent } from '@/src/features/walk/utils/formatPercent';
-import { getWalkModeLabel } from '@/src/features/walk/utils/walkModeCopy';
-import { getRecommendedRouteColor } from '@/src/components/map/routeStyles';
 import { colors, spacing, typography } from '@/src/theme/theme';
 
-export function RouteSummaryCard({ route, tone, walkMode = 'cool' }: { route: RouteStats; tone: 'shortest' | 'pawsafe'; walkMode?: WalkMode }) {
-  const values = [
-    ['총 거리', formatDistance(route.distance_m)], ['예상 시간', formatDuration(route.duration_min)],
-    ['Heat Cost', route.heat_cost.toFixed(0)], ['예상 그늘 비율', formatPercent(route.shade_ratio)],
-    ['직사광선 노출', formatDuration(route.direct_sun_minutes)],
-  ];
+interface RouteSummaryCardProps {
+  route: RouteStats;
+  tone: 'shortest' | 'pawsafe';
+  selected: boolean;
+  onPress: () => void;
+}
+
+export function RouteSummaryCard({ route, tone, selected, onPress }: RouteSummaryCardProps) {
+  const isPawSafe = tone === 'pawsafe';
+  const isKakao = route.route_source.toLowerCase().includes('kakao');
+  const title = isPawSafe ? 'PawSafe 추천' : isKakao ? '카카오맵 최단경로' : '일반 최단경로';
   return (
-    <AppCard style={[styles.card, tone === 'pawsafe' ? { borderTopColor: getRecommendedRouteColor(walkMode) } : styles.shortest]}>
-      <Text style={styles.title}>{tone === 'pawsafe' ? getWalkModeLabel(walkMode) : '일반 최단 경로'}</Text>
-      {values.map(([label, value]) => <View key={label} style={styles.row}><Text style={styles.label}>{label}</Text><Text style={styles.value}>{value}</Text></View>)}
-    </AppCard>
+    <Pressable
+      accessibilityRole="radio"
+      accessibilityState={{ selected, checked: selected }}
+      accessibilityLabel={`${title}, ${formatDistance(route.distance_m)}, ${formatDuration(route.duration_min)}, Heat Cost ${route.heat_cost.toFixed(0)}`}
+      style={({ pressed }) => [styles.card, isPawSafe ? styles.pawsafe : styles.shortest, selected && styles.selected, pressed && styles.pressed]}
+      onPress={onPress}
+    >
+      <View style={styles.titleRow}>
+        <Text style={[styles.title, isPawSafe && styles.pawsafeTitle]}>{title}</Text>
+        {selected ? <Text style={styles.selectedBadge}>선택</Text> : null}
+      </View>
+      <Text style={styles.distance}>{formatDistance(route.distance_m)}</Text>
+      <Text style={styles.duration}>{formatDuration(route.duration_min)}</Text>
+      <View style={styles.heatPill}><Text style={styles.heatText}>Heat Cost {route.heat_cost.toFixed(0)}</Text></View>
+      <Text style={[styles.caption, isPawSafe ? styles.coolCaption : styles.hotCaption]}>{isPawSafe ? '조금 더 걸어도 · 열노출 감소' : '거리 우선 · 빠른 이동'}</Text>
+    </Pressable>
   );
 }
+
 const styles = StyleSheet.create({
-  card: { flex: 1, minWidth: 0, gap: spacing.sm }, shortest: { borderTopWidth: 4, borderTopColor: colors.routeBaseline },
-  title: { ...typography.subheading, color: colors.text, marginBottom: spacing.xs }, row: { gap: 1 }, label: { ...typography.caption, color: colors.mutedText }, value: { ...typography.body, color: colors.text, fontWeight: '700' },
+  card: { flex: 1, minWidth: 0, minHeight: 176, padding: spacing.md, gap: spacing.xs, borderWidth: 1, backgroundColor: colors.surface },
+  shortest: { borderColor: '#E8D7B6', borderTopLeftRadius: 16, borderBottomLeftRadius: 16 },
+  pawsafe: { borderColor: '#B9DEBF', borderTopRightRadius: 16, borderBottomRightRadius: 16, backgroundColor: '#EFF9F0' },
+  selected: { borderWidth: 2, borderColor: colors.greenStrong },
+  pressed: { opacity: 0.76 },
+  titleRow: { minHeight: 22, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 4 },
+  title: { ...typography.caption, color: colors.text, fontWeight: '700', fontSize: 11 },
+  pawsafeTitle: { color: colors.greenStrong },
+  selectedBadge: { ...typography.caption, color: colors.white, backgroundColor: colors.greenStrong, borderRadius: 8, paddingHorizontal: 5, paddingVertical: 1, fontSize: 9, fontWeight: '800' },
+  distance: { ...typography.heading, color: colors.text, fontSize: 22 },
+  duration: { ...typography.caption, color: colors.mutedText },
+  heatPill: { alignSelf: 'flex-start', borderRadius: 8, paddingHorizontal: spacing.sm, paddingVertical: 3, backgroundColor: colors.greenSoft },
+  heatText: { ...typography.caption, color: colors.greenStrong, fontWeight: '800', fontSize: 10 },
+  caption: { ...typography.caption, fontSize: 10, lineHeight: 15, marginTop: 'auto' },
+  coolCaption: { color: colors.greenStrong }, hotCaption: { color: colors.orange },
 });

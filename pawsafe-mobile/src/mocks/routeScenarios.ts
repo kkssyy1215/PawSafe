@@ -110,7 +110,7 @@ function buildResponse(
     is_demo: true,
     analysis_source: 'mock_fixture',
     validation_status: 'not_validated',
-    requested_departure_at: request.departure_at,
+    requested_departure_at: request.departure_at ?? new Date().toISOString(),
     generated_at: '2026-08-12T18:29:10+09:00',
     data_valid_at: null,
     graph_version: 'demo-graph-v1',

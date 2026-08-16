@@ -1,6 +1,6 @@
 # Backend implementation status
 
-기준일: 2026-08-15
+기준일: 2026-08-16
 
 ## 현재 동작
 
@@ -13,7 +13,7 @@
 - 장소 검색·역지오코딩 Provider와 coverage 검증
 - 표준 오류 envelope, request ID, CORS, gzip, 민감정보 로그 제거
 - Docker·Render 실행 구성
-- pytest 51개, Ruff, strict mypy 검증
+- pytest 58개, Ruff, strict mypy 검증
 
 공유 기본 설정은 `ANALYSIS_PROVIDER=graph`, `HEAT_COST_PROVIDER=file`입니다.
 Mock fixture는 API 키나 실시간 데이터 없이 UI와 오류 흐름을 재현하는 테스트
@@ -39,3 +39,7 @@ Heat Cost는 상대 경로 비교 지표이며 실측 노면온도나 절대 안
 - rate limiting, 관측성, 데이터 갱신 rollback
 - 대규모 그래프 latency·memory profiling
 - Expo 물리 기기 E2E와 배포 환경 smoke test
+- AWS·ASOS 실시간 Edge Heat Cost 재계산 모델 Provider 연결
+
+실시간 모델을 받기 전 연동 경계와 교체 방법은
+[`REALTIME_MODEL_INTEGRATION.md`](REALTIME_MODEL_INTEGRATION.md)를 참고합니다.

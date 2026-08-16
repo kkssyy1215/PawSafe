@@ -21,7 +21,8 @@ export default function SegmentsScreen() {
   }, [dispatch, resultState?.request.walk_mode, state.status]));
   if (!resultState) return <ScreenContainer style={styles.missing}><Text style={styles.missingText}>먼저 경로를 분석해 주세요.</Text><AppButton onPress={() => { dispatch({ type: 'RESET' }); router.replace('/'); }}>조건 입력으로 이동</AppButton></ScreenContainer>;
   const { request, result } = resultState;
-  const isFast = request.walk_mode === 'fast';
+  const isFast = resultState.selectedRoute === 'shortest';
+  const selectedRoute = isFast ? result.shortest : result.pawsafe;
   const recommendedSegment = result.heat_segments.find((segment) => segment.level === 'low') ?? result.heat_segments[0] ?? null;
   const selectedId = (state.status === 'segmentReview' ? state.selectedSegmentId : null) ?? recommendedSegment?.edge_id ?? null;
   const selected = result.heat_segments.find((segment) => segment.edge_id === selectedId) ?? null;
@@ -38,10 +39,10 @@ export default function SegmentsScreen() {
           <Text style={styles.heroDescription}>{isFast ? '실제 카카오 보행 경로를 확인하고 바로 길안내를 시작하세요.' : '노면온도와 그늘 데이터를 반영한 추천 경로예요.'}</Text>
         </View>
         <RouteEndpointsCard origin={request.origin} destination={request.destination} />
-        <RecommendedRouteCard route={result.pawsafe} walkMode={request.walk_mode} showHeatMetrics={!isFast} />
+        <RecommendedRouteCard route={selectedRoute} walkMode={isFast ? 'fast' : 'cool'} showHeatMetrics={!isFast} />
         <View style={styles.mapSection}>
           <View style={styles.mapHeading}><View><Text style={styles.sectionTitle}>경로 지도</Text><Text style={styles.sectionHint}>{isFast ? '카카오가 계산한 실제 보행 경로 좌표예요.' : '추천 경로와 구간별 열노출을 한눈에 확인하세요.'}</Text></View><View style={styles.livePill}><View style={styles.liveDot} /><Text style={styles.liveText}>경로 반영</Text></View></View>
-          <PawSafeMap origin={request.origin} destination={request.destination} pawsafe={result.pawsafe} walkMode={request.walk_mode} segments={isFast ? undefined : result.heat_segments} selectedSegmentId={selectedId} onSegmentPress={selectSegment} showRouteLegend={false} showSegmentLegend={!isFast} />
+          <PawSafeMap origin={request.origin} destination={request.destination} shortest={isFast ? result.shortest : undefined} pawsafe={isFast ? undefined : result.pawsafe} walkMode={isFast ? 'fast' : 'cool'} segments={isFast ? undefined : result.heat_segments} selectedSegmentId={selectedId} onSegmentPress={selectSegment} showRouteLegend={false} showSegmentLegend={!isFast} />
         </View>
         {result.is_demo ? <DemoNotice analysisSource={result.analysis_source} walkMode={request.walk_mode} /> : null}
         {!isFast ? <>
@@ -62,8 +63,8 @@ export default function SegmentsScreen() {
           <RelativeHeatNotice />
         </> : null}
         <View style={styles.actions}>
-          {isFast && result.pawsafe.navigation_url ? <AppButton onPress={() => Linking.openURL(result.pawsafe.navigation_url!)}>카카오맵에서 길안내 보기</AppButton> : null}
-          {!isFast ? <AppButton testID="comparison-button" onPress={() => router.push('/comparison')}>경로 비교하기</AppButton> : null}
+          {isFast && result.shortest.navigation_url ? <AppButton onPress={() => Linking.openURL(result.shortest.navigation_url!)}>카카오맵에서 길안내 보기</AppButton> : null}
+          <AppButton testID="comparison-button" onPress={() => router.push('/comparison')}>경로 비교로 돌아가기</AppButton>
           <AppButton variant="quiet" onPress={() => { dispatch({ type: 'RESET' }); router.replace('/'); }}>다른 조건으로 검색</AppButton>
         </View>
       </ScrollView>

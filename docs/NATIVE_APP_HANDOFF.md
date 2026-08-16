@@ -22,6 +22,11 @@ EXPO_PUBLIC_API_BASE_URL=http://127.0.0.1:8000
 - `POST /v1/places/reverse-geocode`: 좌표→장소
 - `POST /v1/route-analyses`: fast/cool 경로 비교
 
+모바일 앱은 `departure_at`을 보내지 않고 요청 시점의 한국 표준시를 사용합니다.
+한 번의 경로 분석 요청으로 일반 최단경로와 PawSafe 추천경로를 모두 받아
+비교 화면에 표시합니다. 사용자가 고른 산책 스타일은 기본 선택 경로만
+결정합니다.
+
 GeoJSON 좌표는 `[longitude, latitude]` 순서입니다. 앱은 거리, 예상 시간,
 상대 Heat Cost, 최단 경로 대비 차이와 Heat Segment를 표시합니다. 정확한
 필드·null·오류 규칙은 `backend/docs/API_CONTRACT.md`와 `/openapi.json`을
@@ -34,3 +39,7 @@ GeoJSON 좌표는 `[longitude, latitude]` 순서입니다. 앱은 거리, 예상
 - Heat Cost: “예상 상대 열노출”로 표시
 - `validation_status=not_validated`: 실측 검증 전 안내 유지
 - 지도·경로 화면: OpenStreetMap과 기상청 출처 표시 유지
+
+AWS·ASOS 실시간 모델은 아직 연결 전입니다. 현재 그래프/Heat Cost 스냅샷과
+향후 모델의 교체 경계는 `backend/docs/REALTIME_MODEL_INTEGRATION.md`를
+기준으로 합니다.

@@ -16,7 +16,7 @@ export const lineStringSchema = z.object({
 export const routeAnalysisRequestSchema = z.object({
   origin: placeSchema,
   destination: placeSchema,
-  departure_at: z.string().datetime({ offset: true }),
+  departure_at: z.string().datetime({ offset: true }).optional(),
   walk_mode: z.enum(['fast', 'cool']),
 });
 const routeStatsSchema = z.object({

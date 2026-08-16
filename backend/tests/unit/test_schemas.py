@@ -28,6 +28,14 @@ def test_route_request_requires_timezone() -> None:
         RouteAnalysisRequest.model_validate(_request("2026-08-12T18:30:00"))
 
 
+def test_route_request_defaults_to_current_korean_time() -> None:
+    payload = _request()
+    del payload["departure_at"]
+    request = RouteAnalysisRequest.model_validate(payload)
+    assert request.departure_at.tzinfo is not None
+    assert request.departure_at.utcoffset() is not None
+
+
 @pytest.mark.parametrize("walk_mode", ["fast", "cool"])
 def test_route_request_accepts_walk_modes(walk_mode: str) -> None:
     payload = _request()

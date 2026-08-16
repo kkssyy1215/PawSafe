@@ -28,14 +28,13 @@ export default function AnalyzingScreen() {
     const previewRequest = request ?? {
       origin: pipelineMockRouteOrigin,
       destination: pipelineMockRouteDestination,
-      departure_at: new Date().toISOString(),
       walk_mode: 'cool' as const,
     };
     cancel();
     if (!request) dispatch({ type: 'BEGIN_SUBMIT', request: previewRequest });
     dispatch({ type: 'SUBMIT_SUCCESS', result: getMockRouteScenario(previewRequest) });
     clearPendingRouteRequest();
-    router.replace('/segments');
+    router.replace('/comparison');
   };
 
   useEffect(() => {
@@ -63,11 +62,14 @@ export default function AnalyzingScreen() {
       if (running || (Platform.OS !== 'web' && appState.current !== 'active')) return;
       running = true;
       try {
-        const result = await analyze(request);
+        const [result] = await Promise.all([
+          analyze(request),
+          new Promise<void>((resolve) => setTimeout(resolve, 2_800)),
+        ]);
         if (!active) return;
         dispatch({ type: 'SUBMIT_SUCCESS', result });
         clearPendingRouteRequest();
-        router.replace('/segments');
+        router.replace('/comparison');
       } catch (error) {
         if (!active || (error instanceof Error && error.name === 'AppError' && 'code' in error && error.code === 'CANCELLED')) return;
         dispatch({ type: 'FAIL', error: error as import('@/src/api/errors').AppError });

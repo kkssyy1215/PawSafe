@@ -23,7 +23,7 @@ export interface LineStringGeometry {
 export interface RouteAnalysisRequest {
   origin: Place;
   destination: Place;
-  departure_at: string;
+  departure_at?: string;
   walk_mode: WalkMode;
 }
 

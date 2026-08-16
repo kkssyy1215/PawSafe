@@ -96,12 +96,11 @@ GET /v1/places/search?q=공원&lat=37.55&lng=126.91
     "lat": 37.555,
     "lng": 126.9
   },
-  "departure_at": "2026-08-12T18:30:00+09:00",
   "walk_mode": "cool"
 }
 ```
 
-`departure_at`은 offset을 포함하는 timezone-aware ISO 8601이어야 합니다. 위치 문자열과 좌표에 길이/범위 검증을 적용하며 extra key는 허용하지 않습니다.
+`departure_at`은 선택 필드입니다. 앱의 기본 시나리오처럼 생략하면 백엔드가 요청을 받은 시점의 한국 표준시를 사용합니다. 미래 시각 분석이 필요할 때만 timezone offset을 포함하는 ISO 8601 값을 전달합니다. 위치 문자열과 좌표에 길이/범위 검증을 적용하며 extra key는 허용하지 않습니다.
 
 응답의 핵심 구조:
 

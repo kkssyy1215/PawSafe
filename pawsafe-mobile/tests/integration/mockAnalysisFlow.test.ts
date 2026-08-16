@@ -12,21 +12,22 @@ const request: RouteAnalysisRequest = {
 };
 
 describe('deterministic mock walk flow', () => {
-  it('moves from input through segment review and comparison', async () => {
+  it('moves from input directly to comparison with the preferred route selected', async () => {
     const provider = new MockAnalysisProvider();
     const submitting = walkFlowReducer(createInitialWalkFlowState(), { type: 'BEGIN_SUBMIT', request });
     expect(submitting.status).toBe('submitting');
 
     const result = routeAnalysisResponseSchema.parse(await provider.analyzeRoute(request));
-    const segmentReview = walkFlowReducer(submitting, { type: 'SUBMIT_SUCCESS', result });
-    expect(segmentReview).toMatchObject({ status: 'segmentReview', selectedSegmentId: null });
+    const comparison = walkFlowReducer(submitting, { type: 'SUBMIT_SUCCESS', result });
+    expect(comparison).toMatchObject({ status: 'comparison', selectedRoute: 'pawsafe' });
 
     const firstSegmentId = result.heat_segments[0].edge_id;
+    const segmentReview = walkFlowReducer(comparison, { type: 'SHOW_SEGMENTS' });
     const selected = walkFlowReducer(segmentReview, { type: 'SELECT_SEGMENT', id: firstSegmentId });
     expect(selected).toMatchObject({ status: 'segmentReview', selectedSegmentId: firstSegmentId });
 
-    const comparison = walkFlowReducer(selected, { type: 'SHOW_COMPARISON' });
-    expect(comparison.status).toBe('comparison');
+    const comparisonAgain = walkFlowReducer(selected, { type: 'SHOW_COMPARISON' });
+    expect(comparisonAgain).toMatchObject({ status: 'comparison', selectedRoute: 'pawsafe' });
     expect(result).toMatchObject({ is_demo: true, validation_status: 'not_validated', analysis_source: 'mock_fixture' });
     expect(result.shortest.geometry.coordinates[0]).toEqual([request.origin.lng, request.origin.lat]);
     expect(result.shortest.geometry.coordinates.at(-1)).toEqual([request.destination.lng, request.destination.lat]);
