@@ -10,6 +10,8 @@
 - 라이선스: Open Data Commons Open Database License 1.0 (ODbL)
 - 안내: https://www.openstreetmap.org/copyright
 - 적용: 보행로 원본, `walk_graph.gpkg`, 경로 좌표 및 이를 기반으로 한 지도 시각화
+- 12일 모델 적용: `backend/data/models/pawsafe_12day/data/processed/edges_static.gpkg`
+  및 이 보행 Edge를 기반으로 계산한 경로
 - 표시: 앱 지도와 경로 이미지에서 `© OpenStreetMap contributors · ODbL`을 보이게 표시
 - 재배포: OSM 파생 데이터베이스를 외부 제공할 경우 ODbL의 고지와 동일조건 공유 의무를 검토
 
@@ -30,8 +32,19 @@
 - 이용조건: 공공저작물 출처표시(공공누리 제1유형)
 - 적용: 서울 108 지점 시간별 일사량 및 기상자료
 - 표시: `기상청 공공데이터(가공)`
-- 주의: 현재 서비스 계산은 ASOS 전일 동일 시간 자료를 참조하며 원 관측값 자체가 아닌
-  PawSafe 상대 Heat Cost로 가공됩니다.
+- 주의: 12일 모델 런타임은 버전 고정 ASOS 시간자료를 일사 기준값으로 사용하며,
+  원 관측값 자체가 아닌 PawSafe 상대 Heat Cost로 가공합니다. 이전 파일 기반
+  갱신 모드는 ASOS 전일 동일 시간 자료를 참조합니다.
+
+## 기상청 AWS 매분 관측자료
+
+- 제공기관: 기상청
+- 서비스: 기상청 APIHub AWS 매분자료
+- 적용: 서울 108번 지점의 최신 기온, 습도, 풍속, 강수량
+- 처리: 시원한 산책 요청 시 서버에서 조회하고 12일 모델 입력 피처로 변환
+- 표시: `기상청 공공데이터(가공)`
+- 주의: 인증키와 원문 응답은 앱·Git에 저장하지 않으며, 응답에는 관측 유효시각과
+  가공된 상대 Heat Cost만 제공합니다.
 
 ## 서울시·국토 관련 원본
 

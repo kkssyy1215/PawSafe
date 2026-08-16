@@ -9,9 +9,10 @@ Expo 앱과 FastAPI 백엔드입니다. 현재 저장소의 공유 기준은 이
 
 ```text
 PawSafe/
-├── backend/                 FastAPI API, 그래프 경로 분석, KMA·ASOS 연동
+├── backend/                 FastAPI API, 12일 모델 추론, KMA AWS·Kakao 연동
 │   ├── app/                 백엔드 소스
-│   ├── data/exports/        앱이 읽는 버전 고정 그래프·Heat Cost
+│   ├── data/models/         앱이 읽는 12일 모델·Edge·시간 피처
+│   ├── data/exports/        이전 파일 기반 분석 모드의 그래프·Heat Cost
 │   └── tests/               백엔드 테스트
 ├── pawsafe-mobile/          Expo Router 모바일·웹 앱
 ├── src/pawsafe/             Heat Cost·기상 데이터 파이프라인의 단일 소스
@@ -22,10 +23,10 @@ PawSafe/
 └── update_live_heat.py      기상값으로 최신 Heat Cost를 갱신하는 진입점
 ```
 
-앱이 실행 중에 읽는 데이터는 `backend/data/exports/`만 사용합니다. 파이프라인
-원본과 재계산 산출물은 루트 `data/`와 `outputs/`에 두며, 갱신 스크립트가 필요한
-백엔드 export를 자동으로 동기화합니다. 개인 API 키는 `backend/.env`에만 두고
-Git에는 올리지 않습니다.
+현재 `cool` 요청은 `backend/data/models/pawsafe_12day/`의 모델·Edge·시간 피처를
+읽고 KMA AWS 최신 관측을 결합합니다. `backend/data/exports/`는 이전 파일 기반
+분석 모드와 갱신 파이프라인 호환을 위해 유지합니다. 개인 API 키는
+`backend/.env`에만 두고 Git에는 올리지 않습니다.
 
 Heat Cost는 절대 노면온도나 안전 판정이 아니라, 같은 조건에서 경로를 비교하는
 상대 지표입니다. 현재 공개된 데이터의 검증 상태도 앱과 API에서
@@ -43,8 +44,18 @@ cd PawSafe
 make setup
 ```
 
-그 다음 `backend/.env`에 KMA·ASOS·Kakao 키를 입력합니다. 키는 백엔드에만
-두며 `pawsafe-mobile/.env`의 `EXPO_PUBLIC_` 변수에는 넣지 않습니다.
+그 다음 `backend/.env`에 Kakao 키와 기상청 APIHub AWS 인증키를 입력합니다.
+날씨 확인 API까지 사용할 경우 KMA·ASOS 키도 입력합니다. 키는 백엔드에만 두며
+`pawsafe-mobile/.env`의 `EXPO_PUBLIC_` 변수에는 넣지 않습니다.
+
+```text
+KAKAO_REST_API_KEY=...
+KMA_AWS_AUTH_KEY=...
+```
+
+현재 실행 흐름은 `빠른 산책 → Kakao`, `시원한 산책 → 12일 모델 + 실시간
+KMA AWS 관측`입니다. 모델은 AWS 데이터로 매 요청 재학습하지 않고, 저장된
+모델에 최신 관측 피처를 입력해 Edge Heat Cost와 경로를 다시 계산합니다.
 
 ## 화면 테스트
 

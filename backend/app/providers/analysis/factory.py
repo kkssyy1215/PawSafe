@@ -9,6 +9,10 @@ from app.providers.analysis.external_analysis import ExternalAnalysisProvider
 from app.providers.analysis.graph_analysis import GraphAnalysisProvider
 from app.providers.analysis.kakao_walking_analysis import KakaoWalkingAnalysisProvider
 from app.providers.analysis.mock_analysis import MockAnalysisProvider
+from app.providers.analysis.pawsafe_12day import (
+    Pawsafe12DayAnalysisProvider,
+    missing_model_assets,
+)
 from app.providers.analysis.walk_mode_analysis import WalkModeAnalysisProvider
 from app.providers.heat_cost.base import HeatCostProvider
 from app.providers.shortest_route.base import ShortestRouteProvider
@@ -74,6 +78,38 @@ def create_analysis_provider(
             api_key=settings.kakao_rest_api_key,
             mock_scenarios_path=settings.resolve_path(settings.mock_scenarios_file_path),
             timeout_seconds=settings.request_timeout_seconds,
+        )
+    if settings.analysis_provider == "pawsafe_12day":
+        model_config_path = settings.resolve_path(settings.pawsafe_12day_config_path)
+        if not settings.kma_aws_auth_key:
+            model_cool_provider: AnalysisProvider = UnavailableAnalysisProvider(
+                PipelineNotReadyError("kma_aws_auth_key")
+            )
+        elif missing_model_assets(model_config_path):
+            model_cool_provider = UnavailableAnalysisProvider(
+                PipelineNotReadyError("pawsafe_12day_assets")
+            )
+        else:
+            model_cool_provider = Pawsafe12DayAnalysisProvider(
+                config_path=model_config_path,
+                aws_auth_key=settings.kma_aws_auth_key,
+                walking_speed_m_per_minute=settings.walking_speed_m_per_minute,
+            )
+        if not settings.kakao_rest_api_key:
+            return WalkModeAnalysisProvider(
+                fast_provider=UnavailableAnalysisProvider(
+                    PipelineNotReadyError("kakao_rest_api_key")
+                ),
+                cool_provider=model_cool_provider,
+            )
+        return WalkModeAnalysisProvider(
+            fast_provider=KakaoWalkingAnalysisProvider(
+                client,
+                api_key=settings.kakao_rest_api_key,
+                mock_scenarios_path=settings.resolve_path(settings.mock_scenarios_file_path),
+                timeout_seconds=settings.request_timeout_seconds,
+            ),
+            cool_provider=model_cool_provider,
         )
     if not graph_data or not heat_provider or not shortest_route_provider or not walk_modes:
         return UnavailableAnalysisProvider(

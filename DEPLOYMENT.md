@@ -5,9 +5,12 @@
 Create a Blueprint from the repository root `render.yaml`. Set the secret values
 requested by Render and set `ALLOWED_ORIGINS` to the final web URL.
 
-The Docker image includes the current graph and heat-cost snapshot. The weather
-endpoints query KMA/ASOS on request. Rebuilding the live heat snapshot remains a
-separate scheduled pipeline job and should not run inside the web process.
+The Docker image includes the versioned 12-day model, 3,797-edge graph, ASOS
+baseline, and precomputed shade features. Configure `KMA_AWS_AUTH_KEY` and
+`KAKAO_REST_API_KEY` as Render secrets. A cool request retrieves the latest KMA
+AWS station-108 observation and runs model inference in the web process; a fast
+request uses Kakao only. `KMA_SERVICE_KEY` and `ASOS_SERVICE_KEY` are optional
+unless the separate weather inspection endpoints are required.
 
 ## Web app (Vercel)
 

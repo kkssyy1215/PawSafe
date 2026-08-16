@@ -13,6 +13,7 @@ from app.core.config import Settings, get_settings
 from app.core.exception_handlers import install_exception_handlers
 from app.core.logging import AccessLogMiddleware, configure_logging
 from app.core.request_id import RequestIdMiddleware
+from app.providers.analysis.pawsafe_12day import missing_model_assets
 from app.schemas.capability import HealthResponse
 
 
@@ -55,8 +56,17 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @application.get("/health", response_model=HealthResponse, tags=["health"])
     async def health(request: Request) -> HealthResponse:
         container: AppContainer = request.app.state.container
-        graph_loaded = container.graph_data is not None
-        heat_loaded = container.heat_provider is not None and container.heat_provider.loaded
+        uses_12day_model = container.settings.analysis_provider == "pawsafe_12day"
+        model_config_path = container.settings.resolve_path(
+            container.settings.pawsafe_12day_config_path
+        )
+        model_assets_ready = not missing_model_assets(model_config_path)
+        graph_loaded = model_assets_ready if uses_12day_model else container.graph_data is not None
+        heat_loaded = (
+            model_assets_ready
+            if uses_12day_model
+            else container.heat_provider is not None and container.heat_provider.loaded
+        )
         place_ready = container.settings.place_provider == "mock" or (
             container.settings.place_provider == "kakao"
             and bool(container.settings.kakao_rest_api_key)
@@ -78,6 +88,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 and container.walk_modes is not None
                 and container.shortest_route_provider is not None
             )
+            or (
+                uses_12day_model
+                and model_assets_ready
+                and bool(container.settings.kma_aws_auth_key)
+            )
         )
         return HealthResponse(
             status="ok" if analysis_ready and place_ready else "degraded",
@@ -85,15 +100,30 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             heat_data_loaded=heat_loaded,
             analysis_provider=(
                 f"{container.settings.analysis_provider}+kakao_fast"
-                if container.settings.analysis_provider in {"graph", "external"}
+                if container.settings.analysis_provider
+                in {
+                    "graph",
+                    "external",
+                    "pawsafe_12day",
+                }
                 and bool(container.settings.kakao_rest_api_key)
                 else container.settings.analysis_provider
             ),
             heat_cost_provider=container.settings.heat_cost_provider,
             place_provider=container.settings.place_provider,
-            graph_version=container.graph_data.version if container.graph_data else None,
+            graph_version=(
+                "pawsafe-12day-edges-3797"
+                if uses_12day_model and model_assets_ready
+                else container.graph_data.version
+                if container.graph_data
+                else None
+            ),
             heat_data_version=(
-                container.heat_provider.data_version if container.heat_provider else None
+                "pawsafe-12day+aws-live"
+                if uses_12day_model and model_assets_ready
+                else container.heat_provider.data_version
+                if container.heat_provider
+                else None
             ),
         )
 

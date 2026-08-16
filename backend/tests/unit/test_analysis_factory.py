@@ -44,3 +44,29 @@ def test_external_model_does_not_replace_fast_route_without_kakao_key() -> None:
     provider = _create(settings)
 
     assert isinstance(provider, WalkModeAnalysisProvider)
+
+
+def test_12day_model_is_used_only_for_cool_when_keys_are_configured() -> None:
+    settings = Settings(
+        _env_file=None,
+        analysis_provider="pawsafe_12day",
+        kma_aws_auth_key="test-aws-key",
+        kakao_rest_api_key="test-kakao-key",
+    )
+
+    provider = _create(settings)
+
+    assert isinstance(provider, WalkModeAnalysisProvider)
+
+
+def test_12day_model_keeps_walk_mode_split_when_aws_key_is_missing() -> None:
+    settings = Settings(
+        _env_file=None,
+        analysis_provider="pawsafe_12day",
+        kma_aws_auth_key=None,
+        kakao_rest_api_key="test-kakao-key",
+    )
+
+    provider = _create(settings)
+
+    assert isinstance(provider, WalkModeAnalysisProvider)

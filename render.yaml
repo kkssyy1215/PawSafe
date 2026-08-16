@@ -4,12 +4,12 @@ services:
     runtime: docker
     rootDir: backend
     dockerfilePath: ./Dockerfile
-    healthCheckPath: /v1/meta/capabilities
+    healthCheckPath: /health
     envVars:
       - key: APP_ENV
         value: production
       - key: ANALYSIS_PROVIDER
-        value: graph
+        value: pawsafe_12day
       - key: HEAT_COST_PROVIDER
         value: file
       - key: PLACE_PROVIDER
@@ -24,11 +24,17 @@ services:
         value: data/exports/coverage.geojson
       - key: WALK_MODE_CONFIG_PATH
         value: app/config_data/walk_modes.live.yaml
+      - key: PAWSAFE_12DAY_CONFIG_PATH
+        value: data/models/pawsafe_12day/config.json
+      - key: ROUTE_ANALYSIS_TIMEOUT_SECONDS
+        value: "60"
       - key: ALLOWED_ORIGINS
         sync: false
       - key: KAKAO_REST_API_KEY
         sync: false
       - key: KMA_SERVICE_KEY
+        sync: false
+      - key: KMA_AWS_AUTH_KEY
         sync: false
       - key: ASOS_SERVICE_KEY
         sync: false

@@ -127,7 +127,7 @@ def build_container(settings: Settings) -> AppContainer:
         coverage_service,
         min_location_distance_m=settings.min_location_distance_m,
         max_route_search_distance_m=settings.max_route_search_distance_m,
-        timeout_seconds=settings.request_timeout_seconds,
+        timeout_seconds=settings.route_analysis_timeout_seconds,
     )
     return AppContainer(
         settings=settings,

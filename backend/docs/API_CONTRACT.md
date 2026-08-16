@@ -20,11 +20,11 @@ Base prefix는 `/v1`입니다. 모든 JSON 키는 snake_case입니다. GeoJSON �
   "status": "ok",
   "graph_loaded": true,
   "heat_data_loaded": true,
-  "analysis_provider": "graph",
+  "analysis_provider": "pawsafe_12day+kakao_fast",
   "heat_cost_provider": "file",
   "place_provider": "mock",
-  "graph_version": "walk_graph",
-  "heat_data_version": "live-20260815T1400+0900"
+  "graph_version": "pawsafe-12day-edges-3797",
+  "heat_data_version": "pawsafe-12day+aws-live"
 }
 ```
 
@@ -34,13 +34,13 @@ Base prefix는 `/v1`입니다. 모든 JSON 키는 snake_case입니다. GeoJSON �
 
 ```json
 {
-  "analysis_mode": "graph",
+  "analysis_mode": "pawsafe_12day",
   "place_search": "mock",
   "map_graph": "configured",
   "data_pipeline": "configured",
-  "heat_model": "not_ready",
-  "heat_cost_source": "file",
-  "route_optimizer": "internal_graph",
+  "heat_model": "pawsafe_12day",
+  "heat_cost_source": "pawsafe_12day+KMA_AWS_station_108",
+  "route_optimizer": "kakao_walk+pawsafe_12day",
   "absolute_surface_temperature_prediction": false,
   "absolute_safety_classification": false
 }
@@ -100,10 +100,15 @@ GET /v1/places/search?q=공원&lat=37.55&lng=126.91
 }
 ```
 
-`departure_at`은 선택 필드입니다. 앱의 기본 시나리오처럼 생략하면 백엔드가 요청을 받은 시점의 한국 표준시를 사용합니다. 미래 시각 분석이 필요할 때만 timezone offset을 포함하는 ISO 8601 값을 전달합니다. 위치 문자열과 좌표에 길이/범위 검증을 적용하며 extra key는 허용하지 않습니다.
+`departure_at`은 선택 필드입니다. 앱의 기본 시나리오처럼 생략하면 백엔드가 요청을
+받은 시점의 한국 표준시를 기록합니다. 현재 12일 모델 모드는 미래 시각을 예측하지
+않고 KMA AWS의 최신 관측 유효시각으로 계산합니다. 위치 문자열과 좌표에
+길이/범위 검증을 적용하며 extra key는 허용하지 않습니다.
 
 - `walk_mode=fast`: Kakao 도보 API만 호출하고 앱은 `shortest`만 표시합니다. 모델 서버는 호출하지 않습니다.
-- `walk_mode=cool`: 모델팀 서버가 AWS·ASOS 관측자료를 직접 조회해 Heat Cost와 PawSafe 경로를 계산하고 앱은 `shortest`와 `pawsafe`를 비교합니다.
+- `walk_mode=cool`: 같은 FastAPI 프로세스에 병합된 12일 모델이 KMA AWS 최신
+  관측을 직접 조회하고, 버전 고정 ASOS 기준자료와 결합해 Heat Cost와 PawSafe
+  경로를 계산합니다. 앱은 `shortest`와 `pawsafe`를 비교합니다.
 
 응답의 핵심 구조:
 
@@ -152,9 +157,31 @@ GET /v1/places/search?q=공원&lat=37.55&lng=126.91
 
 ### Kakao 최단 보행 경로 MVP 모드
 
-공유 설정인 `ANALYSIS_PROVIDER=graph`에서 `KAKAO_REST_API_KEY`가 있으면 요청 모드에 따라 공급자를 분리합니다. `walk_mode=fast`는 Kakao맵 도보 경로 API의 `route_mode=SHORTEST` 응답을 사용하고, `walk_mode=cool`은 데이터팀 보행 그래프와 Edge × Time Heat Cost를 사용합니다. 입력·출력 좌표계는 WGS84이며 Kakao의 `[x, y]`는 GeoJSON `[lng, lat]`로 유지합니다.
+공유 설정인 `ANALYSIS_PROVIDER=pawsafe_12day`에서 `KAKAO_REST_API_KEY`가 있으면
+요청 모드에 따라 공급자를 분리합니다. `walk_mode=fast`는 Kakao맵 도보 경로
+API의 `route_mode=SHORTEST` 응답을 사용하고, `walk_mode=cool`은 12일 모델의
+보행 그래프와 요청 시점에 재계산한 Edge Heat Cost를 사용합니다. 입력·출력
+좌표계는 WGS84이며 Kakao의 `[x, y]`는 GeoJSON `[lng, lat]`로 유지합니다.
 
-fast 응답에는 `analysis_source=kakao_walk+mock_heat_fixture`와 `KAKAO_SHORTEST_WITH_DEMO_HEAT` warning이 포함됩니다. 경로 geometry·distance·duration은 실제 Kakao 응답이며, Kakao가 `landingUrl`을 제공하면 `navigation_url`로 전달해 앱의 길안내 버튼에 사용합니다. 빠른 산책 화면에서는 열환경 수치를 표시하지 않습니다. cool 응답은 `analysis_source=graph`이며 최신 Heat Cost 스냅샷을 사용합니다.
+fast 응답에는 `analysis_source=kakao_walk+mock_heat_fixture`와
+`KAKAO_SHORTEST_WITH_DEMO_HEAT` warning이 포함됩니다. 경로
+geometry·distance·duration은 실제 Kakao 응답이며, Kakao가 `landingUrl`을
+제공하면 `navigation_url`로 전달합니다. 빠른 산책 화면에서는 열환경 수치를
+표시하지 않습니다. cool 응답은 `analysis_source=pawsafe_12day_aws_live`이며
+`data_valid_at`에 사용한 AWS 관측 시각을 제공합니다.
+
+### 12일 모델 + KMA AWS 실시간 모드
+
+`backend/data/models/pawsafe_12day/`의 모델, ASOS 기준 CSV, 정적 Edge,
+시간대별 그늘 피처를 서버가 처음 cool 요청에서 한 번 읽고 캐시합니다. 요청마다
+KMA AWS 서울 108번의 최근 6시간 관측을 조회해 모델 피처를 다시 만들고,
+최단 경로(`heat_weight=0`)와 시원한 경로(`heat_weight=0.95`)를 계산합니다.
+`balanced` 경로는 계산하거나 응답하지 않습니다.
+
+필수 설정은 `KMA_AWS_AUTH_KEY`이며 이는 `KMA_SERVICE_KEY`와 다른 기상청
+APIHub 키입니다. 키 또는 모델 자산이 없으면 cool 요청은 `PIPELINE_NOT_READY`,
+AWS 연결 실패는 `EXTERNAL_API_ERROR`를 반환합니다. Heat Cost는 0~100 상대
+열노출 지표이고 실측 노면온도나 절대 안전 판정값이 아닙니다.
 
 ### Graph 모드
 

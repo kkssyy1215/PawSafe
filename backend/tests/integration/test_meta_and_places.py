@@ -60,6 +60,27 @@ def test_graph_mode_uses_kakao_for_fast_when_key_is_configured() -> None:
     assert health.json()["analysis_provider"] == "graph+kakao_fast"
 
 
+def test_12day_model_reports_aws_runtime_capabilities() -> None:
+    settings = Settings(
+        analysis_provider="pawsafe_12day",
+        kma_aws_auth_key="test-aws-key",
+        kakao_rest_api_key="test-kakao-key",
+        _env_file=None,
+    )
+    with TestClient(create_app(settings)) as client:
+        capabilities = client.get("/v1/capabilities")
+        health = client.get("/health")
+
+    assert capabilities.status_code == 200
+    assert capabilities.json()["analysis_mode"] == "pawsafe_12day"
+    assert capabilities.json()["heat_model"] == "pawsafe_12day"
+    assert capabilities.json()["heat_cost_source"] == "pawsafe_12day+KMA_AWS_station_108"
+    assert capabilities.json()["route_optimizer"] == "kakao_walk+pawsafe_12day"
+    assert health.json()["status"] == "ok"
+    assert health.json()["analysis_provider"] == "pawsafe_12day+kakao_fast"
+    assert health.json()["graph_version"] == "pawsafe-12day-edges-3797"
+
+
 def test_coverage_is_geojson_lng_lat(client: TestClient) -> None:
     payload = client.get("/v1/coverage").json()
     assert payload["coverage_id"] == "demo-mapo-v1"

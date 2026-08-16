@@ -20,7 +20,7 @@ class Settings(BaseSettings):
     app_name: str = "PawSafe API"
     api_prefix: str = "/v1"
 
-    analysis_provider: Literal["mock", "graph", "external", "kakao_walk"] = "mock"
+    analysis_provider: Literal["mock", "graph", "external", "kakao_walk", "pawsafe_12day"] = "mock"
     heat_cost_provider: Literal["mock", "file", "external"] = "mock"
     place_provider: Literal["mock", "kakao"] = "mock"
     shortest_route_provider: Literal["internal_graph", "external"] = "internal_graph"
@@ -40,6 +40,8 @@ class Settings(BaseSettings):
     mock_places_file_path: Path = Path("app/fixtures/demo_places.json")
 
     analysis_external_url: str | None = None
+    pawsafe_12day_config_path: Path = Path("data/models/pawsafe_12day/config.json")
+    kma_aws_auth_key: str | None = None
     heat_cost_external_url: str | None = None
     shortest_route_external_url: str | None = None
     kakao_rest_api_key: str | None = None
@@ -55,6 +57,7 @@ class Settings(BaseSettings):
         "http://localhost:8081,http://127.0.0.1:8081,http://localhost:19006,http://127.0.0.1:19006"
     )
     request_timeout_seconds: float = Field(default=10.0, gt=0)
+    route_analysis_timeout_seconds: float = Field(default=60.0, gt=0)
     place_search_timeout_seconds: float = Field(default=5.0, gt=0)
 
     walking_speed_m_per_minute: float = Field(default=70.0, gt=0)
@@ -78,6 +81,7 @@ class Settings(BaseSettings):
         "pipeline_heat_cost_file_path",
         "pipeline_data_version",
         "kma_service_key",
+        "kma_aws_auth_key",
         "asos_service_key",
         mode="before",
     )
