@@ -10,6 +10,7 @@ import { WalkModeSelector } from '@/src/features/walk/components/WalkModeSelecto
 import { savePendingRouteRequest } from '@/src/features/walk/utils/pendingRouteRequest';
 import { toApiPlace, validateWalkForm } from '@/src/features/walk/utils/validation';
 import { getWalkSearchButtonLabel } from '@/src/features/walk/utils/walkModeCopy';
+import { getPairedPipelineDestinationIds } from '@/src/mocks/demoRouteCandidates';
 import { useWalkFlow } from '@/src/state/WalkFlowContext';
 import { spacing } from '@/src/theme/theme';
 
@@ -28,9 +29,7 @@ export default function InputScreen() {
 
   if (state.status !== 'input') return <ScreenContainer><View /></ScreenContainer>;
   const { form } = state;
-  const pairedDestinationId = form.origin?.id.endsWith('_origin')
-    ? `${form.origin.id.slice(0, -'_origin'.length)}_destination`
-    : null;
+  const pairedDestinationIds = getPairedPipelineDestinationIds(form.origin);
   const submit = () => {
     const issue = validateWalkForm(form);
     if (issue) { setValidationError(issue); AccessibilityInfo.announceForAccessibility(issue); return; }
@@ -56,7 +55,7 @@ export default function InputScreen() {
               dispatch({ type: 'SET_PLACE', field: 'origin', place });
               dispatch({ type: 'SET_PLACE', field: 'destination', place: null });
             }} />
-            <PlaceSearchField label="목적지" field="destination" selected={form.destination} placeholder="목적지 또는 근처 공원 검색" resultFilter={(place) => place.id.endsWith('_destination') && (!pairedDestinationId || place.id === pairedDestinationId)} onSelect={(place) => { setValidationError(null); dispatch({ type: 'SET_PLACE', field: 'destination', place }); }} />
+            <PlaceSearchField label="목적지" field="destination" selected={form.destination} placeholder="목적지 또는 근처 공원 검색" resultFilter={(place) => place.id.endsWith('_destination') && (!pairedDestinationIds || pairedDestinationIds.has(place.id))} onSelect={(place) => { setValidationError(null); dispatch({ type: 'SET_PLACE', field: 'destination', place }); }} />
           </View>
           <View style={styles.modeSection}>
             <WalkModeSelector value={form.walkMode} onChange={(value) => dispatch({ type: 'SET_WALK_MODE', value })} />

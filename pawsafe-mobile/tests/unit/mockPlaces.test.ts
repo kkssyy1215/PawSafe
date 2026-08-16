@@ -1,5 +1,6 @@
-import { csvDemoRouteCandidates, heatDifferenceDemoRoute, pipelineDemoPlaces } from '@/src/mocks/demoRouteCandidates';
+import { csvDemoRouteCandidates, getPairedPipelineDestinationIds, heatDifferenceDemoRoute, pipelineDemoPlaces } from '@/src/mocks/demoRouteCandidates';
 import { isInMockCoverage, mockPlaces, pipelineMockRouteDestination, pipelineMockRouteOrigin } from '@/src/mocks/places';
+import { uniquePlacesByAddress } from '@/src/features/walk/utils/placeSearchResults';
 import { MockPlaceSearchProvider } from '@/src/providers/places/MockPlaceSearchProvider';
 
 describe('mock place coverage', () => {
@@ -21,7 +22,7 @@ describe('mock place coverage', () => {
     expect(pipelineMockRouteDestination).toMatchObject({ lat: 37.48804, lng: 127.15297, is_in_coverage: true });
   });
 
-  it('exposes all 15 CSV route pairs as searchable pipeline places', () => {
+  it('keeps all 15 CSV route pairs as internal pipeline fixtures', () => {
     expect(csvDemoRouteCandidates).toHaveLength(15);
     expect(pipelineDemoPlaces).toHaveLength(32);
 
@@ -32,6 +33,26 @@ describe('mock place coverage', () => {
       name: '신천동 32', address: '서울특별시 송파구 신천동 32', lat: 37.511922376, lng: 127.104658454, is_in_coverage: true,
     });
     expect(pipelineDemoPlaces.every((place) => place.address.includes('송파구') && !place.address.includes('목업'))).toBe(true);
+  });
+
+  it('shows duplicate origin and destination addresses only once', () => {
+    const origins = uniquePlacesByAddress(pipelineDemoPlaces.filter(({ id }) => id.endsWith('_origin')));
+    const destinations = uniquePlacesByAddress(pipelineDemoPlaces.filter(({ id }) => id.endsWith('_destination')));
+
+    expect(origins).toHaveLength(9);
+    expect(destinations).toHaveLength(12);
+    expect(origins.filter(({ address }) => address === '서울특별시 송파구 잠실동 253')).toHaveLength(1);
+    expect(destinations.filter(({ address }) => address === '서울특별시 송파구 장지동 859-1')).toHaveLength(1);
+  });
+
+  it('keeps every tested destination paired with a deduplicated origin address', () => {
+    const origin = pipelineDemoPlaces.find(({ id }) => id === 'demo_001_origin') ?? null;
+    expect(Array.from(getPairedPipelineDestinationIds(origin) ?? [])).toEqual([
+      'demo_001_destination',
+      'demo_003_destination',
+      'demo_004_destination',
+      'demo_005_destination',
+    ]);
   });
 
   it('keeps the separately supplied heat-difference route selectable', () => {

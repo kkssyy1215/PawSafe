@@ -110,3 +110,15 @@ export const pipelineDemoPlaces: PlaceSearchResult[] = pipelineDemoRouteCandidat
     is_in_coverage: true,
   }];
 });
+
+export function getPairedPipelineDestinationIds(
+  origin: Pick<PlaceSearchResult, 'id' | 'address'> | null,
+): Set<string> | null {
+  if (!origin?.id.endsWith('_origin')) return null;
+
+  const destinationIds = pipelineDemoPlaces
+    .filter((place) => place.id.endsWith('_origin') && place.address === origin.address)
+    .map((place) => `${place.id.slice(0, -'_origin'.length)}_destination`);
+
+  return new Set(destinationIds);
+}

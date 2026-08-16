@@ -5,6 +5,7 @@ import type { Place, PlaceSearchResult } from '@/src/api/contracts';
 import { AppTextField } from '@/src/components/common/AppTextField';
 import { Notice } from '@/src/components/common/Notice';
 import { usePlaceSearch } from '@/src/features/walk/hooks/usePlaceSearch';
+import { uniquePlacesByAddress } from '@/src/features/walk/utils/placeSearchResults';
 import { colors, spacing, typography } from '@/src/theme/theme';
 
 interface PlaceSearchFieldProps {
@@ -19,7 +20,7 @@ interface PlaceSearchFieldProps {
 export function PlaceSearchField({ label, field, selected, onSelect, placeholder, resultFilter }: PlaceSearchFieldProps) {
   const { query, setQuery, results, isLoading, error, minimumLength } = usePlaceSearch();
   const visibleResults = useMemo(
-    () => (resultFilter ? results.filter(resultFilter) : results).slice(0, 6),
+    () => uniquePlacesByAddress(resultFilter ? results.filter(resultFilter) : results).slice(0, 6),
     [resultFilter, results],
   );
   const prefix = field === 'origin' ? 'origin' : 'destination';
