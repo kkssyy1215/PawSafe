@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react';
-import { AccessibilityInfo, AppState, Platform, StyleSheet, View } from 'react-native';
+import { AccessibilityInfo, AppState, Platform, ScrollView, StyleSheet } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import type { AppStateStatus } from 'react-native';
 import { AppButton } from '@/src/components/common/AppButton';
@@ -65,7 +65,7 @@ export default function AnalyzingScreen() {
       try {
         const [result] = await Promise.all([
           analyze(request),
-          new Promise<void>((resolve) => setTimeout(resolve, request.walk_mode === 'fast' ? 650 : 2_800)),
+          new Promise<void>((resolve) => setTimeout(resolve, request.walk_mode === 'fast' ? 1_300 : 3_200)),
         ]);
         if (!active) return;
         dispatch({ type: 'SUBMIT_SUCCESS', result });
@@ -89,12 +89,12 @@ export default function AnalyzingScreen() {
 
   return (
     <ScreenContainer>
-      <View style={styles.container}>
+      <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
         {walkMode === 'fast' ? <FastRouteStatus /> : <AnalysisStatus isMock={env.analysisMode === 'mock'} />}
         {env.showDemoControls && env.analysisMode === 'mock' ? <AppButton testID="preview-results-button" variant="secondary" onPress={showTemporaryResult}>분석 결과 임시로 보기</AppButton> : null}
-        <AppButton variant="quiet" onPress={() => { cancel(); clearPendingRouteRequest(); router.back(); }}>이전 화면</AppButton>
-      </View>
+        <AppButton variant="quiet" onPress={() => { cancel(); clearPendingRouteRequest(); router.back(); }}>검색 취소</AppButton>
+      </ScrollView>
     </ScreenContainer>
   );
 }
-const styles = StyleSheet.create({ container: { flex: 1, justifyContent: 'center', padding: spacing.xl, gap: spacing.xl } });
+const styles = StyleSheet.create({ container: { flexGrow: 1, width: '100%', maxWidth: 520, alignSelf: 'center', paddingHorizontal: spacing.lg, paddingTop: spacing.lg, paddingBottom: spacing.xxl, gap: spacing.lg } });
