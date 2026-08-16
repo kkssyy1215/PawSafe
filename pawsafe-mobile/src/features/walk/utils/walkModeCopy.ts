@@ -5,5 +5,5 @@ export function getWalkModeLabel(mode: WalkMode): string {
 }
 
 export function getWalkSearchButtonLabel(mode: WalkMode): string {
-  return mode === 'fast' ? '빠른 산책길 찾기' : '안전한 산책길 찾기';
+  return mode === 'fast' ? '빠른 산책길 찾기' : '시원한 산책길 찾기';
 }

@@ -17,4 +17,22 @@ describe('PlaceSearchField', () => {
       id: 'place_home', lat: 37.55, lng: 126.91, is_in_coverage: true,
     }));
   });
+
+  it('shows only registered candidates allowed for the field', async () => {
+    const screen = await render(
+      <PlaceSearchField
+        label="출발지"
+        field="origin"
+        selected={null}
+        onSelect={jest.fn()}
+        resultFilter={(place) => place.id === 'place_mangwon_market'}
+      />,
+    );
+    await fireEvent.changeText(screen.getByTestId('origin-search-input'), '망원');
+
+    await act(async () => { await jest.advanceTimersByTimeAsync(600); });
+
+    expect(screen.getByTestId('origin-result-place_mangwon_market')).toBeTruthy();
+    expect(screen.queryByTestId('origin-result-place_mangwon_park')).toBeNull();
+  });
 });

@@ -45,29 +45,23 @@ export const heatDifferenceDemoRoute: DemoRouteCandidate = {
 
 export const pipelineDemoRouteCandidates = [heatDifferenceDemoRoute, ...csvDemoRouteCandidates];
 
-const categoryLabel: Record<DemoRouteCandidate['category'], string> = {
-  best_fast_cool_demo: 'Fast·Cool 차이 추천',
-  longest: '장거리 경로',
-  highest_known_surface: '포장정보 확인 경로',
-  heat_difference_demo: 'Heat 차이 검증 경로',
-};
-
-function metricSummary(candidate: DemoRouteCandidate): string {
-  return `${categoryLabel[candidate.category]} · fast ${Math.round(candidate.fastDistanceM)}m / cool ${Math.round(candidate.coolDistanceM)}m · Heat ${candidate.fastHeatCost.toFixed(1)} → ${candidate.coolHeatCost.toFixed(1)}`;
+function mockAddress(candidate: DemoRouteCandidate, endpoint: '출발지' | '목적지'): string {
+  const point = endpoint === '출발지' ? candidate.origin : candidate.destination;
+  return `서울특별시 송파구 ${candidate.id} 목업 ${endpoint} · ${point.lat.toFixed(6)}, ${point.lng.toFixed(6)}`;
 }
 
 export const pipelineDemoPlaces: PlaceSearchResult[] = pipelineDemoRouteCandidates.flatMap((candidate) => [
   {
     id: `${candidate.id.toLowerCase()}_origin`,
     name: `${candidate.id} 출발지`,
-    address: metricSummary(candidate),
+    address: mockAddress(candidate, '출발지'),
     ...candidate.origin,
     is_in_coverage: true,
   },
   {
     id: `${candidate.id.toLowerCase()}_destination`,
     name: `${candidate.id} 목적지`,
-    address: metricSummary(candidate),
+    address: mockAddress(candidate, '목적지'),
     ...candidate.destination,
     is_in_coverage: true,
   },

@@ -13,7 +13,7 @@
 - 장소 검색·역지오코딩 Provider와 coverage 검증
 - 표준 오류 envelope, request ID, CORS, gzip, 민감정보 로그 제거
 - Docker·Render 실행 구성
-- pytest 58개, Ruff, strict mypy 검증
+- pytest 60개, Ruff, strict mypy 검증
 
 공유 기본 설정은 `ANALYSIS_PROVIDER=graph`, `HEAT_COST_PROVIDER=file`입니다.
 Mock fixture는 API 키나 실시간 데이터 없이 UI와 오류 흐름을 재현하는 테스트

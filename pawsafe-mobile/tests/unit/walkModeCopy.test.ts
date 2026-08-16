@@ -5,8 +5,8 @@ describe('walk mode submit copy', () => {
     expect(getWalkSearchButtonLabel('fast')).toBe('빠른 산책길 찾기');
   });
 
-  it('keeps the safety label for cool mode', () => {
-    expect(getWalkSearchButtonLabel('cool')).toBe('안전한 산책길 찾기');
+  it('uses a cool-specific label for cool mode', () => {
+    expect(getWalkSearchButtonLabel('cool')).toBe('시원한 산책길 찾기');
   });
 
   it('uses the selected mode name throughout result summaries', () => {

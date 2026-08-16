@@ -1,16 +1,17 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { AccessibilityInfo, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { AccessibilityInfo, ScrollView, StyleSheet, View } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { AppButton } from '@/src/components/common/AppButton';
 import { Notice } from '@/src/components/common/Notice';
 import { ScreenContainer } from '@/src/components/common/ScreenContainer';
 import { ScreenHeader } from '@/src/components/common/ScreenHeader';
-import { RegisteredPlacePicker } from '@/src/features/walk/components/RegisteredPlacePicker';
+import { PlaceSearchField } from '@/src/features/walk/components/PlaceSearchField';
 import { WalkModeSelector } from '@/src/features/walk/components/WalkModeSelector';
 import { savePendingRouteRequest } from '@/src/features/walk/utils/pendingRouteRequest';
 import { toApiPlace, validateWalkForm } from '@/src/features/walk/utils/validation';
+import { getWalkSearchButtonLabel } from '@/src/features/walk/utils/walkModeCopy';
 import { useWalkFlow } from '@/src/state/WalkFlowContext';
-import { colors, spacing, typography } from '@/src/theme/theme';
+import { spacing } from '@/src/theme/theme';
 
 export default function InputScreen() {
   const { state, dispatch } = useWalkFlow();
@@ -27,6 +28,9 @@ export default function InputScreen() {
 
   if (state.status !== 'input') return <ScreenContainer><View /></ScreenContainer>;
   const { form } = state;
+  const pairedDestinationId = form.origin?.id.endsWith('_origin')
+    ? `${form.origin.id.slice(0, -'_origin'.length)}_destination`
+    : null;
   const submit = () => {
     const issue = validateWalkForm(form);
     if (issue) { setValidationError(issue); AccessibilityInfo.announceForAccessibility(issue); return; }
@@ -47,12 +51,12 @@ export default function InputScreen() {
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           <ScreenHeader eyebrow="PawSafe" brandTagline="오늘도 발바닥까지 안전하게" />
           <View style={styles.locationSection}>
-            <RegisteredPlacePicker label="출발지" field="origin" selected={form.origin} onSelect={(place) => {
+            <PlaceSearchField label="출발지" field="origin" selected={form.origin} placeholder="출발지 주소 검색" resultFilter={(place) => place.id.endsWith('_origin')} onSelect={(place) => {
               setValidationError(null);
               dispatch({ type: 'SET_PLACE', field: 'origin', place });
               dispatch({ type: 'SET_PLACE', field: 'destination', place: null });
             }} />
-            <RegisteredPlacePicker label="목적지" field="destination" selected={form.destination} pairedWith={form.origin} onSelect={(place) => { setValidationError(null); dispatch({ type: 'SET_PLACE', field: 'destination', place }); }} />
+            <PlaceSearchField label="목적지" field="destination" selected={form.destination} placeholder="목적지 또는 근처 공원 검색" resultFilter={(place) => place.id.endsWith('_destination') && (!pairedDestinationId || place.id === pairedDestinationId)} onSelect={(place) => { setValidationError(null); dispatch({ type: 'SET_PLACE', field: 'destination', place }); }} />
           </View>
           <View style={styles.modeSection}>
             <WalkModeSelector value={form.walkMode} onChange={(value) => dispatch({ type: 'SET_WALK_MODE', value })} />
@@ -63,8 +67,7 @@ export default function InputScreen() {
             disabled={!form.origin || !form.destination}
             accessibilityHint="선택한 조건으로 경로 비교를 요청합니다."
             onPress={submit}
-          >안전한 산책길 찾기</AppButton>
-          <Text style={styles.liveNote}>요청 시점의 최신 기상정보를 반영해 두 경로를 비교해요.</Text>
+          >{getWalkSearchButtonLabel(form.walkMode)}</AppButton>
       </ScrollView>
     </ScreenContainer>
   );
@@ -73,5 +76,4 @@ const styles = StyleSheet.create({
   content: { padding: spacing.lg, paddingBottom: spacing.xxl, gap: spacing.xl },
   locationSection: { gap: spacing.md },
   modeSection: { gap: spacing.md },
-  liveNote: { ...typography.caption, color: colors.mutedText, textAlign: 'center' },
 });

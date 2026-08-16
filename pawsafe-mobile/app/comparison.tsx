@@ -4,8 +4,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { AppButton } from '@/src/components/common/AppButton';
 import { ScreenContainer } from '@/src/components/common/ScreenContainer';
 import { PawSafeMap } from '@/src/components/map/PawSafeMap';
-import { DemoNotice } from '@/src/features/walk/components/DemoNotice';
-import { RelativeHeatNotice } from '@/src/features/walk/components/RelativeHeatNotice';
+import { FastRouteResultCard } from '@/src/features/walk/components/FastRouteResultCard';
 import { ResultHeadline } from '@/src/features/walk/components/ResultHeadline';
 import { RouteSummaryCard } from '@/src/features/walk/components/RouteSummaryCard';
 import { useWalkFlow } from '@/src/state/WalkFlowContext';
@@ -17,11 +16,34 @@ export default function ComparisonScreen() {
   const resultState = state.status === 'comparison' || state.status === 'segmentReview' ? state : null;
   const walkModeForAnnouncement = resultState?.request.walk_mode ?? null;
   useFocusEffect(useCallback(() => {
-    AccessibilityInfo.announceForAccessibility(`일반 최단 경로와 ${walkModeForAnnouncement ? getWalkModeLabel(walkModeForAnnouncement) : '산책길'} 비교 화면`);
+    AccessibilityInfo.announceForAccessibility(
+      walkModeForAnnouncement === 'fast'
+        ? '카카오맵 빠른 산책길 결과 화면'
+        : `일반 최단 경로와 ${walkModeForAnnouncement ? getWalkModeLabel(walkModeForAnnouncement) : '산책길'} 비교 화면`,
+    );
     if (state.status === 'segmentReview') dispatch({ type: 'SHOW_COMPARISON' });
   }, [dispatch, state.status, walkModeForAnnouncement]));
   if (!resultState) return <ScreenContainer style={styles.missing}><Text style={styles.missingText}>비교할 경로 결과가 없습니다.</Text><AppButton onPress={() => { dispatch({ type: 'RESET' }); router.replace('/'); }}>조건 입력으로 이동</AppButton></ScreenContainer>;
   const { request, result } = resultState;
+  if (request.walk_mode === 'fast') {
+    return (
+      <ScreenContainer>
+        <ScrollView contentContainerStyle={styles.content}>
+          <View accessible accessibilityRole="header" style={styles.fastHeader}>
+            <Text style={styles.fastLabel}>KAKAO FAST ROUTE</Text>
+            <Text style={styles.fastHeadline}>가장 빠른 산책길을{`\n`}찾았어요.</Text>
+            <Text style={styles.fastDescription}>카카오맵 보행경로 중 거리와 예상 시간이 가장 짧은 길이에요.</Text>
+          </View>
+          <PawSafeMap origin={request.origin} destination={request.destination} shortest={result.shortest} selectedRoute="shortest" walkMode="fast" showRouteLegend={false} />
+          <FastRouteResultCard route={result.shortest} />
+          <View style={styles.actions}>
+            <AppButton testID="walking-direction-button" onPress={() => router.push('/live')}>산책길 보기</AppButton>
+            <AppButton testID="restart-button" variant="secondary" onPress={() => { dispatch({ type: 'RESET' }); router.dismissAll(); router.replace('/'); }}>다른 산책길 찾아보기</AppButton>
+          </View>
+        </ScrollView>
+      </ScreenContainer>
+    );
+  }
   return (
     <ScreenContainer>
       <ScrollView contentContainerStyle={styles.content}>
@@ -31,14 +53,10 @@ export default function ComparisonScreen() {
           <RouteSummaryCard route={result.shortest} tone="shortest" selected={resultState.selectedRoute === 'shortest'} onPress={() => dispatch({ type: 'SELECT_ROUTE', route: 'shortest' })} />
           <RouteSummaryCard route={result.pawsafe} tone="pawsafe" selected={resultState.selectedRoute === 'pawsafe'} onPress={() => dispatch({ type: 'SELECT_ROUTE', route: 'pawsafe' })} />
         </View>
-        <Text style={styles.explanation}>{result.comparison.distance_delta_m > 0 ? `PawSafe 추천은 일반 경로보다 ${Math.round(result.comparison.distance_delta_m)}m 더 걷지만, 현재 기상환경에서 뜨거운 노면 노출을 줄이는 경로예요.` : '현재 기상환경에서 두 경로의 거리와 열노출을 비교했어요.'}</Text>
-        {result.is_demo || result.analysis_source === 'graph' ? <DemoNotice analysisSource={result.analysis_source} /> : null}
-        <RelativeHeatNotice />
-        <Text style={styles.version}>그래프 {result.graph_version} · {result.data_valid_at ? `데이터 ${new Date(result.data_valid_at).toLocaleString('ko-KR')}` : 'MVP 예시 시나리오'}</Text>
+        <Text style={styles.explanation}>{result.comparison.distance_delta_m > 0 ? `뜨거운 노면과 직사광선 노출이 상대적으로 적은 길이에요. 일반 경로보다 ${Math.round(result.comparison.distance_delta_m)}m 더 걸어도 우리 강아지가 걷기 좋은 경로를 추천했어요.` : '현재 기상환경에서 거리와 노면 열노출을 함께 비교해 우리 강아지가 걷기 좋은 길을 추천했어요.'}</Text>
         <View style={styles.actions}>
           <AppButton testID="walking-direction-button" onPress={() => router.push('/live')}>산책길 보기</AppButton>
           <AppButton testID="restart-button" variant="secondary" onPress={() => { dispatch({ type: 'RESET' }); router.dismissAll(); router.replace('/'); }}>다른 산책길 찾아보기</AppButton>
-          <AppButton variant="quiet" onPress={() => { if (state.status === 'comparison') dispatch({ type: 'SHOW_SEGMENTS' }); router.push('/segments'); }}>구간별 열환경 자세히 보기</AppButton>
         </View>
       </ScrollView>
     </ScreenContainer>
@@ -46,6 +64,10 @@ export default function ComparisonScreen() {
 }
 const styles = StyleSheet.create({
   content: { padding: spacing.lg, paddingBottom: spacing.xxl, gap: spacing.lg }, routeCards: { flexDirection: 'row', gap: 0, alignItems: 'stretch' }, actions: { gap: spacing.sm },
+  fastHeader: { gap: spacing.xs },
+  fastLabel: { alignSelf: 'flex-start', ...typography.caption, color: colors.white, backgroundColor: colors.orange, borderRadius: 10, paddingHorizontal: spacing.sm, paddingVertical: 3, fontWeight: '800', fontSize: 10 },
+  fastHeadline: { ...typography.heading, color: colors.text, fontSize: 22, lineHeight: 27 },
+  fastDescription: { ...typography.caption, color: colors.mutedText },
   explanation: { ...typography.caption, color: colors.mutedText, lineHeight: 20 },
-  version: { ...typography.caption, color: colors.mutedText, textAlign: 'center' }, missing: { justifyContent: 'center', padding: spacing.xl, gap: spacing.lg }, missingText: { ...typography.body, color: colors.text, textAlign: 'center' },
+  missing: { justifyContent: 'center', padding: spacing.xl, gap: spacing.lg }, missingText: { ...typography.body, color: colors.text, textAlign: 'center' },
 });

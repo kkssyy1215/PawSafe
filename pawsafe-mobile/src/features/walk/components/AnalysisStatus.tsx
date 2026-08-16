@@ -1,18 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
 import { AccessibilityInfo, ActivityIndicator, Animated, Easing, StyleSheet, Text, View } from 'react-native';
-import type { WalkMode } from '@/src/api/contracts';
-import { getWalkModeLabel } from '@/src/features/walk/utils/walkModeCopy';
 import { colors, spacing, typography } from '@/src/theme/theme';
 
 const steps = [
-  { label: '현재 기상정보 확인', description: '현재 산책지역의 날씨를 확인하고 있어요.' },
-  { label: '보행로 환경정보 결합', description: '포장재와 주변 환경정보를 결합하고 있어요.' },
-  { label: '햇빛 노출 정도 분석', description: '최근 햇빛 노출 정도를 분석하고 있어요.' },
-  { label: 'Edge별 Heat Cost 계산', description: '노면 열노출 정도를 계산하고 있어요.' },
-  { label: '안전한 산책경로 탐색', description: '두 경로의 거리와 열노출을 비교하고 있어요.' },
+  { label: '포장재 정보 결합', description: '보행로의 포장재 특성을 확인하고 있어요.' },
+  { label: '기상정보 분석', description: '모델 서버가 AWS·ASOS 관측자료를 분석하고 있어요.' },
+  { label: '일사량 분석', description: '최근 햇빛에 노출된 정도를 계산하고 있어요.' },
+  { label: '직사광선 누적 노출 분석', description: '직사광선에 노출된 시간을 분석하고 있어요.' },
+  { label: '건물 그림자 분석', description: '시간대별 건물 그림자와 시원한 경로를 계산하고 있어요.' },
 ];
 
-export function AnalysisStatus({ isMock, walkMode }: { isMock: boolean; walkMode: WalkMode }) {
+export function AnalysisStatus({ isMock }: { isMock: boolean }) {
   const [activeStep, setActiveStep] = useState(0);
   const [reduceMotion, setReduceMotion] = useState(false);
   const markerProgress = useRef(new Animated.Value(0)).current;
@@ -39,16 +37,11 @@ export function AnalysisStatus({ isMock, walkMode }: { isMock: boolean; walkMode
   const markerTranslateX = markerProgress.interpolate({ inputRange: [0, 1], outputRange: [0, 142] });
   const markerTranslateY = markerProgress.interpolate({ inputRange: [0, 1], outputRange: [0, 76] });
   const progress = `${Math.round(((activeStep + 1) / steps.length) * 100)}%` as `${number}%`;
-  const routeColor = walkMode === 'fast' ? colors.orange : colors.greenStrong;
-
   return (
     <View accessible accessibilityRole="progressbar" accessibilityState={{ busy: true }} accessibilityLiveRegion="polite" style={styles.container}>
-      <View style={styles.headingRow}>
-        <View style={styles.headingCopy}>
-          <Text style={styles.title}>우리 강아지가 걷기 좋은 길을{`\n`}찾고 있어요</Text>
-          <Text style={styles.description}>현재 날씨를 반영해 두 산책길을 비교하고 있어요.</Text>
-        </View>
-        <View style={[styles.modeBadge, { borderColor: routeColor }]}><Text style={[styles.modeText, { color: routeColor }]}>{getWalkModeLabel(walkMode)}</Text></View>
+      <View style={styles.headingCopy}>
+        <Text style={styles.title}>우리 강아지가 걷기 좋은 길을{`\n`}찾고 있어요</Text>
+        <Text style={styles.description}>현재 날씨를 반영해 두 산책길을 비교하고 있어요.</Text>
       </View>
       <View style={styles.progressTrack}><View style={[styles.progress, { width: progress }]} /></View>
 
@@ -72,7 +65,7 @@ export function AnalysisStatus({ isMock, walkMode }: { isMock: boolean; walkMode
       </View>
       <View style={styles.message}>
         <ActivityIndicator size="small" color={colors.greenStrong} />
-        <Text style={styles.messageText}>{steps[activeStep].description}{isMock ? ' 시연용 분석 데이터를 사용 중입니다.' : ''}</Text>
+        <Text style={styles.messageText}>{steps[activeStep].description}{isMock ? ' 시연용 분석 데이터를 사용 중입니다.' : ''}{`\n`}뜨거운 노면과 햇빛 노출이 적은 길을 찾고 있어요. 잠시만 기다려 주세요.</Text>
       </View>
     </View>
   );
@@ -80,12 +73,9 @@ export function AnalysisStatus({ isMock, walkMode }: { isMock: boolean; walkMode
 
 const styles = StyleSheet.create({
   container: { flex: 1, justifyContent: 'center', gap: spacing.md },
-  headingRow: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.sm },
   headingCopy: { flex: 1, gap: spacing.xs },
   title: { ...typography.heading, color: colors.text },
   description: { ...typography.caption, color: colors.mutedText },
-  modeBadge: { borderWidth: 1, borderRadius: 14, paddingHorizontal: spacing.sm, paddingVertical: spacing.xs, backgroundColor: colors.surface },
-  modeText: { ...typography.caption, fontWeight: '700' },
   progressTrack: { height: 4, borderRadius: 2, overflow: 'hidden', backgroundColor: '#DDE2DC' },
   progress: { height: 4, borderRadius: 2, backgroundColor: colors.greenStrong },
   map: { height: 236, overflow: 'hidden', backgroundColor: '#F2F3EF', borderTopWidth: 1, borderBottomWidth: 1, borderColor: '#ECEEEA' },

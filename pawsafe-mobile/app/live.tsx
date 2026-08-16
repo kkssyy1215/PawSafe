@@ -29,7 +29,9 @@ export default function LiveWalkScreen() {
   if (!resultState) return <ScreenContainer style={styles.missing}><Text style={styles.missingText}>표시할 산책 경로가 없습니다.</Text><AppButton onPress={() => router.replace('/')}>처음 화면으로</AppButton></ScreenContainer>;
   const { request, result, selectedRoute } = resultState;
   const route = selectedRoute === 'shortest' ? result.shortest : result.pawsafe;
-  const routeLabel = selectedRoute === 'shortest' ? '일반 최단경로' : 'PawSafe 추천경로';
+  const routeLabel = selectedRoute === 'shortest'
+    ? route.route_source.toLowerCase().includes('kakao') ? '카카오맵 빠른 경로' : '일반 최단경로'
+    : 'PawSafe 추천경로';
 
   return (
     <ScreenContainer>

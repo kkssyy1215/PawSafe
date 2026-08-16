@@ -5,7 +5,7 @@ from app.schemas.route import RouteAnalysisRequest, RouteAnalysisResponse
 
 
 class WalkModeAnalysisProvider:
-    """Route fast requests to Kakao and cool requests to the heat graph."""
+    """Route fast requests to Kakao and cool requests to the configured heat model."""
 
     def __init__(
         self,

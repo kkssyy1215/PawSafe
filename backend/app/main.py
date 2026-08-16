@@ -84,9 +84,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             graph_loaded=graph_loaded,
             heat_data_loaded=heat_loaded,
             analysis_provider=(
-                "graph+kakao_fast"
-                if container.settings.analysis_provider == "graph"
-                and container.settings.kakao_rest_api_key
+                f"{container.settings.analysis_provider}+kakao_fast"
+                if container.settings.analysis_provider in {"graph", "external"}
+                and bool(container.settings.kakao_rest_api_key)
                 else container.settings.analysis_provider
             ),
             heat_cost_provider=container.settings.heat_cost_provider,

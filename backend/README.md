@@ -33,11 +33,11 @@ make backend
 | `GET` | `/v1/coverage` | 분석 영역 |
 | `GET` | `/v1/weather/current` | KMA 현재 기상 |
 | `GET` | `/v1/weather/asos/reference` | ASOS 전날 동일 시간 일사량 |
-| `POST` | `/v1/route-analyses` | fast/cool 경로 비교 |
+| `POST` | `/v1/route-analyses` | fast Kakao 경로 또는 cool 모델 분석 |
 
 `ANALYSIS_PROVIDER=graph`와 `HEAT_COST_PROVIDER=file`이 공유 데이터 연결
 설정입니다. 이 상태에서 `KAKAO_REST_API_KEY`가 있으면 `fast`는 Kakao 도보
-최단 경로 API를 사용하고, `cool`은 보행 그래프와 시간별 Heat Cost로 계산합니다.
+최단 경로 API만 사용하고, `cool`은 보행 그래프와 시간별 Heat Cost로 계산합니다.
 Heat Cost는 상대 비교 지표입니다.
 
 상세 계약은 [`docs/API_CONTRACT.md`](docs/API_CONTRACT.md), 전체 실행·테스트

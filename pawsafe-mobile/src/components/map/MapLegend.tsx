@@ -6,7 +6,7 @@ import { getRecommendedRouteColor } from './routeStyles';
 export function MapLegend({ showRoutes = true, showSegments = false, walkMode = 'cool' }: { showRoutes?: boolean; showSegments?: boolean; walkMode?: WalkMode }) {
   return (
     <View accessible accessibilityLabel="지도 범례" style={styles.container}>
-      {showRoutes ? <><Legend color={colors.routeBaseline} label="일반 최단 경로" /><Legend color={getRecommendedRouteColor(walkMode)} label={walkMode === 'fast' ? '빠른 산책길 (fast)' : '시원한 산책길 (cool)'} /></> : null}
+      {showRoutes ? <><Legend color={colors.routeBaseline} label="일반 최단경로" /><Legend color={getRecommendedRouteColor(walkMode)} label={walkMode === 'fast' ? '카카오맵 빠른 경로' : 'PawSafe 추천'} /></> : null}
       {showSegments ? <><Legend color={colors.low} label="열노출 낮음" dot /><Legend color={colors.medium} label="열노출 보통" dot /><Legend color={colors.high} label="열노출 높음" dot /><Legend color={colors.unknown} label="정보 부족" dot /></> : null}
     </View>
   );

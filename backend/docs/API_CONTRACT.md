@@ -102,6 +102,9 @@ GET /v1/places/search?q=공원&lat=37.55&lng=126.91
 
 `departure_at`은 선택 필드입니다. 앱의 기본 시나리오처럼 생략하면 백엔드가 요청을 받은 시점의 한국 표준시를 사용합니다. 미래 시각 분석이 필요할 때만 timezone offset을 포함하는 ISO 8601 값을 전달합니다. 위치 문자열과 좌표에 길이/범위 검증을 적용하며 extra key는 허용하지 않습니다.
 
+- `walk_mode=fast`: Kakao 도보 API만 호출하고 앱은 `shortest`만 표시합니다. 모델 서버는 호출하지 않습니다.
+- `walk_mode=cool`: 모델팀 서버가 AWS·ASOS 관측자료를 직접 조회해 Heat Cost와 PawSafe 경로를 계산하고 앱은 `shortest`와 `pawsafe`를 비교합니다.
+
 응답의 핵심 구조:
 
 ```json

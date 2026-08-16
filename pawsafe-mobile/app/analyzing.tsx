@@ -5,6 +5,7 @@ import type { AppStateStatus } from 'react-native';
 import { AppButton } from '@/src/components/common/AppButton';
 import { ScreenContainer } from '@/src/components/common/ScreenContainer';
 import { AnalysisStatus } from '@/src/features/walk/components/AnalysisStatus';
+import { FastRouteStatus } from '@/src/features/walk/components/FastRouteStatus';
 import { useRouteAnalysis } from '@/src/features/walk/hooks/useRouteAnalysis';
 import { clearPendingRouteRequest, loadPendingRouteRequest } from '@/src/features/walk/utils/pendingRouteRequest';
 import { env } from '@/src/config/env';
@@ -64,7 +65,7 @@ export default function AnalyzingScreen() {
       try {
         const [result] = await Promise.all([
           analyze(request),
-          new Promise<void>((resolve) => setTimeout(resolve, 2_800)),
+          new Promise<void>((resolve) => setTimeout(resolve, request.walk_mode === 'fast' ? 650 : 2_800)),
         ]);
         if (!active) return;
         dispatch({ type: 'SUBMIT_SUCCESS', result });
@@ -89,7 +90,7 @@ export default function AnalyzingScreen() {
   return (
     <ScreenContainer>
       <View style={styles.container}>
-        <AnalysisStatus isMock={env.analysisMode === 'mock'} walkMode={walkMode} />
+        {walkMode === 'fast' ? <FastRouteStatus /> : <AnalysisStatus isMock={env.analysisMode === 'mock'} />}
         {env.showDemoControls && env.analysisMode === 'mock' ? <AppButton testID="preview-results-button" variant="secondary" onPress={showTemporaryResult}>분석 결과 임시로 보기</AppButton> : null}
         <AppButton variant="quiet" onPress={() => { cancel(); clearPendingRouteRequest(); router.back(); }}>이전 화면</AppButton>
       </View>

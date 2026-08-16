@@ -45,10 +45,26 @@ def create_analysis_provider(
     if settings.analysis_provider == "external":
         if not settings.analysis_external_url:
             return UnavailableAnalysisProvider(PipelineNotReadyError("analysis_external_url"))
-        return ExternalAnalysisProvider(
+        cool_provider = ExternalAnalysisProvider(
             client,
             settings.analysis_external_url,
             timeout_seconds=settings.request_timeout_seconds,
+        )
+        if not settings.kakao_rest_api_key:
+            return WalkModeAnalysisProvider(
+                fast_provider=UnavailableAnalysisProvider(
+                    PipelineNotReadyError("kakao_rest_api_key")
+                ),
+                cool_provider=cool_provider,
+            )
+        return WalkModeAnalysisProvider(
+            fast_provider=KakaoWalkingAnalysisProvider(
+                client,
+                api_key=settings.kakao_rest_api_key,
+                mock_scenarios_path=settings.resolve_path(settings.mock_scenarios_file_path),
+                timeout_seconds=settings.request_timeout_seconds,
+            ),
+            cool_provider=cool_provider,
         )
     if settings.analysis_provider == "kakao_walk":
         if not settings.kakao_rest_api_key:
