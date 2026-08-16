@@ -44,6 +44,13 @@ describe('mock place coverage', () => {
       coolHeatCost: 33.3,
     });
 
-    expect(pipelineDemoPlaces.filter((place) => place.name.includes('HEAT_DIFF_001'))).toHaveLength(2);
+    const mappedOrigin = pipelineDemoPlaces.find((place) => place.id === 'heat_diff_001_origin');
+    expect(mappedOrigin).toMatchObject({
+      name: '위례광장로 185',
+      address: '서울특별시 송파구 위례광장로 185',
+      lat: 37.4811743,
+      lng: 127.1405973,
+    });
+    expect(pipelineDemoPlaces.find((place) => place.id === 'heat_diff_001_destination')).toBeDefined();
   });
 });

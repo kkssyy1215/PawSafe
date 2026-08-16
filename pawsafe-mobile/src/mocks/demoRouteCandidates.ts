@@ -45,24 +45,42 @@ export const heatDifferenceDemoRoute: DemoRouteCandidate = {
 
 export const pipelineDemoRouteCandidates = [heatDifferenceDemoRoute, ...csvDemoRouteCandidates];
 
-function mockAddress(candidate: DemoRouteCandidate, endpoint: '출발지' | '목적지'): string {
-  const point = endpoint === '출발지' ? candidate.origin : candidate.destination;
-  return `서울특별시 송파구 ${candidate.id} 목업 ${endpoint} · ${point.lat.toFixed(6)}, ${point.lng.toFixed(6)}`;
+type DemoEndpoint = 'origin' | 'destination';
+
+// The user sees these real-looking addresses while the app keeps the fixed,
+// graph-connected coordinates from the model team's route candidates.
+// Add the remaining agreed addresses here without changing route/node data.
+const placeDisplayOverrides: Record<string, { name: string; address: string }> = {
+  'HEAT_DIFF_001:origin': {
+    name: '위례광장로 185',
+    address: '서울특별시 송파구 위례광장로 185',
+  },
+};
+
+function placeDisplay(candidate: DemoRouteCandidate, endpoint: DemoEndpoint) {
+  const override = placeDisplayOverrides[`${candidate.id}:${endpoint}`];
+  if (override) return override;
+  const endpointLabel = endpoint === 'origin' ? '출발지' : '목적지';
+  const point = endpoint === 'origin' ? candidate.origin : candidate.destination;
+  return {
+    name: `${candidate.id} ${endpointLabel}`,
+    address: `서울특별시 송파구 ${candidate.id} 목업 ${endpointLabel} · ${point.lat.toFixed(6)}, ${point.lng.toFixed(6)}`,
+  };
 }
 
-export const pipelineDemoPlaces: PlaceSearchResult[] = pipelineDemoRouteCandidates.flatMap((candidate) => [
-  {
+export const pipelineDemoPlaces: PlaceSearchResult[] = pipelineDemoRouteCandidates.flatMap((candidate) => {
+  const originDisplay = placeDisplay(candidate, 'origin');
+  const destinationDisplay = placeDisplay(candidate, 'destination');
+  return [{
     id: `${candidate.id.toLowerCase()}_origin`,
-    name: `${candidate.id} 출발지`,
-    address: mockAddress(candidate, '출발지'),
+    ...originDisplay,
     ...candidate.origin,
     is_in_coverage: true,
   },
   {
     id: `${candidate.id.toLowerCase()}_destination`,
-    name: `${candidate.id} 목적지`,
-    address: mockAddress(candidate, '목적지'),
+    ...destinationDisplay,
     ...candidate.destination,
     is_in_coverage: true,
-  },
-]);
+  }];
+});

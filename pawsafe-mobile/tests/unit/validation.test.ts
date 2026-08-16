@@ -1,5 +1,6 @@
 import type { Place } from '@/src/api/contracts';
 import { isSamePlace, toApiPlace, validateWalkForm } from '@/src/features/walk/utils/validation';
+import { pipelineDemoPlaces } from '@/src/mocks/demoRouteCandidates';
 
 const origin: Place = { id: 'home', name: '우리집', address: '서울', lat: 37.55, lng: 126.91 };
 const destination: Place = { id: 'park', name: '공원', address: '서울', lat: 37.555, lng: 126.9 };
@@ -32,5 +33,17 @@ describe('walk form validation', () => {
 
   it('removes client-only coverage metadata from API locations', () => {
     expect(toApiPlace({ ...origin, is_in_coverage: true } as Place & { is_in_coverage: boolean })).toEqual(origin);
+  });
+
+  it('sends the fixed graph coordinate behind the visible Wirye address', () => {
+    const mapped = pipelineDemoPlaces.find((place) => place.id === 'heat_diff_001_origin');
+    expect(mapped).toBeDefined();
+    expect(toApiPlace(mapped!)).toEqual({
+      id: 'heat_diff_001_origin',
+      name: '위례광장로 185',
+      address: '서울특별시 송파구 위례광장로 185',
+      lat: 37.4811743,
+      lng: 127.1405973,
+    });
   });
 });
