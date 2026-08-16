@@ -1,4 +1,5 @@
 import type { PlaceSearchResult } from '@/src/api/contracts';
+import { pipelineDemoPlaces } from '@/src/mocks/demoRouteCandidates';
 
 export const mockCurrentPlace: PlaceSearchResult = {
   id: 'current_mock',
@@ -51,6 +52,7 @@ export const pipelineMockRouteDestination: PlaceSearchResult = {
 export const pipelineCurrentPlace = pipelineMockRouteOrigin;
 
 export const pipelinePlaces: PlaceSearchResult[] = [
+  ...pipelineDemoPlaces,
   pipelineCurrentPlace,
   pipelineMockRouteDestination,
   {

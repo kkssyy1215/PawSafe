@@ -1,3 +1,4 @@
+import { csvDemoRouteCandidates, heatDifferenceDemoRoute, pipelineDemoPlaces } from '@/src/mocks/demoRouteCandidates';
 import { isInMockCoverage, mockPlaces, pipelineMockRouteDestination, pipelineMockRouteOrigin } from '@/src/mocks/places';
 import { MockPlaceSearchProvider } from '@/src/providers/places/MockPlaceSearchProvider';
 
@@ -18,5 +19,31 @@ describe('mock place coverage', () => {
   it('keeps the data-team route coordinates as explicit pipeline fixtures', () => {
     expect(pipelineMockRouteOrigin).toMatchObject({ lat: 37.48508, lng: 127.11261, is_in_coverage: true });
     expect(pipelineMockRouteDestination).toMatchObject({ lat: 37.48804, lng: 127.15297, is_in_coverage: true });
+  });
+
+  it('exposes all 15 CSV route pairs as searchable pipeline places', () => {
+    expect(csvDemoRouteCandidates).toHaveLength(15);
+    expect(pipelineDemoPlaces).toHaveLength(32);
+
+    const matches = pipelineDemoPlaces.filter((place) => place.name.includes('DEMO_001'));
+    expect(matches).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ name: 'DEMO_001 출발지', lat: 37.510356341, lng: 127.079320701, is_in_coverage: true }),
+        expect.objectContaining({ name: 'DEMO_001 목적지', lat: 37.511922376, lng: 127.104658454, is_in_coverage: true }),
+      ]),
+    );
+  });
+
+  it('keeps the separately supplied heat-difference route selectable', () => {
+    expect(heatDifferenceDemoRoute).toMatchObject({
+      origin: { lat: 37.4811743, lng: 127.1405973 },
+      destination: { lat: 37.4772949, lng: 127.1410705 },
+      fastDistanceM: 875.1,
+      coolDistanceM: 987,
+      fastHeatCost: 75.4,
+      coolHeatCost: 33.3,
+    });
+
+    expect(pipelineDemoPlaces.filter((place) => place.name.includes('HEAT_DIFF_001'))).toHaveLength(2);
   });
 });

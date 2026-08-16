@@ -101,6 +101,25 @@ def test_place_search_q_only_keeps_backwards_compatible_fixture_order(
     ]
 
 
+def test_place_search_exposes_csv_demo_route_pair(client: TestClient) -> None:
+    response = client.get("/v1/places/search", params={"q": "DEMO_001"})
+    assert response.status_code == 200
+    assert [item["name"] for item in response.json()["items"]] == [
+        "DEMO_001 출발지",
+        "DEMO_001 목적지",
+    ]
+
+
+def test_place_search_exposes_heat_difference_route_pair(client: TestClient) -> None:
+    response = client.get("/v1/places/search", params={"q": "HEAT_DIFF_001"})
+    assert response.status_code == 200
+    items = response.json()["items"]
+    assert [(item["lat"], item["lng"]) for item in items] == [
+        (37.4811743, 127.1405973),
+        (37.4772949, 127.1410705),
+    ]
+
+
 def test_place_search_requires_lat_and_lng_together(client: TestClient) -> None:
     response = client.get(
         "/v1/places/search",
