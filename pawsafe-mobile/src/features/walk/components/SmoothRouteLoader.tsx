@@ -58,9 +58,7 @@ export function SmoothRouteLoader({ walkMode, statusLabel, statusDescription }: 
     <View style={styles.container}>
       <View style={[styles.visual, { backgroundColor: soft }]}>
         <Animated.View style={[styles.pulseRing, { borderColor: accent, opacity: pulseOpacity, transform: [{ scale: pulseScale }] }]} />
-        <Animated.View style={[styles.orbit, { borderColor: accent, transform: [{ rotate: spin }] }]}>
-          <View style={[styles.orbitDot, { backgroundColor: accent }]} />
-        </Animated.View>
+        <Animated.View style={[styles.orbit, { borderColor: accent, transform: [{ rotate: spin }] }]} />
         <View style={styles.logoCore}>
           <Image
             source={require('../../../../assets/brand/pawsafe-mark.png')}
@@ -95,7 +93,6 @@ const styles = StyleSheet.create({
   visual: { height: 260, alignItems: 'center', justifyContent: 'center', overflow: 'hidden', borderRadius: 24 },
   pulseRing: { position: 'absolute', width: 154, height: 154, borderWidth: 2, borderRadius: 77 },
   orbit: { position: 'absolute', width: 132, height: 132, borderWidth: 2, borderRightColor: 'transparent', borderBottomColor: 'transparent', borderRadius: 66 },
-  orbitDot: { position: 'absolute', left: 53, top: -6, width: 12, height: 12, borderWidth: 3, borderColor: colors.white, borderRadius: 6 },
   logoCore: { width: 92, height: 92, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.border, borderRadius: 46, backgroundColor: colors.white },
   logo: { width: 58, height: 58 },
   visualCaption: { position: 'absolute', bottom: 18, flexDirection: 'row', alignItems: 'center', gap: 7, borderRadius: 13, backgroundColor: 'rgba(255,255,255,0.9)', paddingHorizontal: 11, paddingVertical: 7 },
