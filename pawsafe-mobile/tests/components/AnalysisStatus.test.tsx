@@ -16,12 +16,12 @@ jest.mock('@/src/features/walk/components/SmoothRouteLoader', () => {
 });
 
 describe('AnalysisStatus', () => {
-  it('shows only Kakao route lookup for fast walks', async () => {
+  it('shows the shared model graph lookup for fast walks', async () => {
     const screen = await render(<FastRouteStatus />);
 
     expect(screen.getByText(/가장 빠른 산책길을/)).toBeTruthy();
-    expect(screen.getByText(/열환경 분석 없이/)).toBeTruthy();
-    expect(screen.getByText(/카카오맵 보행거리와 예상 시간만/)).toBeTruthy();
+    expect(screen.getByText(/거리 기준 최단경로를 계산/)).toBeTruthy();
+    expect(screen.getByText(/같은 보행로 그래프의 최단경로/)).toBeTruthy();
     expect(screen.queryByText('Edge별 Heat Cost 계산')).toBeNull();
   });
 
@@ -29,7 +29,7 @@ describe('AnalysisStatus', () => {
     const screen = await render(<AnalysisStatus isMock={false} />);
 
     expect(screen.getByText(/우리 강아지가 걷기 좋은 길을/)).toBeTruthy();
-    expect(screen.getByText(/포장재 · AWS·ASOS 기상 · 일사량 · 그늘 · Heat Cost/)).toBeTruthy();
+    expect(screen.getByText(/포장재 · ASOS 기상 · 일사량 · 그늘 · Heat Cost/)).toBeTruthy();
     expect(screen.queryByText('분석 5/5')).toBeNull();
   });
 });

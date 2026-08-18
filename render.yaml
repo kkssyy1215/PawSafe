@@ -34,7 +34,5 @@ services:
         sync: false
       - key: KMA_SERVICE_KEY
         sync: false
-      - key: KMA_AWS_AUTH_KEY
-        sync: false
       - key: ASOS_SERVICE_KEY
         sync: false

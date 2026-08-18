@@ -69,7 +69,7 @@ export function SmoothRouteLoader({ walkMode, statusLabel, statusDescription }: 
         </View>
         <View style={styles.visualCaption}>
           <View style={[styles.liveDot, { backgroundColor: accent }]} />
-          <Text style={styles.visualCaptionText}>{isFast ? '카카오맵 경로 연결 중' : '실시간 데이터 결합 중'}</Text>
+          <Text style={styles.visualCaptionText}>{isFast ? '보행로 그래프 연결 중' : '실시간 데이터 결합 중'}</Text>
         </View>
       </View>
 

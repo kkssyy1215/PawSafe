@@ -1,4 +1,5 @@
 import type { GeoJsonCoordinate, HeatSegment, RouteAnalysisRequest, RouteAnalysisResponse, RouteStats } from '@/src/api/contracts';
+import { csvDemoRouteCandidates } from '@/src/mocks/demoRouteCandidates';
 
 const shortestCoordinates: GeoJsonCoordinate[] = [
   [126.91, 37.55], [126.907, 37.551], [126.904, 37.552], [126.901, 37.5535], [126.9, 37.555],
@@ -97,8 +98,9 @@ function buildResponse(
   scenario: string,
   pawsafe: RouteStats,
   sameRoute = false,
+  shortestRoute: RouteStats = shortestBase,
 ): RouteAnalysisResponse {
-  const shortest = adaptRoute(shortestBase, request);
+  const shortest = adaptRoute(shortestRoute, request);
   const adaptedPawsafe = adaptRoute(pawsafe, request);
   const distanceDelta = adaptedPawsafe.distance_m - shortest.distance_m;
   const durationDelta = adaptedPawsafe.duration_min - shortest.duration_min;
@@ -137,6 +139,29 @@ function buildResponse(
 export type DemoSuccessScenario = 'cool-improvement' | 'fast-near-shortest' | 'same-route' | 'no-improvement';
 
 export function getMockRouteScenario(request: RouteAnalysisRequest): RouteAnalysisResponse {
+  const highHeatCandidate = csvDemoRouteCandidates.find(
+    (candidate) => candidate.category === 'highest_known_surface'
+      && request.destination.id === `${candidate.id.toLowerCase()}_destination`,
+  );
+  if (highHeatCandidate) {
+    const highHeatShortest = {
+      ...shortestBase,
+      heat_cost: highHeatCandidate.fastHeatCost,
+    };
+    const highHeatPawsafe = {
+      ...shortestBase,
+      route_id: `pawsafe_${highHeatCandidate.id.toLowerCase()}`,
+      label: 'PawSafe 고열 경고 확인 경로',
+      heat_cost: highHeatCandidate.coolHeatCost,
+    };
+    return buildResponse(
+      request,
+      `high-heat-${highHeatCandidate.id.toLowerCase()}`,
+      highHeatPawsafe,
+      true,
+      highHeatShortest,
+    );
+  }
   if (request.destination.id === 'scenario_same_route') {
     return buildResponse(request, 'same-route', { ...shortestBase, route_id: 'pawsafe_same', label: 'PawSafe 예시 경로' }, true);
   }

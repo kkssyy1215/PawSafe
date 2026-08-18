@@ -1,9 +1,4 @@
-"""KMA short-term forecast retrieval and future feature construction.
-
-The KMA forecast is an online input. ASOS remains the historical baseline
-used to fill the few fields that the short-term forecast does not provide,
-most importantly hourly solar radiation.
-"""
+"""Online weather retrieval and time-dependent feature construction."""
 
 from __future__ import annotations
 
@@ -282,7 +277,12 @@ def build_forecast_weather_window(
 
     target = choose_forecast_timestamp(forecast, target_timestamp)
     interval = int(cfg["time"]["shadow_interval_minutes"])
-    window_hours = float(cfg["time"]["cumulative_window_hours"])
+    window_hours = float(
+        cfg["time"].get(
+            "inference_history_hours",
+            cfg["time"]["cumulative_window_hours"],
+        )
+    )
     times = pd.date_range(
         target - pd.Timedelta(hours=window_hours),
         target,
@@ -309,6 +309,17 @@ def build_forecast_weather_window(
             number = _parse_number(source.get(name))
             return default if number is None else number
 
+        observed_solar = _parse_number(row.get("solar_radiation_mj_m2"))
+        solar_radiation = (
+            max(0.0, observed_solar)
+            if observed_solar is not None
+            else _estimate_solar_radiation(
+                timestamp,
+                row.get("sky_code", 4),
+                solar_profile,
+                cfg,
+            )
+        )
         rows.append(
             {
                 "timestamp": timestamp,
@@ -316,12 +327,7 @@ def build_forecast_weather_window(
                 "humidity_pct": value("humidity_pct"),
                 "wind_speed_ms": max(0.0, value("wind_speed_ms")),
                 "rainfall_mm": max(0.0, value("rainfall_mm")),
-                "solar_radiation_mj_m2": _estimate_solar_radiation(
-                    timestamp,
-                    row.get("sky_code", 4),
-                    solar_profile,
-                    cfg,
-                ),
+                "solar_radiation_mj_m2": solar_radiation,
             }
         )
 

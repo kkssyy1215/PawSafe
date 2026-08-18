@@ -23,9 +23,10 @@ EXPO_PUBLIC_API_BASE_URL=http://127.0.0.1:8000
 - `POST /v1/route-analyses`: fast/cool 경로 비교
 
 모바일 앱은 `departure_at`을 보내지 않고 요청 시점의 한국 표준시를 사용합니다.
-`fast`는 Kakao 빠른 보행경로만 받아 단일 결과로 표시하고 모델 서버를 호출하지
-않습니다. `cool`은 모델팀 서버가 AWS·ASOS 자료를 직접 조회해 계산한 일반
-최단경로와 PawSafe 추천경로를 비교 화면에 표시합니다.
+`fast`는 모델팀 서버가 계산한 일반 최단경로만 단일 결과로 표시합니다. `cool`은
+같은 일반 최단경로와 최신 ASOS 12시간 자료를 반영한 PawSafe 추천경로를 비교 화면에
+표시합니다. 따라서 같은 출발지·목적지의 fast 경로와 cool의 `shortest`는
+동일합니다.
 
 GeoJSON 좌표는 `[longitude, latitude]` 순서입니다. 앱은 거리, 예상 시간,
 상대 Heat Cost, 최단 경로 대비 차이와 Heat Segment를 표시합니다. 정확한
@@ -40,6 +41,6 @@ GeoJSON 좌표는 `[longitude, latitude]` 순서입니다. 앱은 거리, 예상
 - `validation_status=not_validated`: 실측 검증 전 안내 유지
 - 지도·경로 화면: OpenStreetMap과 기상청 출처 표시 유지
 
-AWS·ASOS 실시간 모델은 아직 연결 전입니다. 현재 그래프/Heat Cost 스냅샷과
-향후 모델의 교체 경계는 `backend/docs/REALTIME_MODEL_INTEGRATION.md`를
-기준으로 합니다.
+ASOS 최신/고정 전환형 12일 모델은 `ANALYSIS_PROVIDER=pawsafe_12day`로 연결되어
+있습니다. 향후 모델의 교체 경계는
+`backend/docs/REALTIME_MODEL_INTEGRATION.md`를 기준으로 합니다.

@@ -7,10 +7,10 @@ import { colors, spacing, typography } from '@/src/theme/theme';
 
 export function FastRouteResultCard({ route }: { route: RouteStats }) {
   return (
-    <View accessible accessibilityLabel={`카카오맵 빠른 경로, ${formatDistance(route.distance_m)}, ${formatDuration(route.duration_min)}`} style={styles.card}>
+    <View accessible accessibilityLabel={`일반 최단경로, ${formatDistance(route.distance_m)}, ${formatDuration(route.duration_min)}`} style={styles.card}>
       <View style={styles.titleRow}>
         <View style={styles.icon}><Ionicons name="flash" size={21} color={colors.orange} /></View>
-        <View style={styles.copy}><Text style={styles.title}>카카오맵 빠른 경로</Text><Text style={styles.description}>가장 거리가 짧은 보행경로</Text></View>
+        <View style={styles.copy}><Text style={styles.title}>일반 최단경로</Text><Text style={styles.description}>가장 거리가 짧은 보행경로</Text></View>
         <Text style={styles.badge}>FAST</Text>
       </View>
       <View style={styles.stats}>

@@ -81,36 +81,25 @@ def create_analysis_provider(
         )
     if settings.analysis_provider == "pawsafe_12day":
         model_config_path = settings.resolve_path(settings.pawsafe_12day_config_path)
-        if not settings.kma_aws_auth_key:
-            model_cool_provider: AnalysisProvider = UnavailableAnalysisProvider(
-                PipelineNotReadyError("kma_aws_auth_key")
+        if not settings.asos_service_key:
+            model_provider: AnalysisProvider = UnavailableAnalysisProvider(
+                PipelineNotReadyError("asos_service_key")
             )
         elif missing_model_assets(model_config_path):
-            model_cool_provider = UnavailableAnalysisProvider(
+            model_provider = UnavailableAnalysisProvider(
                 PipelineNotReadyError("pawsafe_12day_assets")
             )
         else:
-            model_cool_provider = Pawsafe12DayAnalysisProvider(
+            model_provider = Pawsafe12DayAnalysisProvider(
                 config_path=model_config_path,
-                aws_auth_key=settings.kma_aws_auth_key,
+                asos_service_key=settings.asos_service_key,
+                asos_base_url=settings.asos_base_url,
+                asos_station_id=settings.asos_station_id,
+                asos_inference_mode=settings.pawsafe_asos_inference_mode,
+                asos_fixed_timestamp=settings.pawsafe_asos_fixed_timestamp,
                 walking_speed_m_per_minute=settings.walking_speed_m_per_minute,
             )
-        if not settings.kakao_rest_api_key:
-            return WalkModeAnalysisProvider(
-                fast_provider=UnavailableAnalysisProvider(
-                    PipelineNotReadyError("kakao_rest_api_key")
-                ),
-                cool_provider=model_cool_provider,
-            )
-        return WalkModeAnalysisProvider(
-            fast_provider=KakaoWalkingAnalysisProvider(
-                client,
-                api_key=settings.kakao_rest_api_key,
-                mock_scenarios_path=settings.resolve_path(settings.mock_scenarios_file_path),
-                timeout_seconds=settings.request_timeout_seconds,
-            ),
-            cool_provider=model_cool_provider,
-        )
+        return model_provider
     if not graph_data or not heat_provider or not shortest_route_provider or not walk_modes:
         return UnavailableAnalysisProvider(
             readiness_error or PipelineNotReadyError("graph_or_heat_data")

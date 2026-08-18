@@ -6,11 +6,13 @@ Create a Blueprint from the repository root `render.yaml`. Set the secret values
 requested by Render and set `ALLOWED_ORIGINS` to the final web URL.
 
 The Docker image includes the versioned 12-day model, 3,797-edge graph, ASOS
-baseline, and precomputed shade features. Configure `KMA_AWS_AUTH_KEY` and
-`KAKAO_REST_API_KEY` as Render secrets. A cool request retrieves the latest KMA
-AWS station-108 observation and runs model inference in the web process; a fast
-request uses Kakao only. `KMA_SERVICE_KEY` and `ASOS_SERVICE_KEY` are optional
-unless the separate weather inspection endpoints are required.
+baseline, and precomputed shade features. Configure `ASOS_SERVICE_KEY` and
+`KAKAO_REST_API_KEY` as Render secrets. Both walk modes use the internal model
+graph: fast returns the distance shortest route, while cool compares it with
+the Heat Cost route. In normal mode, a request retrieves the latest complete
+12-hour KMA ASOS station-108 window available through D-1 and runs model inference in the web process.
+Set `PAWSAFE_ASOS_INFERENCE_MODE=latest`; use `fixed` only for the reproducible
+2026-08-15 16:00 demonstration.
 
 ## Web app (Vercel)
 

@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useId, useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import type { GeoJsonCoordinate, HeatSegment } from '@/src/api/contracts';
 import { colors, spacing, typography } from '@/src/theme/theme';
@@ -33,6 +33,10 @@ export function WebRouteMap({
   walkMode = 'cool',
   onSegmentPress,
 }: RouteMapProps) {
+  const instanceId = useId().replace(/:/g, '');
+  const routeGradientId = `route-${walkMode}-${instanceId}`;
+  const routeShadowId = `route-shadow-${instanceId}`;
+  const streetGridId = `street-grid-${instanceId}`;
   const geometry = useMemo(() => {
     const shortestCoordinates = shortest?.geometry.coordinates ?? [];
     const pawsafeCoordinates = pawsafe?.geometry.coordinates ?? [];
@@ -68,34 +72,34 @@ export function WebRouteMap({
   }
 
   const routeColor = getRecommendedRouteColor(walkMode);
-  const routeLabel = walkMode === 'fast' ? '카카오 보행 경로' : 'PawSafe 추천 경로';
+  const routeLabel = walkMode === 'fast' ? '일반 최단경로' : 'PawSafe 추천 경로';
   return (
     <View accessible accessibilityLabel={`${origin.name}에서 ${destination.name}까지 실제 경로 좌표 지도`} style={styles.wrapper}>
       <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} preserveAspectRatio="xMidYMid meet" style={svgStyle} aria-hidden="true">
         <defs>
-          <linearGradient id={`route-${walkMode}`} x1="0" y1="0" x2="1" y2="1">
+          <linearGradient id={routeGradientId} x1="0" y1="0" x2="1" y2="1">
             <stop offset="0%" stopColor={routeColor} />
             <stop offset="100%" stopColor={walkMode === 'fast' ? '#B36CF4' : '#6DCA7E'} />
           </linearGradient>
-          <filter id="route-shadow" x="-20%" y="-20%" width="140%" height="140%">
+          <filter id={routeShadowId} x="-20%" y="-20%" width="140%" height="140%">
             <feDropShadow dx="0" dy="3" stdDeviation="4" floodColor="#26382C" floodOpacity="0.18" />
           </filter>
-          <pattern id="street-grid" width="118" height="86" patternUnits="userSpaceOnUse" patternTransform="rotate(-12)">
+          <pattern id={streetGridId} width="118" height="86" patternUnits="userSpaceOnUse" patternTransform="rotate(-12)">
             <path d="M 0 18 H 118 M 34 0 V 86" fill="none" stroke="#E5E7E1" strokeWidth="12" />
             <path d="M 0 18 H 118 M 34 0 V 86" fill="none" stroke="#FFFFFF" strokeWidth="7" />
           </pattern>
         </defs>
 
         <rect width={WIDTH} height={HEIGHT} rx="28" fill="#F2F3EF" />
-        <rect width={WIDTH} height={HEIGHT} rx="28" fill="url(#street-grid)" opacity="0.78" />
+        <rect width={WIDTH} height={HEIGHT} rx="28" fill={`url(#${streetGridId})`} opacity="0.78" />
         <path d="M 670 -20 C 735 70 720 154 806 210 C 860 246 910 258 950 260 L 950 -20 Z" fill="#DDEFE3" opacity="0.9" />
         <path d="M -20 350 C 130 302 222 350 344 315 C 446 286 520 300 610 356 L 610 460 L -20 460 Z" fill="#E8F0E5" />
         <path d="M 755 448 C 740 365 782 325 920 286" fill="none" stroke="#D7E9F0" strokeWidth="44" opacity="0.8" />
 
         {geometry.shortestPath ? <path d={geometry.shortestPath} fill="none" stroke={colors.routeBaseline} strokeWidth={selectedRoute === 'pawsafe' ? 6 : 9} strokeLinecap="round" strokeLinejoin="round" opacity={selectedRoute === 'pawsafe' ? 0.72 : 1} /> : null}
         {geometry.pawsafePath ? <>
-          <path d={geometry.pawsafePath} fill="none" stroke="#FFFFFF" strokeWidth="17" strokeLinecap="round" strokeLinejoin="round" filter="url(#route-shadow)" />
-          <path d={geometry.pawsafePath} fill="none" stroke={`url(#route-${walkMode})`} strokeWidth={selectedRoute === 'shortest' ? 6 : 9} strokeLinecap="round" strokeLinejoin="round" opacity={selectedRoute === 'shortest' ? 0.72 : 1} />
+          <path d={geometry.pawsafePath} fill="none" stroke="#FFFFFF" strokeWidth="17" strokeLinecap="round" strokeLinejoin="round" filter={`url(#${routeShadowId})`} />
+          <path d={geometry.pawsafePath} fill="none" stroke={`url(#${routeGradientId})`} strokeWidth={selectedRoute === 'shortest' ? 6 : 9} strokeLinecap="round" strokeLinejoin="round" opacity={selectedRoute === 'shortest' ? 0.72 : 1} />
         </> : null}
         {geometry.segmentPaths.map(({ segment, path }) => selectedSegmentId === segment.edge_id && path ? <g key={`selected-${segment.edge_id}`}>
           <path d={path} fill="none" stroke="#FFFFFF" strokeWidth="15" strokeLinecap="round" strokeLinejoin="round" />

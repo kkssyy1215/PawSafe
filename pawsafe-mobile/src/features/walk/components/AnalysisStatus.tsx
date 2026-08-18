@@ -5,7 +5,7 @@ import { colors, spacing, typography } from '@/src/theme/theme';
 
 const steps = [
   { label: '포장재 정보 결합', description: '보행로의 포장재와 흡수율을 확인하고 있어요.' },
-  { label: '기상정보 분석', description: '현재 AWS 관측값과 ASOS 기준자료를 결합하고 있어요.' },
+  { label: '기상정보 분석', description: 'ASOS의 최근 12시간 기상 관측자료를 확인하고 있어요.' },
   { label: '일사량과 그늘 분석', description: '최근 햇빛 노출과 시간대별 그늘 비율을 계산하고 있어요.' },
   { label: 'Edge Heat Cost 계산', description: '각 보행로의 상대적인 열노출 값을 계산하고 있어요.' },
   { label: '시원한 경로 탐색', description: '열노출이 낮은 산책길을 부드럽게 이어 찾고 있어요.' },
@@ -32,7 +32,7 @@ export function AnalysisStatus({ isMock }: { isMock: boolean }) {
 
       <SmoothRouteLoader walkMode="cool" statusLabel={currentStep.label} statusDescription={description} />
 
-      <Text style={styles.scope}>포장재 · AWS·ASOS 기상 · 일사량 · 그늘 · Heat Cost를 함께 반영해요.</Text>
+      <Text style={styles.scope}>포장재 · ASOS 기상 · 일사량 · 그늘 · Heat Cost를 함께 반영해요.</Text>
     </View>
   );
 }

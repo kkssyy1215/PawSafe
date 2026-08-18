@@ -22,10 +22,9 @@ from app.core.errors import (
     ModelNotReadyError,
     NoRouteError,
 )
-from app.model_runtime.pawsafe_12day.aws_live import fetch_live_aws
+from app.model_runtime.pawsafe_12day.asos_live import fetch_asos_inference_window
 from app.model_runtime.pawsafe_12day.forecast import build_forecast_features
 from app.model_runtime.pawsafe_12day.inference import (
-    add_continuous_heat_cost,
     load_model_bundle,
     score_features,
 )
@@ -43,12 +42,11 @@ from app.schemas.route import (
 from app.services.route_statistics_service import RouteStatisticsService
 
 SEOUL = ZoneInfo("Asia/Seoul")
-AWS_STATION_ID = "108"
-MODEL_VERSION = "pawsafe-12day"
+MODEL_VERSION = "pawsafe-summer-09-21-12day-v5"
 REQUIRED_MODEL_PATHS = (
     Path("data/raw/asos_hourly.csv"),
     Path("data/processed/edges_static.gpkg"),
-    Path("data/processed/edge_time_features.parquet"),
+    Path("data/processed/shadow_cache_songpa_full_network_v3.parquet"),
     Path("outputs/heat_cluster_model.joblib"),
 )
 WeatherFetcher = Callable[..., tuple[pd.DataFrame, pd.Timestamp]]
@@ -71,18 +69,26 @@ class _RuntimeAssets:
 
 
 class Pawsafe12DayAnalysisProvider:
-    """Run the supplied 12-day model with current KMA AWS observations."""
+    """Run the supplied schema-v5 model with a complete ASOS history window."""
 
     def __init__(
         self,
         *,
         config_path: Path,
-        aws_auth_key: str,
+        asos_service_key: str,
+        asos_base_url: str,
+        asos_station_id: int,
+        asos_inference_mode: str,
+        asos_fixed_timestamp: str,
         walking_speed_m_per_minute: float,
-        weather_fetcher: WeatherFetcher = fetch_live_aws,
+        weather_fetcher: WeatherFetcher = fetch_asos_inference_window,
     ) -> None:
         self._config_path = config_path
-        self._aws_auth_key = aws_auth_key
+        self._asos_service_key = asos_service_key
+        self._asos_base_url = asos_base_url
+        self._asos_station_id = asos_station_id
+        self._asos_inference_mode = asos_inference_mode
+        self._asos_fixed_timestamp = asos_fixed_timestamp
         self._walking_speed = walking_speed_m_per_minute
         self._weather_fetcher = weather_fetcher
         self._assets: _RuntimeAssets | None = None
@@ -98,7 +104,7 @@ class Pawsafe12DayAnalysisProvider:
         except (FileNotFoundError, KeyError, ValueError) as exc:
             raise InvalidDataFileError("pawsafe_12day") from exc
         except RuntimeError as exc:
-            if "AWS" in str(exc) or "KMA_AWS_AUTH_KEY" in str(exc):
+            if "ASOS" in str(exc) or "ASOS_SERVICE_KEY" in str(exc):
                 raise ExternalApiError() from exc
             raise ModelNotReadyError() from exc
         except Exception as exc:
@@ -122,10 +128,11 @@ class Pawsafe12DayAnalysisProvider:
             ).to_crs(config["project_crs"])
             baseline = load_weather(config)
             historical_features = pd.read_parquet(
-                root / "data/processed/edge_time_features.parquet",
+                root / "data/processed/shadow_cache_songpa_full_network_v3.parquet",
                 columns=["edge_id", "timestamp", "shade_ratio"],
             )
             model = load_model_bundle(root / "outputs/heat_cluster_model.joblib")
+            self._validate_assets(edges, model)
             graph, _ = build_graph(edges, config)
             if graph.number_of_nodes() == 0:
                 raise ValueError("모델 보행 그래프에 노드가 없습니다.")
@@ -142,9 +149,14 @@ class Pawsafe12DayAnalysisProvider:
     def _analyze_sync(self, request: RouteAnalysisRequest) -> RouteAnalysisResponse:
         assets = self._load_assets()
         weather, _ = self._weather_fetcher(
-            auth_key=self._aws_auth_key,
-            station_id=AWS_STATION_ID,
-            window_hours=6,
+            service_key=self._asos_service_key,
+            station_id=self._asos_station_id,
+            base_url=self._asos_base_url,
+            mode=self._asos_inference_mode,
+            fixed_timestamp=self._asos_fixed_timestamp,
+            history_hours=int(assets.config["time"].get("inference_history_hours", 12)),
+            service_start_hour=int(assets.config["time"].get("service_start_hour", 9)),
+            service_end_hour=int(assets.config["time"].get("service_end_hour", 21)),
         )
         weather = self._normalize_weather(weather)
         requested = weather["timestamp"].max()
@@ -161,10 +173,10 @@ class Pawsafe12DayAnalysisProvider:
         )
         target_features = current_features.loc[current_features["timestamp"].eq(matched)].copy()
         if target_features.empty:
-            raise RuntimeError("현재 AWS 관측 시각의 Edge Feature가 없습니다.")
+            raise RuntimeError("현재 ASOS 관측 시각의 Edge Feature가 없습니다.")
 
-        scored = add_continuous_heat_cost(score_features(target_features, assets.model))
-        heat_by_edge = dict(zip(scored["edge_id"], scored["heat_cost_continuous"], strict=True))
+        scored = score_features(target_features, assets.model)
+        heat_by_edge = dict(zip(scored["edge_id"], scored["heat_cost"], strict=True))
         feature_by_edge = scored.drop_duplicates("edge_id").set_index("edge_id")
 
         points = gpd.GeoSeries(
@@ -201,8 +213,16 @@ class Pawsafe12DayAnalysisProvider:
                 message="Heat Cost는 상대 열노출 지표이며 노면온도(℃)나 안전 판정값이 아닙니다.",
             ),
             WarningMessage(
-                code="AWS_LIVE_OBSERVATION",
-                message="KMA AWS 서울 108번의 최신 관측값과 12일 ASOS 기준자료를 사용했습니다.",
+                code=(
+                    "ASOS_FIXED_DEMO_OBSERVATION"
+                    if self._asos_inference_mode == "fixed"
+                    else "ASOS_LATEST_OBSERVATION"
+                ),
+                message=(
+                    "ASOS 서울 108번의 2026-08-15 16:00 고정 관측과 직전 12시간을 사용했습니다."
+                    if self._asos_inference_mode == "fixed"
+                    else "ASOS 서울 108번의 최신 유효 관측과 직전 12시간을 사용했습니다."
+                ),
             ),
         ]
         if comparison.heat_cost_delta >= 0:
@@ -220,14 +240,23 @@ class Pawsafe12DayAnalysisProvider:
         return RouteAnalysisResponse(
             analysis_id=f"analysis_{digest}",
             is_demo=False,
-            analysis_source="pawsafe_12day_aws_live",
+            analysis_source=(
+                "pawsafe_summer_09_21_12day_v5_asos_fixed"
+                if self._asos_inference_mode == "fixed"
+                else "pawsafe_summer_09_21_12day_v5_asos_latest"
+            ),
             validation_status="not_validated",
             requested_departure_at=request.departure_at,
             generated_at=datetime.now(UTC),
             data_valid_at=data_valid_at,
             graph_version=f"{MODEL_VERSION}-edges-{len(assets.edges)}",
-            heat_data_version=f"{MODEL_VERSION}-aws-{AWS_STATION_ID}-{matched:%Y%m%d%H%M}",
-            weight_profile=WeightProfileResponse(id="pawsafe_12day_cool_0.95", is_demo=False),
+            heat_data_version=(
+                f"{MODEL_VERSION}-asos-{self._asos_station_id}-{matched:%Y%m%d%H%M}"
+            ),
+            weight_profile=WeightProfileResponse(
+                id="pawsafe_summer_09_21_cool_0.95",
+                is_demo=False,
+            ),
             warnings=warnings,
             shortest=shortest,
             pawsafe=pawsafe,
@@ -243,7 +272,7 @@ class Pawsafe12DayAnalysisProvider:
     @staticmethod
     def _normalize_weather(weather: pd.DataFrame) -> pd.DataFrame:
         if "timestamp" not in weather:
-            raise RuntimeError("AWS 기상자료에 timestamp 열이 없습니다.")
+            raise RuntimeError("ASOS 기상자료에 timestamp 열이 없습니다.")
         result = weather.copy()
         timestamps = pd.to_datetime(result["timestamp"], errors="coerce")
         if getattr(timestamps.dt, "tz", None) is not None:
@@ -251,8 +280,24 @@ class Pawsafe12DayAnalysisProvider:
         result["timestamp"] = timestamps
         result = result.dropna(subset=["timestamp"]).sort_values("timestamp")
         if result.empty:
-            raise RuntimeError("유효한 AWS 관측자료가 없습니다.")
+            raise RuntimeError("유효한 ASOS 관측자료가 없습니다.")
         return result.reset_index(drop=True)
+
+    @staticmethod
+    def _validate_assets(edges: gpd.GeoDataFrame, model: dict[str, Any]) -> None:
+        if model.get("schema_version") != 5:
+            raise ValueError("여름 09~21시 schema v5 모델이 아닙니다.")
+        expected_count = int(model.get("edge_count", -1))
+        if expected_count != len(edges):
+            raise ValueError(f"학습 모델과 Edge 수가 다릅니다: {expected_count} != {len(edges)}")
+        fingerprint = hashlib.sha256(
+            "|".join(
+                f"{edge_id}:{float(length_m):.3f}"
+                for edge_id, length_m in zip(edges["edge_id"], edges["length_m"], strict=True)
+            ).encode("utf-8")
+        ).hexdigest()
+        if fingerprint != model.get("edge_fingerprint"):
+            raise ValueError("학습 모델과 현재 Edge fingerprint가 다릅니다.")
 
     def _summarize_route(
         self,

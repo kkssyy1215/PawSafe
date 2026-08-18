@@ -52,4 +52,17 @@ describe('deterministic mock walk flow', () => {
     controller.abort();
     await expect(analysis).rejects.toMatchObject({ code: 'CANCELLED' });
   });
+
+  it('provides a pipeline fixture that crosses the average Heat Cost warning threshold', async () => {
+    const provider = new MockAnalysisProvider();
+    const highHeatRequest: RouteAnalysisRequest = {
+      ...request,
+      origin: { id: 'demo_011_origin', name: '문정동 646-1', address: '서울특별시 송파구 문정동 646-1', lat: 37.484080858, lng: 127.114823773 },
+      destination: { id: 'demo_011_destination', name: '장지동 859-1', address: '서울특별시 송파구 장지동 859-1', lat: 37.478385181, lng: 127.133232038 },
+    };
+
+    const result = routeAnalysisResponseSchema.parse(await provider.analyzeRoute(highHeatRequest));
+    expect(result.shortest.heat_cost).toBeGreaterThanOrEqual(80);
+    expect(result.pawsafe.heat_cost).toBeGreaterThanOrEqual(80);
+  });
 });

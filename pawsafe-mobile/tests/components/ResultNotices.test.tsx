@@ -1,7 +1,9 @@
-import { render } from '@testing-library/react-native';
+import { fireEvent, render } from '@testing-library/react-native';
 import type { HeatSegment } from '@/src/api/contracts';
 import { DemoNotice } from '@/src/features/walk/components/DemoNotice';
 import { HeatSegmentCard } from '@/src/features/walk/components/HeatSegmentCard';
+import { HeatRiskDecisionModal } from '@/src/features/walk/components/HeatRiskDecisionModal';
+import { HeatRiskWarning } from '@/src/features/walk/components/HeatRiskWarning';
 
 const nullableSegment: HeatSegment = {
   edge_id: 'edge-null',
@@ -32,5 +34,31 @@ describe('result disclosure components', () => {
     expect(screen.getByText('MVP 예시 시나리오')).toBeTruthy();
     expect(screen.getByText('실측 검증 전')).toBeTruthy();
     expect(screen.queryByText(/신뢰도/)).toBeNull();
+  });
+
+  it('shows the walk warning when the average Heat Cost is 80 or higher', async () => {
+    const atThreshold = await render(<HeatRiskWarning averageHeatCost={80} />);
+    expect(atThreshold.getByText(/평균 Heat Cost가 80 이상/)).toBeTruthy();
+    await atThreshold.unmount();
+
+    const belowThreshold = await render(<HeatRiskWarning averageHeatCost={79.9} />);
+    expect(belowThreshold.queryByText(/산책 주의/)).toBeNull();
+  });
+
+  it('asks the user whether to continue when the average Heat Cost is 80 or higher', async () => {
+    const onContinue = jest.fn();
+    const onCancelWalk = jest.fn();
+    const screen = await render(
+      <HeatRiskDecisionModal averageHeatCost={84.7} visible onContinue={onContinue} onCancelWalk={onCancelWalk} />,
+    );
+
+    expect(screen.getByRole('alert')).toBeTruthy();
+    expect(screen.getByText('85')).toBeTruthy();
+    expect(screen.getByText('/ 80')).toBeTruthy();
+    expect(screen.getByText('Heat Cost가 80 이상이에요. 안전한 시간대로 산책을 미뤄 주세요.')).toBeTruthy();
+    await fireEvent.press(screen.getByText('그래도 경로 추천받기'));
+    await fireEvent.press(screen.getByText('산책하지 않을게요'));
+    expect(onContinue).toHaveBeenCalledTimes(1);
+    expect(onCancelWalk).toHaveBeenCalledTimes(1);
   });
 });

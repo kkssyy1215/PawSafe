@@ -6,6 +6,7 @@ import { AppButton } from '@/src/components/common/AppButton';
 import { ScreenContainer } from '@/src/components/common/ScreenContainer';
 import { PawSafeMap } from '@/src/components/map/PawSafeMap';
 import { env } from '@/src/config/env';
+import { HeatRiskWarning } from '@/src/features/walk/components/HeatRiskWarning';
 import { useCurrentLocation } from '@/src/features/walk/hooks/useCurrentLocation';
 import { formatDistance } from '@/src/features/walk/utils/formatDistance';
 import { formatDuration } from '@/src/features/walk/utils/formatDuration';
@@ -41,6 +42,7 @@ export default function LiveWalkScreen() {
           <Text style={styles.title}>{routeLabel}를 따라 걸어보세요</Text>
           <Text style={styles.description}>현재 위치와 전체 산책경로, 목적지를 한눈에 확인할 수 있어요.</Text>
         </View>
+        <HeatRiskWarning averageHeatCost={route.heat_cost} />
         <PawSafeMap
           origin={request.origin}
           destination={request.destination}

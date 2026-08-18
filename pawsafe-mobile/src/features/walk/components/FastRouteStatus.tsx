@@ -5,7 +5,7 @@ import { colors, spacing, typography } from '@/src/theme/theme';
 
 const steps = [
   { label: '출발·도착지 확인', description: '선택한 두 장소의 좌표를 확인하고 있어요.' },
-  { label: '카카오맵 경로 연결', description: '카카오맵에서 가장 짧은 보행경로를 불러오고 있어요.' },
+  { label: '보행로 그래프 연결', description: 'PawSafe 보행로 그래프에서 연결 가능한 길을 확인하고 있어요.' },
   { label: '거리와 시간 정리', description: '총거리와 예상 산책 시간을 확인하고 있어요.' },
 ];
 
@@ -22,14 +22,14 @@ export function FastRouteStatus() {
   return (
     <View accessible accessibilityRole="progressbar" accessibilityState={{ busy: true }} accessibilityLiveRegion="polite" style={styles.container}>
       <View style={styles.heading}>
-        <View style={styles.eyebrow}><View style={styles.eyebrowDot} /><Text style={styles.eyebrowText}>KAKAO FAST ROUTE</Text></View>
+        <View style={styles.eyebrow}><View style={styles.eyebrowDot} /><Text style={styles.eyebrowText}>PAWSAFE FAST ROUTE</Text></View>
         <Text style={styles.title}>가장 빠른 산책길을{`\n`}찾고 있어요</Text>
-        <Text style={styles.description}>열환경 분석 없이 가장 짧은 카카오맵 보행경로를 바로 조회해요.</Text>
+        <Text style={styles.description}>PawSafe 보행로 그래프에서 거리 기준 최단경로를 계산해요.</Text>
       </View>
 
       <SmoothRouteLoader walkMode="fast" statusLabel={currentStep.label} statusDescription={currentStep.description} />
 
-      <Text style={styles.scope}>카카오맵 보행거리와 예상 시간만 빠르게 확인해요.</Text>
+      <Text style={styles.scope}>시원한 산책과 같은 보행로 그래프의 최단경로를 확인해요.</Text>
     </View>
   );
 }

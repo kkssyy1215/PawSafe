@@ -35,7 +35,18 @@ def load_model_bundle(path: str | Path) -> dict:
             f"모델 파일이 없습니다: {model_path}. 먼저 run_pipeline.py를 완료해 주세요."
         )
     bundle = joblib.load(model_path)
-    required = {"scaler", "model", "features", "cluster_heat"}
+    if bundle.get("schema_version") == 5:
+        required = {
+            "cluster_features",
+            "cluster_medians",
+            "cluster_scaler",
+            "heat_axis",
+            "heat_bounds",
+            "heat_features",
+            "kmeans",
+        }
+    else:
+        required = {"scaler", "model", "features", "cluster_heat"}
     missing = required.difference(bundle)
     if missing:
         raise ValueError(f"모델 묶음에 필요한 항목이 없습니다: {sorted(missing)}")
@@ -43,6 +54,9 @@ def load_model_bundle(path: str | Path) -> dict:
 
 
 def score_features(features: pd.DataFrame, bundle: dict) -> pd.DataFrame:
+    if bundle.get("schema_version") == 5:
+        return _score_summer_service_model(features, bundle)
+
     columns = list(bundle["features"])
     missing = [column for column in columns if column not in features]
     if missing:
@@ -77,6 +91,48 @@ def score_features(features: pd.DataFrame, bundle: dict) -> pd.DataFrame:
     result = features.copy()
     result["cluster"] = labels.astype(int)
     result["heat_cost"] = np.clip(heat, 0.0, 100.0)
+    return result
+
+
+def _score_summer_service_model(features: pd.DataFrame, bundle: dict) -> pd.DataFrame:
+    """Apply the model team's fixed 09:00--21:00 training scale.
+
+    Unlike the legacy online display score, schema v5 must not be re-fitted or
+    re-scaled against the current request. The saved PCA axis and 09--21
+    training bounds define the stable 0--100 Heat Cost scale.
+    """
+
+    heat_axis = bundle["heat_axis"]
+    heat_columns = list(heat_axis["columns"])
+    missing = [column for column in heat_columns if column not in features]
+    if missing:
+        raise ValueError(f"여름 모델 Heat Cost feature가 없습니다: {missing}")
+
+    heat_medians = pd.Series(heat_axis["medians"], dtype=float)
+    heat_input = features[heat_columns].replace([np.inf, -np.inf], np.nan)
+    heat_input = heat_input.fillna(heat_medians)
+    standardized = heat_axis["scaler"].transform(heat_input)
+    projection = heat_axis["pca"].transform(standardized)[:, 0]
+    low, high = (float(value) for value in bundle["heat_bounds"])
+    if not np.isfinite(low) or not np.isfinite(high) or high <= low:
+        raise ValueError("여름 모델 Heat Cost 경계가 올바르지 않습니다.")
+
+    result = features.copy()
+    result["heat_cost"] = np.clip((projection - low) / (high - low) * 100.0, 0.0, 100.0)
+
+    cluster_columns = list(bundle["cluster_features"])
+    cluster_missing = [column for column in cluster_columns if column not in result]
+    if cluster_missing:
+        raise ValueError(f"여름 모델 군집 feature가 없습니다: {cluster_missing}")
+    cluster_medians = pd.Series(bundle["cluster_medians"], dtype=float)
+    cluster_input = result[cluster_columns].replace([np.inf, -np.inf], np.nan)
+    cluster_input = cluster_input.fillna(cluster_medians)
+    cluster_standardized = bundle["cluster_scaler"].transform(cluster_input)
+    cluster_pca = bundle.get("cluster_pca")
+    if cluster_pca is not None:
+        cluster_standardized = cluster_pca.transform(cluster_standardized)
+    result["cluster"] = bundle["kmeans"].predict(cluster_standardized).astype(int)
+    result["cluster_name"] = result["cluster"].map(bundle.get("cluster_names", {}))
     return result
 
 

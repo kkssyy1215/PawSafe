@@ -12,7 +12,7 @@ export function MapTextSummary({ origin, destination, shortest, pawsafe, segment
     : pawsafe
       ? `${recommendedLabel} ${formatDistance(pawsafe.distance_m)}.`
       : shortest
-        ? `${walkMode === 'fast' ? '카카오맵 빠른 경로' : '일반 최단 경로'} ${formatDistance(shortest.distance_m)}.`
+        ? `${walkMode === 'fast' ? '일반 최단경로' : '일반 최단 경로'} ${formatDistance(shortest.distance_m)}.`
         : '';
   const segmentText = counts ? ` 구간은 열노출 낮음 ${counts.low}개, 보통 ${counts.medium}개, 높음 ${counts.high}개, 정보 부족 ${counts.unknown}개입니다.` : '';
   return <View accessible style={[styles.container, visuallyHidden && styles.visuallyHidden]}><Text style={styles.title}>지도 텍스트 요약</Text><Text style={styles.text}>{origin.name}에서 {destination.name}까지 {routeText}{segmentText}</Text></View>;

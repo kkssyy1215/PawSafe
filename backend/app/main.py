@@ -91,7 +91,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             or (
                 uses_12day_model
                 and model_assets_ready
-                and bool(container.settings.kma_aws_auth_key)
+                and bool(container.settings.asos_service_key)
             )
         )
         return HealthResponse(
@@ -104,7 +104,6 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 in {
                     "graph",
                     "external",
-                    "pawsafe_12day",
                 }
                 and bool(container.settings.kakao_rest_api_key)
                 else container.settings.analysis_provider
@@ -112,14 +111,18 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             heat_cost_provider=container.settings.heat_cost_provider,
             place_provider=container.settings.place_provider,
             graph_version=(
-                "pawsafe-12day-edges-3797"
+                "pawsafe-summer-09-21-12day-v5-edges-3797"
                 if uses_12day_model and model_assets_ready
                 else container.graph_data.version
                 if container.graph_data
                 else None
             ),
             heat_data_version=(
-                "pawsafe-12day+aws-live"
+                (
+                    "pawsafe-summer-09-21-12day-v5+asos-fixed-20260815-1600"
+                    if container.settings.pawsafe_asos_inference_mode == "fixed"
+                    else "pawsafe-summer-09-21-12day-v5+asos-latest"
+                )
                 if uses_12day_model and model_assets_ready
                 else container.heat_provider.data_version
                 if container.heat_provider

@@ -39,7 +39,10 @@ async def capabilities(request: Request) -> CapabilityResponse:
         ),
         heat_model="pawsafe_12day" if uses_12day_model and model_assets_ready else "not_ready",
         heat_cost_source=(
-            "pawsafe_12day+KMA_AWS_station_108"
+            (
+                f"pawsafe_summer_09_21_12day_v5+KMA_ASOS_station_"
+                f"{settings.asos_station_id}_{settings.pawsafe_asos_inference_mode}"
+            )
             if uses_12day_model
             else "mock_fixture"
             if settings.heat_cost_provider == "mock"
@@ -50,8 +53,6 @@ async def capabilities(request: Request) -> CapabilityResponse:
             if settings.analysis_provider == "mock"
             else "kakao_walk"
             if settings.analysis_provider == "kakao_walk"
-            else "kakao_walk+pawsafe_12day"
-            if uses_12day_model and settings.kakao_rest_api_key
             else "pawsafe_12day"
             if uses_12day_model
             else "kakao_walk+internal_graph"

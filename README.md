@@ -9,7 +9,7 @@ Expo 앱과 FastAPI 백엔드입니다. 현재 저장소의 공유 기준은 이
 
 ```text
 PawSafe/
-├── backend/                 FastAPI API, 12일 모델 추론, KMA AWS·Kakao 연동
+├── backend/                 FastAPI API, 12일 모델 추론, KMA ASOS·Kakao 연동
 │   ├── app/                 백엔드 소스
 │   ├── data/models/         앱이 읽는 12일 모델·Edge·시간 피처
 │   ├── data/exports/        이전 파일 기반 분석 모드의 그래프·Heat Cost
@@ -24,7 +24,7 @@ PawSafe/
 ```
 
 현재 `cool` 요청은 `backend/data/models/pawsafe_12day/`의 모델·Edge·시간 피처를
-읽고 KMA AWS 최신 관측을 결합합니다. `backend/data/exports/`는 이전 파일 기반
+읽고 KMA ASOS가 제공하는 전날 최신 유효 12시간 관측을 결합합니다. `backend/data/exports/`는 이전 파일 기반
 분석 모드와 갱신 파이프라인 호환을 위해 유지합니다. 개인 API 키는
 `backend/.env`에만 두고 Git에는 올리지 않습니다.
 
@@ -44,18 +44,22 @@ cd PawSafe
 make setup
 ```
 
-그 다음 `backend/.env`에 Kakao 키와 기상청 APIHub AWS 인증키를 입력합니다.
-날씨 확인 API까지 사용할 경우 KMA·ASOS 키도 입력합니다. 키는 백엔드에만 두며
+그 다음 `backend/.env`에 기상청 ASOS 서비스 키를 입력합니다. Kakao 장소
+검색을 사용할 경우 Kakao 키를 추가합니다. 키는 백엔드에만 두며
 `pawsafe-mobile/.env`의 `EXPO_PUBLIC_` 변수에는 넣지 않습니다.
 
 ```text
 KAKAO_REST_API_KEY=...
-KMA_AWS_AUTH_KEY=...
+ASOS_SERVICE_KEY=...
+PAWSAFE_ASOS_INFERENCE_MODE=latest
 ```
 
-현재 실행 흐름은 `빠른 산책 → Kakao`, `시원한 산책 → 12일 모델 + 실시간
-KMA AWS 관측`입니다. 모델은 AWS 데이터로 매 요청 재학습하지 않고, 저장된
-모델에 최신 관측 피처를 입력해 Edge Heat Cost와 경로를 다시 계산합니다.
+현재 두 산책 모드는 같은 3,797개 보행 Edge와 12일 모델 분석 결과를 사용합니다.
+`빠른 산책`은 그 결과의 거리 기준 최단경로만 표시하고, `시원한 산책`은 같은
+최단경로와 Heat Cost 최소경로를 비교합니다. 모델은 ASOS 데이터로 매 요청
+재학습하지 않고, 저장된 모델에 최신 유효 12시간 관측 피처를 입력해 Edge Heat
+Cost와 경로를 다시 계산합니다. 시연은 `PAWSAFE_ASOS_INFERENCE_MODE=fixed`로
+전환하면 2026-08-15 16:00 결과를 재현합니다.
 
 ## 화면 테스트
 

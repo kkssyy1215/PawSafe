@@ -41,7 +41,6 @@ class Settings(BaseSettings):
 
     analysis_external_url: str | None = None
     pawsafe_12day_config_path: Path = Path("data/models/pawsafe_12day/config.json")
-    kma_aws_auth_key: str | None = None
     heat_cost_external_url: str | None = None
     shortest_route_external_url: str | None = None
     kakao_rest_api_key: str | None = None
@@ -52,6 +51,8 @@ class Settings(BaseSettings):
     asos_service_key: str | None = None
     asos_base_url: str = "https://apis.data.go.kr/1360000/AsosHourlyInfoService"
     asos_station_id: int = Field(default=108, gt=0)
+    pawsafe_asos_inference_mode: Literal["latest", "fixed"] = "latest"
+    pawsafe_asos_fixed_timestamp: str = "2026-08-15T16:00:00"
 
     allowed_origins: str = (
         "http://localhost:8081,http://127.0.0.1:8081,http://localhost:19006,http://127.0.0.1:19006"
@@ -81,7 +82,6 @@ class Settings(BaseSettings):
         "pipeline_heat_cost_file_path",
         "pipeline_data_version",
         "kma_service_key",
-        "kma_aws_auth_key",
         "asos_service_key",
         mode="before",
     )
