@@ -1,7 +1,7 @@
 import type { ConfigContext, ExpoConfig } from "expo/config";
 
 const locationPermission =
-  "출발지 설정을 위해 앱 사용 중 현재 위치 접근이 필요합니다.";
+  "출발지 설정과 산책 중 음성 경로 안내를 위해 앱 사용 중 현재 위치 접근이 필요합니다.";
 
 export default ({ config }: ConfigContext): ExpoConfig => {
   // Standalone Android builds of react-native-maps may need a Google Maps key.

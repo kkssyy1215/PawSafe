@@ -17,28 +17,36 @@ export interface RouteMapProps {
   selectedSegmentId?: string | null;
   selectedRoute?: 'shortest' | 'pawsafe' | null;
   walkMode?: WalkMode;
+  followCurrentLocation?: boolean;
   onSegmentPress?: (id: string) => void;
 }
 
 const segmentColors: Record<HeatSegment['level'], string> = { low: colors.low, medium: colors.medium, high: colors.high, unknown: colors.unknown };
 
-export function NativeMap({ origin, destination, currentLocation, shortest, pawsafe, segments, selectedSegmentId, selectedRoute, walkMode = 'cool', onSegmentPress }: RouteMapProps) {
+export function NativeMap({ origin, destination, currentLocation, shortest, pawsafe, segments, selectedSegmentId, selectedRoute, walkMode = 'cool', followCurrentLocation = false, onSegmentPress }: RouteMapProps) {
   const mapRef = useRef<MapView>(null);
   const [loaded, setLoaded] = useState(false);
   const [timedOut, setTimedOut] = useState(false);
   const shortestCoordinates = useMemo(() => geometryToMapCoordinates(shortest?.geometry), [shortest]);
   const pawsafeCoordinates = useMemo(() => geometryToMapCoordinates(pawsafe?.geometry), [pawsafe]);
-  const allCoordinates = useMemo(() => [
-    { latitude: origin.lat, longitude: origin.lng }, ...(currentLocation ? [{ latitude: currentLocation.lat, longitude: currentLocation.lng }] : []), ...shortestCoordinates, ...pawsafeCoordinates,
+  const routeCoordinates = useMemo(() => [
+    { latitude: origin.lat, longitude: origin.lng }, ...shortestCoordinates, ...pawsafeCoordinates,
     { latitude: destination.lat, longitude: destination.lng },
-  ], [currentLocation, destination.lat, destination.lng, origin.lat, origin.lng, pawsafeCoordinates, shortestCoordinates]);
+  ], [destination.lat, destination.lng, origin.lat, origin.lng, pawsafeCoordinates, shortestCoordinates]);
   useEffect(() => {
     const id = setTimeout(() => { if (!loaded) setTimedOut(true); }, 8_000);
     return () => clearTimeout(id);
   }, [loaded]);
   useEffect(() => {
-    if (loaded && allCoordinates.length >= 2) mapRef.current?.fitToCoordinates(allCoordinates, { edgePadding: { top: 48, right: 36, bottom: 48, left: 36 }, animated: false });
-  }, [allCoordinates, loaded]);
+    if (loaded && routeCoordinates.length >= 2 && !followCurrentLocation) mapRef.current?.fitToCoordinates(routeCoordinates, { edgePadding: { top: 48, right: 36, bottom: 48, left: 36 }, animated: false });
+  }, [followCurrentLocation, loaded, routeCoordinates]);
+  useEffect(() => {
+    if (!loaded || !followCurrentLocation || !currentLocation) return;
+    mapRef.current?.animateCamera(
+      { center: { latitude: currentLocation.lat, longitude: currentLocation.lng }, zoom: 17 },
+      { duration: 450 },
+    );
+  }, [currentLocation, followCurrentLocation, loaded]);
 
   if (shortestCoordinates.length === 0 && pawsafeCoordinates.length === 0 && (!segments || segments.length === 0)) {
     return <View accessible accessibilityLiveRegion="polite" style={styles.fallback}><Text style={styles.fallbackTitle}>표시할 경로 좌표가 없습니다</Text><Text style={styles.fallbackText}>아래 텍스트 요약에서 경로 정보를 확인해 주세요.</Text></View>;
