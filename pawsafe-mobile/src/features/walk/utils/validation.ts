@@ -21,6 +21,6 @@ export function validateWalkForm(form: WalkConditionFormState): string | null {
   if (isSamePlace(form.origin, form.destination)) return '출발지와 목적지를 다르게 선택해 주세요.';
   const originCoverage = 'is_in_coverage' in form.origin ? Boolean(form.origin.is_in_coverage) : true;
   const destinationCoverage = 'is_in_coverage' in form.destination ? Boolean(form.destination.is_in_coverage) : true;
-  if (!originCoverage || !destinationCoverage) return 'MVP 분석 범위 안의 출발지와 목적지를 선택해 주세요.';
+  if (!originCoverage || !destinationCoverage) return '온:길 분석 범위 안의 출발지와 목적지를 선택해 주세요.';
   return null;
 }

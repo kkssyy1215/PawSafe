@@ -45,7 +45,6 @@ class GraphData:
     edges: dict[str, EdgeRecord]
     indexed_nodes: tuple[NodeRecord, ...]
     node_index: STRtree
-    is_demo: bool
 
 
 class GraphRepository:
@@ -91,7 +90,6 @@ class GraphRepository:
 
         return self._build_graph(
             version=str(payload.get("graph_version", "unknown")),
-            is_demo=bool(payload.get("is_demo", False)),
             nodes=nodes,
             edge_payloads=edge_payloads,
         )
@@ -127,7 +125,6 @@ class GraphRepository:
             edge_payloads.append((properties, geometry))
         return self._build_graph(
             version=str(source.graph.get("graph_version", "unknown")),
-            is_demo=bool(source.graph.get("is_demo", False)),
             nodes=nodes,
             edge_payloads=edge_payloads,
         )
@@ -157,7 +154,6 @@ class GraphRepository:
         ]
         return self._build_graph(
             version=str(edges_frame.attrs.get("graph_version", path.stem)),
-            is_demo=False,
             nodes=nodes,
             edge_payloads=edge_payloads,
         )
@@ -274,7 +270,6 @@ class GraphRepository:
                     )
         return self._build_graph(
             version=f"pipeline:{path.stem}",
-            is_demo=False,
             nodes=nodes,
             edge_payloads=edge_payloads,
         )
@@ -331,7 +326,6 @@ class GraphRepository:
             edge_payloads.append((row, geometry))
         return self._build_graph(
             version=str(frame.attrs.get("graph_version", path.stem)),
-            is_demo=False,
             nodes=nodes,
             edge_payloads=edge_payloads,
         )
@@ -340,7 +334,6 @@ class GraphRepository:
         self,
         *,
         version: str,
-        is_demo: bool,
         nodes: dict[str, NodeRecord],
         edge_payloads: list[tuple[dict[str, Any], dict[str, Any] | None]],
     ) -> GraphData:
@@ -405,7 +398,6 @@ class GraphRepository:
             edges=edges,
             indexed_nodes=indexed_nodes,
             node_index=STRtree([Point(node.lng, node.lat) for node in indexed_nodes]),
-            is_demo=is_demo,
         )
 
     @staticmethod

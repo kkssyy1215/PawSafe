@@ -3,7 +3,7 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-echo "== PawSafe mobile tests =="
+echo "== 온:길 mobile tests =="
 (
   cd "$ROOT_DIR/pawsafe-mobile"
   npm test
@@ -11,7 +11,7 @@ echo "== PawSafe mobile tests =="
   npm run lint
 )
 
-echo "== PawSafe backend tests =="
+echo "== 온:길 backend tests =="
 (
   cd "$ROOT_DIR/backend"
   if [[ ! -x .venv/bin/python ]]; then
@@ -24,9 +24,9 @@ echo "== PawSafe backend tests =="
   .venv/bin/mypy app
 )
 
-echo "All PawSafe file-based tests passed."
+echo "All 온:길 application tests passed."
 
-echo "== PawSafe data pipeline tests =="
+echo "== 온:길 research pipeline tests =="
 (
   cd "$ROOT_DIR"
   if [[ ! -x .venv/bin/python ]]; then
@@ -36,4 +36,4 @@ echo "== PawSafe data pipeline tests =="
   .venv/bin/python -m pytest -q tests
 )
 
-echo "All PawSafe tests passed."
+echo "All 온:길 tests passed."

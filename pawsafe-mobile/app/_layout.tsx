@@ -7,6 +7,7 @@ import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { WalkFlowProvider } from '@/src/state/WalkFlowContext';
+import { VoiceAccessibilityProvider } from '@/src/features/accessibility/VoiceAccessibilityContext';
 import { colors } from '@/src/theme/colors';
 
 void SplashScreen.preventAutoHideAsync();
@@ -22,18 +23,20 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        <WalkFlowProvider>
-          <StatusBar style="dark" backgroundColor={colors.background} />
-          <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.background }, animation: reduceMotion ? 'none' : 'slide_from_right' }}>
-            <Stack.Screen name="index" />
-            <Stack.Screen name="analyzing" />
-            <Stack.Screen name="segments" />
-            <Stack.Screen name="comparison" />
-            <Stack.Screen name="live" />
-            <Stack.Screen name="error" />
-            <Stack.Screen name="+not-found" />
-          </Stack>
-        </WalkFlowProvider>
+        <VoiceAccessibilityProvider>
+          <WalkFlowProvider>
+            <StatusBar style="dark" backgroundColor={colors.background} />
+            <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.background }, animation: reduceMotion ? 'none' : 'slide_from_right' }}>
+              <Stack.Screen name="index" options={{ title: '온:길' }} />
+              <Stack.Screen name="analyzing" options={{ title: '온:길 · 경로 분석' }} />
+              <Stack.Screen name="segments" options={{ title: '온:길 · 경로 상세' }} />
+              <Stack.Screen name="comparison" options={{ title: '온:길 · 경로 비교' }} />
+              <Stack.Screen name="live" options={{ title: '온:길 · 산책길 안내' }} />
+              <Stack.Screen name="error" options={{ title: '온:길 · 안내' }} />
+              <Stack.Screen name="+not-found" />
+            </Stack>
+          </WalkFlowProvider>
+        </VoiceAccessibilityProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

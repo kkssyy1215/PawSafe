@@ -17,16 +17,16 @@ class Settings(BaseSettings):
     )
 
     app_env: Literal["development", "test", "staging", "production"] = "development"
-    app_name: str = "PawSafe API"
+    app_name: str = "온:길 API"
     api_prefix: str = "/v1"
 
-    analysis_provider: Literal["mock", "graph", "external", "kakao_walk", "pawsafe_12day"] = "mock"
-    heat_cost_provider: Literal["mock", "file", "external"] = "mock"
-    place_provider: Literal["mock", "kakao"] = "mock"
+    analysis_provider: Literal["graph", "external", "ongil_gmm"] = "ongil_gmm"
+    heat_cost_provider: Literal["file", "external"] = "file"
+    place_provider: Literal["catalog", "kakao"] = "catalog"
     shortest_route_provider: Literal["internal_graph", "external"] = "internal_graph"
 
-    graph_file_path: Path = Path("app/fixtures/demo_graph.geojson")
-    heat_cost_file_path: Path = Path("app/fixtures/demo_heat_cost.json")
+    graph_file_path: Path = Path("data/exports/walk_graph.gpkg")
+    heat_cost_file_path: Path = Path("data/exports/edge_heat_cost.json")
     # Data-team exports are intentionally configured as absolute/private paths.
     # They are never copied into this repository or bundled into the API image.
     pipeline_graph_file_path: Path | None = None
@@ -34,13 +34,12 @@ class Settings(BaseSettings):
     pipeline_walk_mode_config_path: Path = Path("app/config_data/walk_modes.pipeline.yaml")
     pipeline_data_version: str | None = None
     pipeline_timezone: str = "Asia/Seoul"
-    coverage_file_path: Path | None = None
-    walk_mode_config_path: Path = Path("app/config_data/walk_modes.demo.yaml")
-    mock_scenarios_file_path: Path = Path("app/fixtures/demo_scenarios.json")
-    mock_places_file_path: Path = Path("app/fixtures/demo_places.json")
+    coverage_file_path: Path | None = Path("data/exports/coverage.geojson")
+    walk_mode_config_path: Path = Path("app/config_data/walk_modes.live.yaml")
+    supported_places_file_path: Path = Path("data/supported_places.json")
 
     analysis_external_url: str | None = None
-    pawsafe_12day_config_path: Path = Path("data/models/pawsafe_12day/config.json")
+    ongil_gmm_model_path: Path = Path("data/models/ongil_gmm_0815_1600")
     heat_cost_external_url: str | None = None
     shortest_route_external_url: str | None = None
     kakao_rest_api_key: str | None = None
@@ -51,8 +50,6 @@ class Settings(BaseSettings):
     asos_service_key: str | None = None
     asos_base_url: str = "https://apis.data.go.kr/1360000/AsosHourlyInfoService"
     asos_station_id: int = Field(default=108, gt=0)
-    pawsafe_asos_inference_mode: Literal["latest", "fixed"] = "latest"
-    pawsafe_asos_fixed_timestamp: str = "2026-08-15T16:00:00"
 
     allowed_origins: str = (
         "http://localhost:8081,http://127.0.0.1:8081,http://localhost:19006,http://127.0.0.1:19006"

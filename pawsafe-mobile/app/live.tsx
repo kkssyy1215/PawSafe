@@ -1,9 +1,10 @@
-import { useEffect } from 'react';
-import { AccessibilityInfo, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { AccessibilityInfo, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { AppButton } from '@/src/components/common/AppButton';
 import { ScreenContainer } from '@/src/components/common/ScreenContainer';
 import { PawSafeMap } from '@/src/components/map/PawSafeMap';
+import { useVoiceAccessibility } from '@/src/features/accessibility/VoiceAccessibilityContext';
 import { useForegroundNavigation } from '@/src/features/navigation/useForegroundNavigation';
 import { HeatRiskWarning } from '@/src/features/walk/components/HeatRiskWarning';
 import { formatDistance } from '@/src/features/walk/utils/formatDistance';
@@ -13,6 +14,8 @@ import { colors, spacing, typography } from '@/src/theme/theme';
 
 export default function LiveWalkScreen() {
   const { state, dispatch } = useWalkFlow();
+  const { guidanceEnabled, setGuidanceEnabled } = useVoiceAccessibility();
+  const [followCurrentLocation, setFollowCurrentLocation] = useState(false);
   const resultState = state.status === 'comparison' || state.status === 'segmentReview' ? state : null;
   const selectedRoute = resultState?.selectedRoute ?? 'pawsafe';
   const route = resultState
@@ -21,10 +24,11 @@ export default function LiveWalkScreen() {
   const navigation = useForegroundNavigation({
     route,
     destination: resultState?.request.destination ?? null,
+    voiceEnabled: guidanceEnabled,
   });
 
   useEffect(() => {
-    AccessibilityInfo.announceForAccessibility('선택한 산책길 음성 안내 화면');
+    AccessibilityInfo.announceForAccessibility('선택한 산책길 안내 화면');
   }, []);
 
   if (!resultState || !route) {
@@ -34,7 +38,7 @@ export default function LiveWalkScreen() {
   const { request, result } = resultState;
   const routeLabel = selectedRoute === 'shortest'
     ? route.route_source.toLowerCase().includes('kakao') ? '카카오맵 빠른 경로' : '일반 최단경로'
-    : 'PawSafe 추천경로';
+    : '온:길 추천경로';
   const isTracking = navigation.status === 'active';
   const statusLabel = navigation.status === 'requesting' ? '현재 위치 확인 중'
     : navigation.status === 'active' ? navigation.isOffRoute ? '경로 이탈' : '실시간 안내 중'
@@ -57,13 +61,26 @@ export default function LiveWalkScreen() {
   return (
     <ScreenContainer>
       <ScrollView contentContainerStyle={styles.content}>
-        <View style={styles.header}>
-          <Text style={styles.eyebrow}>WALKING DIRECTION</Text>
-          <Text style={styles.title}>{routeLabel} 음성 안내</Text>
-          <Text style={styles.description}>현재 위치를 따라가며 회전 방향과 남은 거리를 한국어 음성으로 알려드려요.</Text>
+        <View style={styles.headerRow}>
+          <View style={styles.header}>
+            <Text style={styles.eyebrow}>WALKING DIRECTION</Text>
+            <Text style={styles.title}>{routeLabel} 경로 안내</Text>
+            <Text style={styles.description}>현재 위치를 따라가며 회전 방향과 남은 거리를 안내해 드려요.</Text>
+          </View>
+          <View style={styles.voiceToggle}>
+            <Text style={styles.voiceToggleLabel}>음성 안내</Text>
+            <Switch
+              accessibilityLabel={`음성 안내 ${guidanceEnabled ? '켜짐' : '꺼짐'}`}
+              value={guidanceEnabled}
+              onValueChange={setGuidanceEnabled}
+              trackColor={{ false: '#CFD6CF', true: '#9FD5A8' }}
+              thumbColor={guidanceEnabled ? colors.greenStrong : '#F5F5F5'}
+              style={styles.voiceSwitch}
+            />
+          </View>
         </View>
 
-        <HeatRiskWarning averageHeatCost={route.heat_cost} />
+        <HeatRiskWarning safety={route.safety} />
 
         <View
           accessible
@@ -80,17 +97,31 @@ export default function LiveWalkScreen() {
           {navigation.accuracyM !== null ? <Text style={styles.accuracy}>GPS 정확도 약 {Math.round(navigation.accuracyM)}m</Text> : null}
         </View>
 
-        <PawSafeMap
-          origin={request.origin}
-          destination={request.destination}
-          currentLocation={navigation.currentLocation ?? request.origin}
-          shortest={selectedRoute === 'shortest' ? result.shortest : undefined}
-          pawsafe={selectedRoute === 'pawsafe' ? result.pawsafe : undefined}
-          selectedRoute={selectedRoute}
-          walkMode={selectedRoute === 'shortest' ? 'fast' : 'cool'}
-          followCurrentLocation={isTracking}
-          showRouteLegend={false}
-        />
+        <View style={styles.mapSection}>
+          <View style={styles.mapHeading}>
+            <View style={styles.mapHeadingText}>
+              <Text style={styles.mapTitle}>안내 중인 전체 경로</Text>
+              <Text style={styles.mapDescription}>{followCurrentLocation ? '현재 위치를 따라 지도를 이동하고 있어요.' : '출발지부터 목적지까지 경로 전체를 보여드려요.'}</Text>
+            </View>
+            <AppButton
+              fullWidth={false}
+              variant="secondary"
+              disabled={!navigation.currentLocation}
+              onPress={() => setFollowCurrentLocation((current) => !current)}
+            >{followCurrentLocation ? '전체 경로' : '현재 위치'}</AppButton>
+          </View>
+          <PawSafeMap
+            origin={request.origin}
+            destination={request.destination}
+            currentLocation={navigation.currentLocation ?? request.origin}
+            shortest={selectedRoute === 'shortest' ? result.shortest : undefined}
+            pawsafe={selectedRoute === 'pawsafe' ? result.pawsafe : undefined}
+            selectedRoute={selectedRoute}
+            walkMode={selectedRoute === 'shortest' ? 'fast' : 'cool'}
+            followCurrentLocation={isTracking && followCurrentLocation}
+            showRouteLegend={false}
+          />
+        </View>
 
         <View
           accessible
@@ -114,14 +145,13 @@ export default function LiveWalkScreen() {
 
         {navigation.status === 'idle' || navigation.status === 'error' || navigation.status === 'arrived' ? (
           <AppButton onPress={() => void navigation.start()}>
-            {navigation.status === 'arrived' ? '음성 안내 다시 시작' : '음성 안내 시작'}
+            {navigation.status === 'arrived' ? '산책길 안내 다시 시작' : '산책길 안내 시작'}
           </AppButton>
         ) : null}
         {navigation.status === 'requesting' ? <AppButton loading>현재 위치 확인 중</AppButton> : null}
-        {navigation.status === 'paused' ? <AppButton onPress={() => void navigation.resume()}>음성 안내 계속하기</AppButton> : null}
+        {navigation.status === 'paused' ? <AppButton onPress={() => void navigation.resume()}>산책길 안내 계속하기</AppButton> : null}
         {navigation.status === 'active' ? <>
-          <AppButton variant="secondary" onPress={navigation.repeatInstruction}>안내 다시 듣기</AppButton>
-          <AppButton variant="secondary" onPress={navigation.toggleVoice}>{navigation.voiceEnabled ? '음성 끄기' : '음성 켜기'}</AppButton>
+          {guidanceEnabled ? <AppButton variant="secondary" onPress={navigation.repeatInstruction}>안내 다시 듣기</AppButton> : null}
           <AppButton variant="quiet" onPress={navigation.pause}>안내 일시정지</AppButton>
         </> : null}
         {navigation.errorMessage ? <Text accessibilityLiveRegion="assertive" style={styles.errorMessage}>{navigation.errorMessage}</Text> : null}
@@ -138,7 +168,11 @@ function Stat({ label, value }: { label: string; value: string }) {
 
 const styles = StyleSheet.create({
   content: { padding: spacing.lg, paddingBottom: spacing.xxl, gap: spacing.lg },
-  header: { gap: spacing.xs },
+  headerRow: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.sm },
+  header: { flex: 1, gap: spacing.xs },
+  voiceToggle: { marginLeft: 'auto', alignItems: 'center', gap: 1, paddingTop: 1 },
+  voiceToggleLabel: { ...typography.caption, color: colors.mutedText, fontSize: 10, fontWeight: '700' },
+  voiceSwitch: { transform: [{ scaleX: 0.76 }, { scaleY: 0.76 }], marginHorizontal: -7, marginVertical: -4 },
   eyebrow: { ...typography.caption, color: colors.greenStrong, fontWeight: '800', fontSize: 10 },
   title: { ...typography.heading, color: colors.text },
   description: { ...typography.caption, color: colors.mutedText },
@@ -154,6 +188,11 @@ const styles = StyleSheet.create({
   instruction: { ...typography.heading, color: colors.text },
   accuracy: { ...typography.caption, color: colors.mutedText },
   warningText: { color: colors.warning },
+  mapSection: { gap: spacing.sm },
+  mapHeading: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  mapHeadingText: { flex: 1, gap: 1 },
+  mapTitle: { ...typography.subheading, color: colors.text, fontWeight: '700' },
+  mapDescription: { ...typography.caption, color: colors.mutedText, fontSize: 11 },
   summary: { borderWidth: 1, borderColor: '#B9DEBF', borderRadius: 16, backgroundColor: colors.greenSoft, padding: spacing.lg, gap: spacing.md },
   destination: { gap: 2 },
   destinationLabel: { ...typography.caption, color: colors.mutedText },

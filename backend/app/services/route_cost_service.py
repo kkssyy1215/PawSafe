@@ -24,7 +24,6 @@ class WalkModeConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     version: str
-    is_demo: bool
     modes: dict[WalkMode, WalkModeProfile]
 
 

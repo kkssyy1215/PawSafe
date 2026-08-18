@@ -58,16 +58,7 @@ backend/.venv
 !backend/data/exports/
 !backend/data/exports/*
 
-# Versioned 12-day model runtime assets supplied by the model team.
+# Final single-timestamp GMM runtime and reproducibility sources.
 !backend/data/models/
-!backend/data/models/pawsafe_12day/
-!backend/data/models/pawsafe_12day/README.md
-!backend/data/models/pawsafe_12day/config.json
-!backend/data/models/pawsafe_12day/data/
-!backend/data/models/pawsafe_12day/data/raw/
-!backend/data/models/pawsafe_12day/data/raw/asos_hourly.csv
-!backend/data/models/pawsafe_12day/data/processed/
-!backend/data/models/pawsafe_12day/data/processed/edges_static.gpkg
-!backend/data/models/pawsafe_12day/data/processed/edge_time_features.parquet
-!backend/data/models/pawsafe_12day/outputs/
-!backend/data/models/pawsafe_12day/outputs/heat_cluster_model.joblib
+!backend/data/models/ongil_gmm_0815_1600/
+!backend/data/models/ongil_gmm_0815_1600/**

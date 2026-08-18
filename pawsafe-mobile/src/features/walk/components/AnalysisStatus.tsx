@@ -4,14 +4,14 @@ import { SmoothRouteLoader } from '@/src/features/walk/components/SmoothRouteLoa
 import { colors, spacing, typography } from '@/src/theme/theme';
 
 const steps = [
-  { label: '포장재 정보 결합', description: '보행로의 포장재와 흡수율을 확인하고 있어요.' },
-  { label: '기상정보 분석', description: 'ASOS의 최근 12시간 기상 관측자료를 확인하고 있어요.' },
-  { label: '일사량과 그늘 분석', description: '최근 햇빛 노출과 시간대별 그늘 비율을 계산하고 있어요.' },
-  { label: 'Edge Heat Cost 계산', description: '각 보행로의 상대적인 열노출 값을 계산하고 있어요.' },
-  { label: '시원한 경로 탐색', description: '열노출이 낮은 산책길을 부드럽게 이어 찾고 있어요.' },
+  { label: '보행로 정보 확인', description: '연결 가능한 보행 Edge를 확인하고 있어요.' },
+  { label: 'GMM 열환경 결합', description: '그늘·일사량·포장재 기반 GMM 결과를 결합하고 있어요.' },
+  { label: '최단경로 계산', description: '거리만 고려한 최단 보행경로를 찾고 있어요.' },
+  { label: '시원한 경로 계산', description: '상대 Heat Cost가 낮은 보행경로를 찾고 있어요.' },
+  { label: '경로 점수 계산', description: '두 경로의 열위험 점수와 구간 정보를 정리하고 있어요.' },
 ];
 
-export function AnalysisStatus({ isMock }: { isMock: boolean }) {
+export function AnalysisStatus() {
   const [activeStep, setActiveStep] = useState(0);
 
   useEffect(() => {
@@ -20,19 +20,18 @@ export function AnalysisStatus({ isMock }: { isMock: boolean }) {
   }, []);
 
   const currentStep = steps[activeStep];
-  const description = `${currentStep.description}${isMock ? ' 시연용 분석 데이터를 사용 중입니다.' : ''}`;
 
   return (
     <View accessible accessibilityRole="progressbar" accessibilityState={{ busy: true }} accessibilityLiveRegion="polite" style={styles.container}>
       <View style={styles.heading}>
-        <View style={styles.eyebrow}><View style={styles.eyebrowDot} /><Text style={styles.eyebrowText}>PAWSAFE LIVE ANALYSIS</Text></View>
+        <View style={styles.eyebrow}><View style={styles.eyebrowDot} /><Text style={styles.eyebrowText}>온:길 실시간 경로 분석</Text></View>
         <Text style={styles.title}>우리 강아지가 걷기 좋은 길을{`\n`}찾고 있어요</Text>
         <Text style={styles.description}>현재 날씨와 보행로 환경을 한 흐름으로 분석하고 있어요.</Text>
       </View>
 
-      <SmoothRouteLoader walkMode="cool" statusLabel={currentStep.label} statusDescription={description} />
+      <SmoothRouteLoader walkMode="cool" statusLabel={currentStep.label} statusDescription={currentStep.description} />
 
-      <Text style={styles.scope}>포장재 · ASOS 기상 · 일사량 · 그늘 · Heat Cost를 함께 반영해요.</Text>
+      <Text style={styles.scope}>GMM 상대 Heat Cost · 고온 군집 확률 · 경로 거리를 함께 반영해요.</Text>
     </View>
   );
 }

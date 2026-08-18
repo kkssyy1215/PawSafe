@@ -145,6 +145,25 @@ export function getNextNavigationStep(route: PreparedNavigationRoute, distanceAl
     ?? null;
 }
 
+export function coordinateAtRouteDistance(route: PreparedNavigationRoute, distanceAlongRouteM: number) {
+  if (route.coordinates.length === 0) return null;
+  if (route.coordinates.length === 1 || route.totalDistanceM <= 0) return route.coordinates[0];
+  const targetDistanceM = Math.min(route.totalDistanceM, Math.max(0, distanceAlongRouteM));
+  const segmentIndex = route.cumulativeDistancesM.findIndex((distance, index) => (
+    index > 0 && distance >= targetDistanceM
+  ));
+  if (segmentIndex < 1) return route.coordinates[route.coordinates.length - 1];
+  const start = route.coordinates[segmentIndex - 1];
+  const end = route.coordinates[segmentIndex];
+  const startDistanceM = route.cumulativeDistancesM[segmentIndex - 1];
+  const segmentDistanceM = route.cumulativeDistancesM[segmentIndex] - startDistanceM;
+  const fraction = segmentDistanceM <= 0 ? 0 : (targetDistanceM - startDistanceM) / segmentDistanceM;
+  return {
+    lat: start.lat + (end.lat - start.lat) * fraction,
+    lng: start.lng + (end.lng - start.lng) * fraction,
+  };
+}
+
 export function instructionForTurn(type: NavigationTurnType) {
   switch (type) {
     case 'start': return '경로를 따라 출발하세요.';

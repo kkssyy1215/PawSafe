@@ -20,6 +20,32 @@ export interface LineStringGeometry {
   coordinates: GeoJsonCoordinate[];
 }
 
+export interface RouteSafety {
+  route_id: string;
+  target_time_kst: string;
+  score: number;
+  score_raw_0_100: number;
+  unit_heat_cost_0_to_alpha: number;
+  route_distance_m: number;
+  air_temperature_c: number;
+  temperature_factor_0_1: number;
+  weighted_mean_p_high: number;
+  high_heat_cluster_raw: number;
+  alert_alpha: number;
+  status: 'comfortable' | 'caution' | 'danger';
+  color: 'green' | 'yellow' | 'red';
+  should_warn: boolean;
+  message: string;
+  thresholds: {
+    comfortable_max: number;
+    caution_min: number;
+    caution_max: number;
+    warning_min: number;
+  };
+  calibrated_safety_threshold: boolean;
+  method_note: string;
+}
+
 export interface RouteAnalysisRequest {
   origin: Place;
   destination: Place;
@@ -39,6 +65,7 @@ export interface RouteStats {
   shade_ratio: number | null;
   direct_sun_minutes: number | null;
   edge_count: number;
+  safety: RouteSafety;
 }
 
 export interface RouteComparison {
@@ -68,7 +95,6 @@ export interface HeatSegment {
 export interface RouteAnalysisResponse {
   analysis_id: string;
   status: 'completed';
-  is_demo: boolean;
   analysis_source: string;
   validation_status: ValidationStatus;
   requested_departure_at: string;
@@ -76,7 +102,7 @@ export interface RouteAnalysisResponse {
   data_valid_at: string | null;
   graph_version: string;
   heat_data_version: string | null;
-  weight_profile: { id: string; is_demo: boolean };
+  weight_profile: { id: string };
   warnings: { code: string; message: string }[];
   shortest: RouteStats;
   pawsafe: RouteStats;

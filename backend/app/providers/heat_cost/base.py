@@ -38,7 +38,6 @@ class HeatCostSnapshot(BaseModel):
     valid_at: datetime | None
     data_version: str | None
     source: str
-    is_demo: bool
     warnings: list[WarningMessage] = Field(default_factory=list)
 
 

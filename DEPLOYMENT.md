@@ -1,30 +1,47 @@
-# PawSafe deployment
+# 온:길 배포
 
-## Backend (Render)
+## 백엔드: Render
 
-Create a Blueprint from the repository root `render.yaml`. Set the secret values
-requested by Render and set `ALLOWED_ORIGINS` to the final web URL.
+저장소 루트의 `render.yaml`을 Blueprint로 등록합니다. Docker 이미지에는 최종
+GMM 3,797 Edge 스냅샷과 점수 설정이 포함됩니다.
 
-The Docker image includes the versioned 12-day model, 3,797-edge graph, ASOS
-baseline, and precomputed shade features. Configure `ASOS_SERVICE_KEY` and
-`KAKAO_REST_API_KEY` as Render secrets. Both walk modes use the internal model
-graph: fast returns the distance shortest route, while cool compares it with
-the Heat Cost route. In normal mode, a request retrieves the latest complete
-12-hour KMA ASOS station-108 window available through D-1 and runs model inference in the web process.
-Set `PAWSAFE_ASOS_INFERENCE_MODE=latest`; use `fixed` only for the reproducible
-2026-08-15 16:00 demonstration.
-
-## Web app (Vercel)
-
-Import the repository with `pawsafe-mobile` as the Root Directory. Configure:
+기본 환경 변수:
 
 ```text
-EXPO_PUBLIC_ANALYSIS_MODE=api
-EXPO_PUBLIC_PLACE_SEARCH_MODE=api
-EXPO_PUBLIC_MAP_MODE=native
-EXPO_PUBLIC_API_BASE_URL=https://<backend-host>
-EXPO_PUBLIC_SHOW_DEMO_CONTROLS=false
+APP_ENV=production
+ANALYSIS_PROVIDER=ongil_gmm
+PLACE_PROVIDER=catalog
+COVERAGE_FILE_PATH=data/exports/coverage.geojson
+ONGIL_GMM_MODEL_PATH=data/models/ongil_gmm_0815_1600
+ALLOWED_ORIGINS=https://<frontend-host>
 ```
 
-After the first frontend deployment, update backend `ALLOWED_ORIGINS` with the
-exact Vercel production URL and redeploy the backend.
+최종 경로 모델은 KMA·ASOS·Kakao·AWS 키 없이 동작합니다. `ALLOWED_ORIGINS`에는
+실제 웹 앱의 HTTPS origin만 쉼표로 구분해 등록합니다. 배포 후 `/health`가
+`status=ok`, `analysis_provider=ongil_gmm`인지 확인합니다.
+
+무료 인스턴스는 유휴 후 첫 요청이 느릴 수 있고 GPKG 그래프를 첫 경로 요청에서
+메모리에 구성합니다. 운영 전 메모리와 cold start를 실제 배포 환경에서 확인해야
+합니다.
+
+## 웹 앱: Vercel
+
+Vercel에서 저장소를 가져오고 Root Directory를 `pawsafe-mobile`로 지정합니다.
+
+```text
+EXPO_PUBLIC_API_BASE_URL=https://<backend-host>
+```
+
+이 값은 브라우저 번들에 공개되므로 비밀키를 넣으면 안 됩니다. 첫 배포 URL이
+정해지면 Render의 `ALLOWED_ORIGINS`를 갱신하고 백엔드를 다시 배포합니다.
+
+## 배포 확인
+
+1. `GET https://<backend-host>/health`
+2. `GET https://<backend-host>/v1/capabilities`
+3. 웹에서 지원 주소 검색
+4. fast 최단경로와 cool 두 경로 비교
+5. 지도 타일·경로·출처 표시
+
+현재 모델 결과의 유효시각은 `2026-08-15 16:00 KST`로 고정됩니다. 실시간 날씨
+반영 서비스로 설명하지 않습니다.

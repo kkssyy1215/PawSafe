@@ -62,7 +62,7 @@ export function SmoothRouteLoader({ walkMode, statusLabel, statusDescription }: 
         <View style={styles.logoCore}>
           <Image
             source={require('../../../../assets/brand/pawsafe-mark.png')}
-            accessibilityLabel="PawSafe 발바닥 로고"
+            accessibilityLabel="온:길 안내견 이동 지원 서비스 로고"
             resizeMode="contain"
             style={[styles.logo, { tintColor: accent }]}
           />

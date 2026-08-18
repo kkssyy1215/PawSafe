@@ -26,7 +26,7 @@ class OutOfCoverageError(AppError):
     def __init__(self) -> None:
         super().__init__(
             "OUT_OF_COVERAGE",
-            "현재 MVP 분석 범위를 벗어난 위치입니다.",
+            "현재 온:길 분석 범위를 벗어난 위치입니다.",
             status_code=422,
         )
 

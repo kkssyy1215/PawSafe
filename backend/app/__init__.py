@@ -1,1 +1,1 @@
-"""PawSafe application backend."""
+"""온:길 application backend."""

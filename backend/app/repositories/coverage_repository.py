@@ -38,7 +38,6 @@ class CoverageRepository:
             response = CoverageResponse(
                 coverage_id=str(properties["coverage_id"]),
                 name=str(properties["name"]),
-                is_demo=bool(properties.get("is_demo", False)),
                 geometry=geometry,
             )
             return CoverageData(response=response, polygon=polygon)
@@ -65,7 +64,6 @@ class CoverageRepository:
             response=CoverageResponse(
                 coverage_id=f"{path.stem}-private",
                 name=f"{path.stem} private coverage",
-                is_demo=False,
                 geometry=polygon_geometry,
             ),
             polygon=geometry,

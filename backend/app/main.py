@@ -13,7 +13,7 @@ from app.core.config import Settings, get_settings
 from app.core.exception_handlers import install_exception_handlers
 from app.core.logging import AccessLogMiddleware, configure_logging
 from app.core.request_id import RequestIdMiddleware
-from app.providers.analysis.pawsafe_12day import missing_model_assets
+from app.providers.analysis.ongil_gmm import missing_model_assets
 from app.schemas.capability import HealthResponse
 
 
@@ -34,8 +34,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         title=resolved_settings.app_name,
         version="0.1.0",
         description=(
-            "PawSafe 앱용 상대 Heat Cost 경로 비교 API. "
-            "절대 노면온도 예측이나 안전 판정 API가 아닙니다."
+            "온:길 앱용 GMM 상대 Heat Cost 경로 비교 API. "
+            "1~100 경로 점수는 실측 노면온도나 의학적 위험 확률이 아닙니다."
         ),
         lifespan=lifespan,
         debug=False,
@@ -56,28 +56,21 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @application.get("/health", response_model=HealthResponse, tags=["health"])
     async def health(request: Request) -> HealthResponse:
         container: AppContainer = request.app.state.container
-        uses_12day_model = container.settings.analysis_provider == "pawsafe_12day"
-        model_config_path = container.settings.resolve_path(
-            container.settings.pawsafe_12day_config_path
-        )
-        model_assets_ready = not missing_model_assets(model_config_path)
-        graph_loaded = model_assets_ready if uses_12day_model else container.graph_data is not None
+        uses_gmm_model = container.settings.analysis_provider == "ongil_gmm"
+        model_path = container.settings.resolve_path(container.settings.ongil_gmm_model_path)
+        model_assets_ready = not missing_model_assets(model_path)
+        graph_loaded = model_assets_ready if uses_gmm_model else container.graph_data is not None
         heat_loaded = (
             model_assets_ready
-            if uses_12day_model
+            if uses_gmm_model
             else container.heat_provider is not None and container.heat_provider.loaded
         )
-        place_ready = container.settings.place_provider == "mock" or (
+        place_ready = container.settings.place_provider == "catalog" or (
             container.settings.place_provider == "kakao"
             and bool(container.settings.kakao_rest_api_key)
         )
         analysis_ready = (
-            container.settings.analysis_provider == "mock"
-            or (
-                container.settings.analysis_provider == "kakao_walk"
-                and bool(container.settings.kakao_rest_api_key)
-            )
-            or (
+            (
                 container.settings.analysis_provider == "external"
                 and bool(container.settings.analysis_external_url)
             )
@@ -88,42 +81,25 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 and container.walk_modes is not None
                 and container.shortest_route_provider is not None
             )
-            or (
-                uses_12day_model
-                and model_assets_ready
-                and bool(container.settings.asos_service_key)
-            )
+            or (uses_gmm_model and model_assets_ready)
         )
         return HealthResponse(
             status="ok" if analysis_ready and place_ready else "degraded",
             graph_loaded=graph_loaded,
             heat_data_loaded=heat_loaded,
-            analysis_provider=(
-                f"{container.settings.analysis_provider}+kakao_fast"
-                if container.settings.analysis_provider
-                in {
-                    "graph",
-                    "external",
-                }
-                and bool(container.settings.kakao_rest_api_key)
-                else container.settings.analysis_provider
-            ),
+            analysis_provider=container.settings.analysis_provider,
             heat_cost_provider=container.settings.heat_cost_provider,
             place_provider=container.settings.place_provider,
             graph_version=(
-                "pawsafe-summer-09-21-12day-v5-edges-3797"
-                if uses_12day_model and model_assets_ready
+                "ongil-gmm-0815-1600-v1-edges-3797"
+                if uses_gmm_model and model_assets_ready
                 else container.graph_data.version
                 if container.graph_data
                 else None
             ),
             heat_data_version=(
-                (
-                    "pawsafe-summer-09-21-12day-v5+asos-fixed-20260815-1600"
-                    if container.settings.pawsafe_asos_inference_mode == "fixed"
-                    else "pawsafe-summer-09-21-12day-v5+asos-latest"
-                )
-                if uses_12day_model and model_assets_ready
+                "ongil-gmm-0815-1600-v1-snapshot-20260815-1600"
+                if uses_gmm_model and model_assets_ready
                 else container.heat_provider.data_version
                 if container.heat_provider
                 else None

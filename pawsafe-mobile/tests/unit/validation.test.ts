@@ -1,6 +1,5 @@
 import type { Place } from '@/src/api/contracts';
 import { isSamePlace, toApiPlace, validateWalkForm } from '@/src/features/walk/utils/validation';
-import { pipelineDemoPlaces } from '@/src/mocks/demoRouteCandidates';
 
 const origin: Place = { id: 'home', name: '우리집', address: '서울', lat: 37.55, lng: 126.91 };
 const destination: Place = { id: 'park', name: '공원', address: '서울', lat: 37.555, lng: 126.9 };
@@ -28,7 +27,7 @@ describe('walk form validation', () => {
       origin: { ...origin, is_in_coverage: false } as Place & { is_in_coverage: boolean },
       destination,
       walkMode: 'cool',
-    })).toBe('MVP 분석 범위 안의 출발지와 목적지를 선택해 주세요.');
+    })).toBe('온:길 분석 범위 안의 출발지와 목적지를 선택해 주세요.');
   });
 
   it('removes client-only coverage metadata from API locations', () => {
@@ -36,10 +35,16 @@ describe('walk form validation', () => {
   });
 
   it('sends the fixed graph coordinate behind the visible Wirye address', () => {
-    const mapped = pipelineDemoPlaces.find((place) => place.id === 'heat_diff_001_origin');
-    expect(mapped).toBeDefined();
-    expect(toApiPlace(mapped!)).toEqual({
-      id: 'heat_diff_001_origin',
+    const mapped = {
+      id: 'place_001',
+      name: '위례광장로 185',
+      address: '서울특별시 송파구 위례광장로 185',
+      lat: 37.4811743,
+      lng: 127.1405973,
+      is_in_coverage: true,
+    };
+    expect(toApiPlace(mapped)).toEqual({
+      id: 'place_001',
       name: '위례광장로 185',
       address: '서울특별시 송파구 위례광장로 185',
       lat: 37.4811743,

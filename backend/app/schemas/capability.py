@@ -19,11 +19,11 @@ class HealthResponse(BaseModel):
 
 
 class CapabilityResponse(BaseModel):
-    analysis_mode: Literal["demo", "graph", "external", "kakao_walk", "pawsafe_12day"]
-    place_search: Literal["mock", "kakao"]
-    map_graph: Literal["demo", "configured", "not_ready"]
+    analysis_mode: Literal["graph", "external", "ongil_gmm"]
+    place_search: Literal["catalog", "kakao"]
+    map_graph: Literal["configured", "not_ready"]
     data_pipeline: Literal["not_ready", "configured"]
-    heat_model: Literal["not_ready", "pawsafe_12day"] = "not_ready"
+    heat_model: Literal["not_ready", "ongil_gmm"] = "not_ready"
     heat_cost_source: str
     route_optimizer: str
     absolute_surface_temperature_prediction: Literal[False] = False
@@ -33,5 +33,4 @@ class CapabilityResponse(BaseModel):
 class CoverageResponse(BaseModel):
     coverage_id: str
     name: str
-    is_demo: bool
     geometry: PolygonGeometry

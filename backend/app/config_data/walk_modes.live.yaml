@@ -1,5 +1,4 @@
 version: live-weight-v1
-is_demo: false
 
 modes:
   fast:

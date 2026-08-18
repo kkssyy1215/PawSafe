@@ -1,0 +1,26 @@
+{
+  "route_id": "heat_cost_recommended",
+  "target_time_kst": "2026-08-15 16:00:00",
+  "score": 18,
+  "score_raw_0_100": 18.3222,
+  "unit_heat_cost_0_to_alpha": 0.091611,
+  "route_distance_m": 4056.536,
+  "air_temperature_c": 26.6,
+  "temperature_factor_0_1": 0.532,
+  "weighted_mean_p_high": 0.344403,
+  "high_heat_cluster_raw": 1,
+  "alert_alpha": 0.5,
+  "status": "comfortable",
+  "icon": "🟢",
+  "color": "green",
+  "should_warn": false,
+  "message": "오늘 산책길은 아주 쾌적해요! (점수: 18점)",
+  "thresholds": {
+    "comfortable_max": 40,
+    "caution_min": 41,
+    "caution_max": 79,
+    "warning_min": 80
+  },
+  "calibrated_safety_threshold": false,
+  "method_note": "경로 확정 후 길이 가중 alpha*f(T)*P(High)를 1~100 UI 점수로 환산; 실측 노면온도 또는 화상 확률이 아님"
+}

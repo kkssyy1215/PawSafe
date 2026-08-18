@@ -10,7 +10,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
 
   return {
     ...config,
-    name: "PawSafe",
+    name: "온:길",
     slug: "pawsafe",
     version: "1.0.0",
     scheme: "pawsafe",
@@ -45,7 +45,6 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         "android.permission.CAMERA",
         "android.permission.READ_CONTACTS",
         "android.permission.WRITE_CONTACTS",
-        "android.permission.RECORD_AUDIO",
         "android.permission.BLUETOOTH_ADVERTISE",
         "android.permission.BLUETOOTH_CONNECT",
         "android.permission.BLUETOOTH_SCAN",
@@ -86,6 +85,14 @@ export default ({ config }: ConfigContext): ExpoConfig => {
           isIosBackgroundLocationEnabled: false,
           isAndroidBackgroundLocationEnabled: false,
           isAndroidForegroundServiceEnabled: false,
+        },
+      ],
+      [
+        "expo-speech-recognition",
+        {
+          microphonePermission: "출발지와 목적지를 음성으로 입력하기 위해 마이크 접근이 필요합니다.",
+          speechRecognitionPermission: "말한 주소를 검색어로 변환하기 위해 음성 인식 접근이 필요합니다.",
+          androidSpeechServicePackages: ["com.google.android.googlequicksearchbox"],
         },
       ],
       "@react-native-community/datetimepicker",

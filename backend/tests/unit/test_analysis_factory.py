@@ -1,13 +1,14 @@
 from __future__ import annotations
 
+from pathlib import Path
 from unittest.mock import AsyncMock
 
 import httpx
 
 from app.core.config import Settings
+from app.providers.analysis.external_analysis import ExternalAnalysisProvider
 from app.providers.analysis.factory import UnavailableAnalysisProvider, create_analysis_provider
-from app.providers.analysis.pawsafe_12day import Pawsafe12DayAnalysisProvider
-from app.providers.analysis.walk_mode_analysis import WalkModeAnalysisProvider
+from app.providers.analysis.ongil_gmm import OngilGmmAnalysisProvider
 
 
 def _create(settings: Settings) -> object:
@@ -21,66 +22,29 @@ def _create(settings: Settings) -> object:
     )
 
 
-def test_external_model_is_used_only_for_cool_when_kakao_is_configured() -> None:
+def test_final_gmm_provider_requires_no_weather_or_kakao_key() -> None:
     settings = Settings(
         _env_file=None,
-        analysis_provider="external",
-        analysis_external_url="https://model.example.com/routes",
-        kakao_rest_api_key="test-kakao-key",
-    )
-
-    provider = _create(settings)
-
-    assert isinstance(provider, WalkModeAnalysisProvider)
-
-
-def test_external_model_does_not_replace_fast_route_without_kakao_key() -> None:
-    settings = Settings(
-        _env_file=None,
-        analysis_provider="external",
-        analysis_external_url="https://model.example.com/routes",
-        kakao_rest_api_key=None,
-    )
-
-    provider = _create(settings)
-
-    assert isinstance(provider, WalkModeAnalysisProvider)
-
-
-def test_12day_model_handles_fast_and_cool_without_kakao_split() -> None:
-    settings = Settings(
-        _env_file=None,
-        analysis_provider="pawsafe_12day",
-        asos_service_key="test-asos-key",
-        kakao_rest_api_key="test-kakao-key",
-    )
-
-    provider = _create(settings)
-
-    assert isinstance(provider, Pawsafe12DayAnalysisProvider)
-
-
-def test_12day_model_does_not_require_kakao_key() -> None:
-    settings = Settings(
-        _env_file=None,
-        analysis_provider="pawsafe_12day",
-        asos_service_key="test-asos-key",
-        kakao_rest_api_key=None,
-    )
-
-    provider = _create(settings)
-
-    assert isinstance(provider, Pawsafe12DayAnalysisProvider)
-
-
-def test_12day_model_is_unavailable_when_asos_key_is_missing() -> None:
-    settings = Settings(
-        _env_file=None,
-        analysis_provider="pawsafe_12day",
+        analysis_provider="ongil_gmm",
         asos_service_key=None,
-        kakao_rest_api_key="test-kakao-key",
+        kakao_rest_api_key=None,
     )
+    assert isinstance(_create(settings), OngilGmmAnalysisProvider)
 
-    provider = _create(settings)
 
-    assert isinstance(provider, UnavailableAnalysisProvider)
+def test_missing_gmm_assets_make_provider_unavailable(tmp_path: Path) -> None:
+    settings = Settings(
+        _env_file=None,
+        analysis_provider="ongil_gmm",
+        ongil_gmm_model_path=tmp_path,
+    )
+    assert isinstance(_create(settings), UnavailableAnalysisProvider)
+
+
+def test_external_provider_is_used_directly() -> None:
+    settings = Settings(
+        _env_file=None,
+        analysis_provider="external",
+        analysis_external_url="https://model.example.com/routes",
+    )
+    assert isinstance(_create(settings), ExternalAnalysisProvider)

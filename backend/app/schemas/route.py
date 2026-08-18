@@ -30,6 +30,40 @@ class RouteAnalysisRequest(BaseModel):
         return value
 
 
+class RouteSafetyThresholds(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    comfortable_max: int = Field(ge=1, le=100)
+    caution_min: int = Field(ge=1, le=100)
+    caution_max: int = Field(ge=1, le=100)
+    warning_min: int = Field(ge=1, le=100)
+
+
+class RouteSafetyPayload(BaseModel):
+    """Post-route 1-100 heat-risk score supplied by the final GMM model."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    route_id: str
+    target_time_kst: datetime
+    score: int = Field(ge=1, le=100)
+    score_raw_0_100: float = Field(ge=0, le=100)
+    unit_heat_cost_0_to_alpha: float = Field(ge=0)
+    route_distance_m: float = Field(gt=0)
+    air_temperature_c: float
+    temperature_factor_0_1: float = Field(ge=0, le=1)
+    weighted_mean_p_high: float = Field(ge=0, le=1)
+    high_heat_cluster_raw: int
+    alert_alpha: float = Field(gt=0)
+    status: Literal["comfortable", "caution", "danger"]
+    color: Literal["green", "yellow", "red"]
+    should_warn: bool
+    message: str
+    thresholds: RouteSafetyThresholds
+    calibrated_safety_threshold: bool
+    method_note: str
+
+
 class RouteSummary(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -44,6 +78,7 @@ class RouteSummary(BaseModel):
     shade_ratio: float | None = Field(default=None, ge=0, le=1)
     direct_sun_minutes: float | None = Field(default=None, ge=0)
     edge_count: int = Field(ge=0)
+    safety: RouteSafetyPayload | None = None
 
 
 class RouteComparison(BaseModel):
@@ -79,7 +114,6 @@ class RouteAnalysisResponse(BaseModel):
 
     analysis_id: str
     status: Literal["completed"] = "completed"
-    is_demo: bool
     analysis_source: str
     validation_status: ValidationStatus
     requested_departure_at: datetime

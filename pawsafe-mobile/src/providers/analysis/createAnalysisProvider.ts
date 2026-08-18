@@ -1,11 +1,10 @@
-import { env } from '@/src/config/env';
 import type { AnalysisProvider } from './AnalysisProvider';
 import { HttpAnalysisProvider } from './HttpAnalysisProvider';
-import { MockAnalysisProvider } from './MockAnalysisProvider';
+import { env } from '@/src/config/env';
 
 let provider: AnalysisProvider | undefined;
 export function createAnalysisProvider(config = env): AnalysisProvider {
-  return config.analysisMode === 'api' ? new HttpAnalysisProvider(config.apiBaseUrl) : new MockAnalysisProvider();
+  return new HttpAnalysisProvider(config.apiBaseUrl);
 }
 export function getAnalysisProvider(): AnalysisProvider {
   provider ??= createAnalysisProvider();

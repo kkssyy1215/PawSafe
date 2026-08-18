@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: pawsafe-api
+    name: ongil-api
     runtime: docker
     rootDir: backend
     dockerfilePath: ./Dockerfile
@@ -9,30 +9,14 @@ services:
       - key: APP_ENV
         value: production
       - key: ANALYSIS_PROVIDER
-        value: pawsafe_12day
-      - key: HEAT_COST_PROVIDER
-        value: file
+        value: ongil_gmm
       - key: PLACE_PROVIDER
-        value: kakao
-      - key: SHORTEST_ROUTE_PROVIDER
-        value: internal_graph
-      - key: GRAPH_FILE_PATH
-        value: data/exports/walk_graph.gpkg
-      - key: HEAT_COST_FILE_PATH
-        value: data/exports/edge_heat_cost.json
+        value: catalog
       - key: COVERAGE_FILE_PATH
         value: data/exports/coverage.geojson
-      - key: WALK_MODE_CONFIG_PATH
-        value: app/config_data/walk_modes.live.yaml
-      - key: PAWSAFE_12DAY_CONFIG_PATH
-        value: data/models/pawsafe_12day/config.json
+      - key: ONGIL_GMM_MODEL_PATH
+        value: data/models/ongil_gmm_0815_1600
       - key: ROUTE_ANALYSIS_TIMEOUT_SECONDS
         value: "60"
       - key: ALLOWED_ORIGINS
-        sync: false
-      - key: KAKAO_REST_API_KEY
-        sync: false
-      - key: KMA_SERVICE_KEY
-        sync: false
-      - key: ASOS_SERVICE_KEY
         sync: false

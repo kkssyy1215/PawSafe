@@ -13,7 +13,7 @@ export function DataAttribution({ walkMode = 'cool' }: { walkMode?: WalkMode }) 
         <Text accessibilityRole="link" onPress={() => Linking.openURL(OSM_COPYRIGHT_URL)} style={styles.link}>
           © OpenStreetMap contributors · ODbL
         </Text>
-        {isFast ? <>{'  '}경로: PawSafe 모델 그래프</> : <>{'  '}기상: 기상청 ASOS 관측자료(가공)</>}
+        {isFast ? <>{'  '}경로: 온:길 모델 그래프</> : <>{'  '}기상: 기상청 ASOS 관측자료(가공)</>}
       </Text>
     </View>
   );

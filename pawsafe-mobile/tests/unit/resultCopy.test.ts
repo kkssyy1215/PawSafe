@@ -1,34 +1,19 @@
-import type { RouteAnalysisRequest } from '@/src/api/contracts';
-import { getResultHeadline, isDemoResult } from '@/src/features/walk/utils/resultCopy';
-import { getMockRouteScenario } from '@/src/mocks/routeScenarios';
-
-const request: RouteAnalysisRequest = {
-  origin: { id: 'place_home', name: '우리집', address: '서울특별시 마포구 독막로 12', lat: 37.55, lng: 126.91 },
-  destination: { id: 'place_mangwon_park', name: '망원한강공원', address: '서울특별시 마포구 마포나루길 467', lat: 37.555, lng: 126.9 },
-  departure_at: '2026-08-12T18:30:00+09:00',
-  walk_mode: 'cool',
-};
+import { getResultHeadline } from '@/src/features/walk/utils/resultCopy';
+import { makeRouteAnalysisResponse } from '@/tests/fixtures/routeAnalysis';
 
 describe('comparison copy', () => {
   it('describes the deterministic cool improvement without an absolute safety claim', () => {
-    const result = getMockRouteScenario(request);
+    const result = makeRouteAnalysisResponse();
     expect(getResultHeadline(result)).toBe('200m 더 걸어도,\n우리 강아지가 걷기 좋은 길이에요.');
-    expect(isDemoResult(result)).toBe(true);
   });
 
   it('handles a same-route result', () => {
-    const result = getMockRouteScenario({
-      ...request,
-      destination: { ...request.destination, id: 'scenario_same_route' },
-    });
+    const result = makeRouteAnalysisResponse({ sameRoute: true });
     expect(getResultHeadline(result)).toBe('현재 조건에서는 두 경로가 같아요.');
   });
 
   it('does not always claim improvement', () => {
-    const result = getMockRouteScenario({
-      ...request,
-      destination: { ...request.destination, id: 'scenario_no_improvement' },
-    });
+    const result = makeRouteAnalysisResponse({ shortestScore: 20, recommendedScore: 20 });
     expect(getResultHeadline(result)).toBe('현재 조건에서는 더 시원한 우회 경로가 없어요.');
   });
 });

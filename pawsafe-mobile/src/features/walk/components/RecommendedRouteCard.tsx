@@ -12,10 +12,10 @@ export function RecommendedRouteCard({ route, walkMode, showHeatMetrics = true }
   const routeColor = getRecommendedRouteColor(walkMode);
   const isFast = walkMode === 'fast';
   return (
-    <AppCard accessibilityLabel={`${getWalkModeLabel(walkMode)}, ${formatDistance(route.distance_m)}, ${formatDuration(route.duration_min)}${showHeatMetrics ? `, Heat Cost ${route.heat_cost.toFixed(0)}` : ''}`} style={[styles.card, { borderColor: isFast ? '#DED4FA' : '#CFE8D4', backgroundColor: isFast ? '#F5F1FF' : '#EDF8EF' }]}>
+    <AppCard accessibilityLabel={`${getWalkModeLabel(walkMode)}, ${formatDistance(route.distance_m)}, ${formatDuration(route.duration_min)}${showHeatMetrics ? `, 경로 열위험 점수 ${route.safety.score}` : ''}`} style={[styles.card, { borderColor: isFast ? '#DED4FA' : '#CFE8D4', backgroundColor: isFast ? '#F5F1FF' : '#EDF8EF' }]}>
       <View style={styles.header}>
         <View style={styles.titleWrap}>
-          <Text style={[styles.eyebrow, { color: routeColor }]}>{walkMode === 'fast' ? '일반 최단경로' : 'PawSafe 추천'}</Text>
+          <Text style={[styles.eyebrow, { color: routeColor }]}>{walkMode === 'fast' ? '일반 최단경로' : '온:길 추천'}</Text>
           <Text style={styles.title}>{getWalkModeLabel(walkMode)}</Text>
         </View>
         <View style={[styles.routeIcon, { backgroundColor: routeColor }]}><Text style={styles.routeIconText}>↗</Text></View>
@@ -23,9 +23,9 @@ export function RecommendedRouteCard({ route, walkMode, showHeatMetrics = true }
       <View style={styles.metrics}>
         <Metric label="거리" value={formatDistance(route.distance_m)} color={routeColor} />
         <Metric label="예상 시간" value={formatDuration(route.duration_min)} color={routeColor} />
-        {showHeatMetrics ? <Metric label="Heat Cost" value={route.heat_cost.toFixed(0)} color={routeColor} /> : null}
+        {showHeatMetrics ? <Metric label="열위험 점수" value={`${route.safety.score}`} color={routeColor} /> : null}
       </View>
-      {showHeatMetrics ? <Text style={styles.footnote}>그늘 비율 {formatPercent(route.shade_ratio)} · 직사광선 {formatDuration(route.direct_sun_minutes)}</Text> : <Text style={styles.footnote}>PawSafe 보행로 그래프에서 계산한 거리 기준 최단경로입니다.</Text>}
+      {showHeatMetrics ? <Text style={styles.footnote}>그늘 비율 {formatPercent(route.shade_ratio)} · 직사광선 {formatDuration(route.direct_sun_minutes)}</Text> : <Text style={styles.footnote}>온:길 보행로 그래프에서 계산한 거리 기준 최단경로입니다.</Text>}
     </AppCard>
   );
 }

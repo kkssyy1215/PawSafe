@@ -1,53 +1,60 @@
-# PawSafe API
+# 온:길 API
 
-FastAPI 백엔드입니다. 기본 운영 모드는 모델팀이 전달한 12일 ASOS 학습 모델과
-3,797개 보행 Edge를 읽고, 경로 요청마다 ASOS 서울 108번의 최근 12시간
-기온·습도·풍속·강수·일사량을 결합해 Heat Cost와 추천 경로를 다시 계산합니다.
+온:길 앱의 FastAPI 백엔드입니다. 최종 런타임은 모델팀이 전달한
+`2026-08-15 16:00 KST` 송파구 GMM Edge 산출물을 읽고, 요청한 출발지와
+목적지 사이에서 순수 최단경로와 상대 Heat Cost 최적 경로를 계산합니다.
 
 ## 실행
 
-프로젝트 루트에서 처음 한 번:
+프로젝트 루트에서:
 
 ```bash
 make setup
-```
-
-`backend/.env`에 `ASOS_SERVICE_KEY`를 입력합니다. Kakao 장소 검색까지 사용할
-경우 `KAKAO_REST_API_KEY`도 입력한 뒤:
-
-```bash
 make backend
 ```
 
-확인 주소:
+또는 백엔드 폴더에서:
+
+```bash
+source .venv/bin/activate
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+```
 
 - Health: `http://127.0.0.1:8000/health`
 - Swagger: `http://127.0.0.1:8000/docs`
-- KMA: `http://127.0.0.1:8000/v1/weather/current`
-- ASOS: `http://127.0.0.1:8000/v1/weather/asos/reference`
+- Route: `POST /v1/route-analyses`
+- Places: `GET /v1/places/search?q=위례`
 
-## 주요 API
+## 최종 모델 런타임
 
-| Method | Path | 역할 |
-| --- | --- | --- |
-| `GET` | `/health` | 그래프·Heat Cost 로딩 상태 |
-| `GET` | `/v1/capabilities` | 앱 기능과 데이터 상태 |
-| `GET` | `/v1/coverage` | 분석 영역 |
-| `GET` | `/v1/weather/current` | KMA 현재 기상 |
-| `GET` | `/v1/weather/asos/reference` | ASOS 전날 동일 시간 일사량 |
-| `POST` | `/v1/route-analyses` | 동일 모델 그래프의 fast 최단경로 또는 cool 경로 비교 |
+`backend/data/models/ongil_gmm_0815_1600/runtime/`의 다음 파일이 필수입니다.
 
-공유 기본 설정은 `ANALYSIS_PROVIDER=pawsafe_12day`입니다.
+- `edge_cluster_heatcost.gpkg`
+- `cluster_heatcost_mapping.csv`
+- `route_safety_payload.json`
 
-- `fast`: `cool`과 같은 보행로 그래프에서 계산한 거리 기준 최단경로만 표시합니다.
-- `cool`: 최신 유효 ASOS 12시간 관측 → 모델 피처 변환 → Edge별 Heat Cost → 거리 기준
-  최단경로와 최저 Heat Cost 경로 비교 순으로 실행합니다.
-- 모델 자산: `backend/data/models/pawsafe_12day/`
+기본 설정은 다음과 같습니다.
 
-기본값 `PAWSAFE_ASOS_INFERENCE_MODE=latest`는 ASOS가 제공하는 전날(D-1)의
-09~21시 중 직전 12시간이 완전한 최신 시각을 사용합니다. 시연에서 같은 결과를 반복하려면 `fixed`로 바꾸며,
-이 경우 `PAWSAFE_ASOS_FIXED_TIMESTAMP`의 2026-08-15 16:00을 사용합니다.
-Heat Cost는 상대 비교 지표이며 노면온도나 절대 안전 판정값이 아닙니다.
+```text
+ANALYSIS_PROVIDER=ongil_gmm
+PLACE_PROVIDER=catalog
+ONGIL_GMM_MODEL_PATH=data/models/ongil_gmm_0815_1600
+```
 
-상세 계약은 [`docs/API_CONTRACT.md`](docs/API_CONTRACT.md), 전체 실행·테스트
-방법은 루트 [`README.md`](../README.md)를 참고합니다.
+경로 계산에는 ASOS·KMA·Kakao 키가 필요하지 않습니다. 기상 조회 API나 Kakao
+자유 장소 검색을 별도로 사용할 때만 `.env`에 각 키를 추가합니다.
+
+## 지표 구분
+
+- `route.heat_cost`: 경로 구간의 길이 가중 Edge 상대 비용, 범위 `0~2`
+- `route.safety.score`: 경로 확정 후 계산한 화면용 열위험 점수, 범위 `1~100`
+- `heat_segments[].heat_cost`: Edge별 GMM 상대 비용 `0·1·2`
+- `heat_segments[].confidence`: 선택된 GMM 군집의 posterior confidence
+
+1~100 점수는 고정 기준시점 기온 26.6℃와 경로의 길이 가중
+`P(High)`를 사용합니다. 실측 노면온도나 화상 확률이 아니며 40/80 기준도
+현장 검증 전 서비스 운영용 초기 기준입니다.
+
+상세 계약은 [`docs/API_CONTRACT.md`](docs/API_CONTRACT.md), 모델 파일 설명은
+[`data/models/ongil_gmm_0815_1600/README.md`](data/models/ongil_gmm_0815_1600/README.md)를
+참고합니다.

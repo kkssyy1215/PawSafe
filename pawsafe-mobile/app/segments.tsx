@@ -4,7 +4,6 @@ import { router, useFocusEffect } from 'expo-router';
 import { AppButton } from '@/src/components/common/AppButton';
 import { ScreenContainer } from '@/src/components/common/ScreenContainer';
 import { PawSafeMap } from '@/src/components/map/PawSafeMap';
-import { DemoNotice } from '@/src/features/walk/components/DemoNotice';
 import { HeatSegmentCard, heatLevelCopy } from '@/src/features/walk/components/HeatSegmentCard';
 import { HeatRiskWarning } from '@/src/features/walk/components/HeatRiskWarning';
 import { RelativeHeatNotice } from '@/src/features/walk/components/RelativeHeatNotice';
@@ -41,12 +40,11 @@ export default function SegmentsScreen() {
         </View>
         <RouteEndpointsCard origin={request.origin} destination={request.destination} />
         <RecommendedRouteCard route={selectedRoute} walkMode={isFast ? 'fast' : 'cool'} showHeatMetrics={!isFast} />
-        <HeatRiskWarning averageHeatCost={selectedRoute.heat_cost} />
+        <HeatRiskWarning safety={selectedRoute.safety} />
         <View style={styles.mapSection}>
-          <View style={styles.mapHeading}><View><Text style={styles.sectionTitle}>경로 지도</Text><Text style={styles.sectionHint}>{isFast ? 'PawSafe 보행로 그래프의 거리 기준 최단경로예요.' : '추천 경로와 구간별 열노출을 한눈에 확인하세요.'}</Text></View><View style={styles.livePill}><View style={styles.liveDot} /><Text style={styles.liveText}>경로 반영</Text></View></View>
+          <View style={styles.mapHeading}><View><Text style={styles.sectionTitle}>경로 지도</Text><Text style={styles.sectionHint}>{isFast ? '온:길 보행로 그래프의 거리 기준 최단경로예요.' : '추천 경로와 구간별 열노출을 한눈에 확인하세요.'}</Text></View><View style={styles.livePill}><View style={styles.liveDot} /><Text style={styles.liveText}>경로 반영</Text></View></View>
           <PawSafeMap origin={request.origin} destination={request.destination} shortest={isFast ? result.shortest : undefined} pawsafe={isFast ? undefined : result.pawsafe} walkMode={isFast ? 'fast' : 'cool'} segments={isFast ? undefined : result.heat_segments} selectedSegmentId={selectedId} onSegmentPress={selectSegment} showRouteLegend={false} showSegmentLegend={!isFast} />
         </View>
-        {result.is_demo ? <DemoNotice analysisSource={result.analysis_source} walkMode={request.walk_mode} /> : null}
         {!isFast ? <>
           <View style={styles.segmentSection}>
             <View style={styles.sectionHeading}>
@@ -61,7 +59,7 @@ export default function SegmentsScreen() {
               })}
             </ScrollView>
           </View>
-          {selectedForDisplay ? <HeatSegmentCard segment={selectedForDisplay} isDemo={result.is_demo} /> : <Text accessibilityLiveRegion="polite" style={styles.prompt}>확인할 구간을 선택해 주세요.</Text>}
+          {selectedForDisplay ? <HeatSegmentCard segment={selectedForDisplay} /> : <Text accessibilityLiveRegion="polite" style={styles.prompt}>확인할 구간을 선택해 주세요.</Text>}
           <RelativeHeatNotice />
         </> : null}
         <View style={styles.actions}>

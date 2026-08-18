@@ -7,13 +7,7 @@ from app.core.errors import AppError, PipelineNotReadyError
 from app.providers.analysis.base import AnalysisProvider
 from app.providers.analysis.external_analysis import ExternalAnalysisProvider
 from app.providers.analysis.graph_analysis import GraphAnalysisProvider
-from app.providers.analysis.kakao_walking_analysis import KakaoWalkingAnalysisProvider
-from app.providers.analysis.mock_analysis import MockAnalysisProvider
-from app.providers.analysis.pawsafe_12day import (
-    Pawsafe12DayAnalysisProvider,
-    missing_model_assets,
-)
-from app.providers.analysis.walk_mode_analysis import WalkModeAnalysisProvider
+from app.providers.analysis.ongil_gmm import OngilGmmAnalysisProvider, missing_model_assets
 from app.providers.heat_cost.base import HeatCostProvider
 from app.providers.shortest_route.base import ShortestRouteProvider
 from app.providers.shortest_route.internal_graph import InternalGraphShortestRouteProvider
@@ -44,62 +38,23 @@ def create_analysis_provider(
     walk_modes: WalkModeConfig | None,
     readiness_error: AppError | None = None,
 ) -> AnalysisProvider:
-    if settings.analysis_provider == "mock":
-        return MockAnalysisProvider(settings.resolve_path(settings.mock_scenarios_file_path))
+    if settings.analysis_provider == "ongil_gmm":
+        model_path = settings.resolve_path(settings.ongil_gmm_model_path)
+        if missing_model_assets(model_path):
+            return UnavailableAnalysisProvider(PipelineNotReadyError("ongil_gmm_assets"))
+        return OngilGmmAnalysisProvider(
+            model_path=model_path,
+            walking_speed_m_per_minute=settings.walking_speed_m_per_minute,
+            max_node_match_distance_m=settings.max_node_match_distance_m,
+        )
     if settings.analysis_provider == "external":
         if not settings.analysis_external_url:
             return UnavailableAnalysisProvider(PipelineNotReadyError("analysis_external_url"))
-        cool_provider = ExternalAnalysisProvider(
+        return ExternalAnalysisProvider(
             client,
             settings.analysis_external_url,
             timeout_seconds=settings.request_timeout_seconds,
         )
-        if not settings.kakao_rest_api_key:
-            return WalkModeAnalysisProvider(
-                fast_provider=UnavailableAnalysisProvider(
-                    PipelineNotReadyError("kakao_rest_api_key")
-                ),
-                cool_provider=cool_provider,
-            )
-        return WalkModeAnalysisProvider(
-            fast_provider=KakaoWalkingAnalysisProvider(
-                client,
-                api_key=settings.kakao_rest_api_key,
-                mock_scenarios_path=settings.resolve_path(settings.mock_scenarios_file_path),
-                timeout_seconds=settings.request_timeout_seconds,
-            ),
-            cool_provider=cool_provider,
-        )
-    if settings.analysis_provider == "kakao_walk":
-        if not settings.kakao_rest_api_key:
-            return UnavailableAnalysisProvider(PipelineNotReadyError("kakao_rest_api_key"))
-        return KakaoWalkingAnalysisProvider(
-            client,
-            api_key=settings.kakao_rest_api_key,
-            mock_scenarios_path=settings.resolve_path(settings.mock_scenarios_file_path),
-            timeout_seconds=settings.request_timeout_seconds,
-        )
-    if settings.analysis_provider == "pawsafe_12day":
-        model_config_path = settings.resolve_path(settings.pawsafe_12day_config_path)
-        if not settings.asos_service_key:
-            model_provider: AnalysisProvider = UnavailableAnalysisProvider(
-                PipelineNotReadyError("asos_service_key")
-            )
-        elif missing_model_assets(model_config_path):
-            model_provider = UnavailableAnalysisProvider(
-                PipelineNotReadyError("pawsafe_12day_assets")
-            )
-        else:
-            model_provider = Pawsafe12DayAnalysisProvider(
-                config_path=model_config_path,
-                asos_service_key=settings.asos_service_key,
-                asos_base_url=settings.asos_base_url,
-                asos_station_id=settings.asos_station_id,
-                asos_inference_mode=settings.pawsafe_asos_inference_mode,
-                asos_fixed_timestamp=settings.pawsafe_asos_fixed_timestamp,
-                walking_speed_m_per_minute=settings.walking_speed_m_per_minute,
-            )
-        return model_provider
     if not graph_data or not heat_provider or not shortest_route_provider or not walk_modes:
         return UnavailableAnalysisProvider(
             readiness_error or PipelineNotReadyError("graph_or_heat_data")
@@ -127,14 +82,4 @@ def create_analysis_provider(
         shortest_route_source=settings.shortest_route_provider,
         pawsafe_route_source="internal_graph",
     )
-    if not settings.kakao_rest_api_key:
-        return graph_provider
-    return WalkModeAnalysisProvider(
-        fast_provider=KakaoWalkingAnalysisProvider(
-            client,
-            api_key=settings.kakao_rest_api_key,
-            mock_scenarios_path=settings.resolve_path(settings.mock_scenarios_file_path),
-            timeout_seconds=settings.request_timeout_seconds,
-        ),
-        cool_provider=graph_provider,
-    )
+    return graph_provider

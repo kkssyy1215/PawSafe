@@ -1,5 +1,4 @@
 version: pipeline-weight-v1
-is_demo: false
 
 # The data-team pipeline defines fast as distance-first and cool as
 # heat-exposure-first. The product exposes only these two modes.

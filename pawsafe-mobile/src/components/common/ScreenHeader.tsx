@@ -12,13 +12,13 @@ interface ScreenHeaderProps {
 export function ScreenHeader({ title, description, eyebrow, compact = false, brandTagline }: ScreenHeaderProps) {
   return (
     <View accessible accessibilityRole="header" style={styles.container}>
-      {eyebrow === 'PawSafe' ? (
+      {eyebrow === '온:길' ? (
         <View style={styles.brandBlock}>
           <View style={styles.brandRow}>
             <View style={styles.brandMarkFrame}>
-              <Image source={require('../../../assets/brand/splash-icon.png')} accessibilityLabel="PawSafe 강아지 발바닥 로고" resizeMode="contain" style={styles.brandMark} />
+              <Image source={require('../../../assets/brand/splash-icon.png')} accessibilityLabel="온:길 안내견 이동 지원 서비스 로고" resizeMode="contain" style={styles.brandMark} />
             </View>
-            <Text style={styles.brandName}>PawSafe</Text>
+            <Text style={styles.brandName}>온:길</Text>
           </View>
           {brandTagline ? <Text style={styles.brandTagline}>{brandTagline}</Text> : null}
         </View>

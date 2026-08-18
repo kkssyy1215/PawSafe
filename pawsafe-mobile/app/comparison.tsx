@@ -31,7 +31,7 @@ export default function ComparisonScreen() {
   const selectedRouteForDecision = request.walk_mode === 'fast' || resultState.selectedRoute === 'shortest' ? result.shortest : result.pawsafe;
   const heatRiskDecision = (
     <HeatRiskDecisionModal
-      averageHeatCost={selectedRouteForDecision.heat_cost}
+      safety={selectedRouteForDecision.safety}
       visible={!acknowledgedHeatRouteIds.includes(selectedRouteForDecision.route_id)}
       onContinue={() => setAcknowledgedHeatRouteIds((routeIds) => [...routeIds, selectedRouteForDecision.route_id])}
       onCancelWalk={() => { dispatch({ type: 'RESET' }); router.dismissAll(); router.replace('/'); }}
@@ -43,15 +43,15 @@ export default function ComparisonScreen() {
         {heatRiskDecision}
         <ScrollView contentContainerStyle={styles.content}>
           <View accessible accessibilityRole="header" style={styles.fastHeader}>
-            <Text style={styles.fastLabel}>PAWSAFE FAST ROUTE</Text>
+            <Text style={styles.fastLabel}>온:길 빠른 경로</Text>
             <Text style={styles.fastHeadline}>가장 빠른 산책길을{`\n`}찾았어요.</Text>
-            <Text style={styles.fastDescription}>PawSafe 보행로 그래프에서 거리와 예상 시간이 가장 짧은 길이에요.</Text>
+            <Text style={styles.fastDescription}>온:길 보행로 그래프에서 거리와 예상 시간이 가장 짧은 길이에요.</Text>
           </View>
           <PawSafeMap origin={request.origin} destination={request.destination} shortest={result.shortest} selectedRoute="shortest" walkMode="fast" showRouteLegend={false} />
           <FastRouteResultCard route={result.shortest} />
-          <HeatRiskWarning averageHeatCost={result.shortest.heat_cost} />
+          <HeatRiskWarning safety={result.shortest.safety} />
           <View style={styles.actions}>
-            <AppButton testID="walking-direction-button" onPress={() => router.push('/live')}>산책길 음성 안내</AppButton>
+            <AppButton testID="walking-direction-button" onPress={() => router.push('/live')}>산책길 안내</AppButton>
             <AppButton testID="restart-button" variant="secondary" onPress={() => { dispatch({ type: 'RESET' }); router.dismissAll(); router.replace('/'); }}>다른 산책길 찾아보기</AppButton>
           </View>
         </ScrollView>
@@ -68,10 +68,10 @@ export default function ComparisonScreen() {
           <RouteSummaryCard route={result.shortest} tone="shortest" selected={resultState.selectedRoute === 'shortest'} onPress={() => dispatch({ type: 'SELECT_ROUTE', route: 'shortest' })} />
           <RouteSummaryCard route={result.pawsafe} tone="pawsafe" selected={resultState.selectedRoute === 'pawsafe'} onPress={() => dispatch({ type: 'SELECT_ROUTE', route: 'pawsafe' })} />
         </View>
-        <HeatRiskWarning averageHeatCost={resultState.selectedRoute === 'shortest' ? result.shortest.heat_cost : result.pawsafe.heat_cost} />
+        <HeatRiskWarning safety={resultState.selectedRoute === 'shortest' ? result.shortest.safety : result.pawsafe.safety} />
         <Text style={styles.explanation}>{result.comparison.distance_delta_m > 0 ? `뜨거운 노면과 직사광선 노출이 상대적으로 적은 길이에요. 일반 경로보다 ${Math.round(result.comparison.distance_delta_m)}m 더 걸어도 우리 강아지가 걷기 좋은 경로를 추천했어요.` : '현재 기상환경에서 거리와 노면 열노출을 함께 비교해 우리 강아지가 걷기 좋은 길을 추천했어요.'}</Text>
         <View style={styles.actions}>
-          <AppButton testID="walking-direction-button" onPress={() => router.push('/live')}>산책길 음성 안내</AppButton>
+          <AppButton testID="walking-direction-button" onPress={() => router.push('/live')}>산책길 안내</AppButton>
           <AppButton testID="restart-button" variant="secondary" onPress={() => { dispatch({ type: 'RESET' }); router.dismissAll(); router.replace('/'); }}>다른 산책길 찾아보기</AppButton>
         </View>
       </ScrollView>

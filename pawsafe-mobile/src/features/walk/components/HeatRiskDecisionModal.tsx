@@ -1,17 +1,17 @@
 import { Modal, StyleSheet, Text, View } from 'react-native';
 import { AppButton } from '@/src/components/common/AppButton';
-import { HIGH_HEAT_COST_THRESHOLD } from '@/src/features/walk/components/HeatRiskWarning';
+import type { RouteSafety } from '@/src/api/contracts';
 import { colors, spacing, typography } from '@/src/theme/theme';
 
 interface HeatRiskDecisionModalProps {
-  averageHeatCost: number;
+  safety: RouteSafety;
   visible: boolean;
   onContinue: () => void;
   onCancelWalk: () => void;
 }
 
-export function HeatRiskDecisionModal({ averageHeatCost, visible, onContinue, onCancelWalk }: HeatRiskDecisionModalProps) {
-  if (!visible || averageHeatCost < HIGH_HEAT_COST_THRESHOLD) return null;
+export function HeatRiskDecisionModal({ safety, visible, onContinue, onCancelWalk }: HeatRiskDecisionModalProps) {
+  if (!visible || !safety.should_warn) return null;
 
   return (
     <Modal transparent visible animationType="fade" onRequestClose={onCancelWalk}>
@@ -24,18 +24,18 @@ export function HeatRiskDecisionModal({ averageHeatCost, visible, onContinue, on
           </View>
           <View
             accessible
-            accessibilityLabel={`이 경로 Heat Cost ${Math.round(averageHeatCost)}, 기준 ${HIGH_HEAT_COST_THRESHOLD}`}
+            accessibilityLabel={`이 경로 열위험 점수 ${safety.score}, 기준 ${safety.thresholds.warning_min}`}
             style={styles.heatComparison}
           >
-            <Text style={styles.heatLabel}>이 경로 Heat Cost</Text>
+            <Text style={styles.heatLabel}>이 경로 열위험 점수</Text>
             <View style={styles.heatValueRow}>
-              <Text style={styles.heatValue}>{Math.round(averageHeatCost)}</Text>
-              <Text style={styles.heatThreshold}>/ {HIGH_HEAT_COST_THRESHOLD}</Text>
+              <Text style={styles.heatValue}>{safety.score}</Text>
+              <Text style={styles.heatThreshold}>/ {safety.thresholds.warning_min}</Text>
             </View>
           </View>
           <View style={styles.copy}>
             <Text style={styles.description}>
-              Heat Cost가 80 이상이에요. 안전한 시간대로 산책을 미뤄 주세요.
+              경로 열위험 점수가 {safety.thresholds.warning_min}점 이상이에요. 안전한 시간대로 산책을 미뤄 주세요.
             </Text>
           </View>
           <View style={styles.actions}>

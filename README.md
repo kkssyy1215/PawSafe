@@ -1,42 +1,56 @@
-# PawSafe
+# 온:길 (On:Gil)
 
 [![CI](https://github.com/kkssyy1215/PawSafe/actions/workflows/ci.yml/badge.svg)](https://github.com/kkssyy1215/PawSafe/actions/workflows/ci.yml)
 
-PawSafe는 일반 보행 경로와 상대적인 Heat Cost가 낮은 산책 경로를 비교하는
-Expo 앱과 FastAPI 백엔드입니다. 현재 저장소의 공유 기준은 이 루트 하나입니다.
+온:길은 노면 열환경을 고려해 일반 최단 보행경로와 상대적으로 열부담이 낮은
+경로를 비교하고, 시각장애인·안내견 사용자를 위한 전경 GPS 음성 안내를 제공하는
+Expo + FastAPI 프로젝트입니다. 저장소 이름은 기존 협업 링크 호환을 위해
+`PawSafe`를 유지하지만 앱에 표시되는 서비스명은 온:길입니다.
 
-## 저장소 구조
+## 현재 적용 모델
+
+최종 앱 런타임은 `2026-08-15 16:00 KST` 송파구 전체 보행로를 분석한
+3군집 GMM 산출물을 사용합니다.
+
+- 입력 특성: 그늘 비율, 누적 유효 일사량, 포장면 흡수율
+- Edge 상대 Heat Cost: 쾌적 `0`, 주의 `1`, 고온 `2`
+- 최단경로 가중치: `length_m`
+- 온:길 추천 가중치: `length_m × (1 + 1.0 × Heat Cost)`
+- 경로 확정 후 GMM의 `P(High)`, 경로 길이, 기준 기온 26.6℃로 1~100
+  경로 열위험 점수 계산
+- 점수 40 이하 쾌적, 41~79 주의, 80 이상 산책 자제 경고
+
+Edge Heat Cost와 1~100 점수는 실측 노면온도, 화상 확률 또는 의학·수의학적으로
+보정된 절대 안전 판정이 아닙니다. 현재 모델은 고정 시점의 상대 경로 비교
+결과이며 현장 검증 전이라는 제한을 API와 화면에 함께 표시합니다.
+
+## 구조
 
 ```text
 PawSafe/
-├── backend/                 FastAPI API, 12일 모델 추론, KMA ASOS·Kakao 연동
-│   ├── app/                 백엔드 소스
-│   ├── data/models/         앱이 읽는 12일 모델·Edge·시간 피처
-│   ├── data/exports/        이전 파일 기반 분석 모드의 그래프·Heat Cost
-│   └── tests/               백엔드 테스트
-├── pawsafe-mobile/          Expo Router 모바일·웹 앱
-├── src/pawsafe/             Heat Cost·기상 데이터 파이프라인의 단일 소스
-├── data/live/               공유한 최신 CSV 입력 스냅샷
-├── scripts/                 설치·전체 테스트 스크립트
-├── docs/                    방법론·배포·데이터 인계 문서
-├── Makefile                 루트에서 실행하는 공통 명령
-└── update_live_heat.py      기상값으로 최신 Heat Cost를 갱신하는 진입점
+├── backend/
+│   ├── app/                          FastAPI와 GMM 경로 계산
+│   ├── data/models/ongil_gmm_0815_1600/
+│   │   ├── runtime/                  앱 실행용 GPKG·mapping·점수 기준
+│   │   └── source/                   모델팀 Notebook·loader 원본
+│   ├── data/supported_places.json    중복 없는 지원 주소·좌표
+│   └── tests/
+├── pawsafe-mobile/
+│   ├── app/                          Expo Router 화면
+│   ├── src/                          API·지도·음성 인식·GPS 안내
+│   └── tests/
+├── src/pawsafe/                      연구·데이터 파이프라인
+└── scripts/                          설치·통합 검사
 ```
 
-현재 `cool` 요청은 `backend/data/models/pawsafe_12day/`의 모델·Edge·시간 피처를
-읽고 KMA ASOS가 제공하는 전날 최신 유효 12시간 관측을 결합합니다. `backend/data/exports/`는 이전 파일 기반
-분석 모드와 갱신 파이프라인 호환을 위해 유지합니다. 개인 API 키는
-`backend/.env`에만 두고 Git에는 올리지 않습니다.
+백엔드는 시작 후 첫 경로 요청에서 3,797개 Edge를 읽어 그래프를 캐시합니다.
+경로 요청마다 출발·도착 좌표를 가까운 보행 Node에 연결하고 최단경로와 Heat Cost
+최적 경로를 계산합니다. GMM을 요청마다 다시 학습하거나 기상 API를 호출하지
+않습니다.
 
-Heat Cost는 절대 노면온도나 안전 판정이 아니라, 같은 조건에서 경로를 비교하는
-상대 지표입니다. 현재 공개된 데이터의 검증 상태도 앱과 API에서
-`not_validated`로 표시합니다.
+## 처음 설정
 
-## 처음 한 번만 설정
-
-Python 3.12 이상과 Node.js 20.19 이상이 필요합니다. macOS에서는 프로젝트
-루트에서 다음 한 번만 실행하면 두 Python 환경, 모바일 의존성, 로컬 환경파일을
-준비합니다.
+Python 3.12 이상과 Node.js 20.19 이상이 필요합니다.
 
 ```bash
 git clone https://github.com/kkssyy1215/PawSafe.git
@@ -44,121 +58,66 @@ cd PawSafe
 make setup
 ```
 
-그 다음 `backend/.env`에 기상청 ASOS 서비스 키를 입력합니다. Kakao 장소
-검색을 사용할 경우 Kakao 키를 추가합니다. 키는 백엔드에만 두며
-`pawsafe-mobile/.env`의 `EXPO_PUBLIC_` 변수에는 넣지 않습니다.
+최종 경로 API는 별도 API 키 없이 실행됩니다. Kakao 장소 자유 검색 또는 KMA·ASOS
+조회 API를 별도로 사용할 때만 해당 키를 `backend/.env`에 넣습니다. 앱 번들에
+포함되는 `EXPO_PUBLIC_` 변수에는 비밀키를 넣지 않습니다.
 
-```text
-KAKAO_REST_API_KEY=...
-ASOS_SERVICE_KEY=...
-PAWSAFE_ASOS_INFERENCE_MODE=latest
-```
+## 실행
 
-현재 두 산책 모드는 같은 3,797개 보행 Edge와 12일 모델 분석 결과를 사용합니다.
-`빠른 산책`은 그 결과의 거리 기준 최단경로만 표시하고, `시원한 산책`은 같은
-최단경로와 Heat Cost 최소경로를 비교합니다. 모델은 ASOS 데이터로 매 요청
-재학습하지 않고, 저장된 모델에 최신 유효 12시간 관측 피처를 입력해 Edge Heat
-Cost와 경로를 다시 계산합니다. 시연은 `PAWSAFE_ASOS_INFERENCE_MODE=fixed`로
-전환하면 2026-08-15 16:00 결과를 재현합니다.
-
-두 산책 모드의 결과 화면에서는 선택 경로를 따라가는 전경 음성 안내를 사용할 수
-있습니다. 앱을 화면에 켜 둔 동안 GPS로 위치를 추적하고, 경로 좌표에서 계산한
-좌·우회전과 도착 정보를 한국어 음성·진동으로 안내하며 남은 거리와 시간을
-갱신합니다. 기존 경로 좌표와 Expo 기기 기능만 사용하므로 별도 유료 길안내 API는
-호출하지 않습니다. 백그라운드·잠금 화면 안내는 현재 구현 범위에서 제외합니다.
-
-## 화면 테스트
-
-터미널 하나에서 API를 실행합니다.
+터미널 1:
 
 ```bash
 make backend
 ```
 
-다른 터미널에서 웹 화면을 실행합니다.
+터미널 2:
 
 ```bash
 make web
 ```
 
-브라우저에서 Expo가 표시한 주소를 열고, API 상태는
-[`http://127.0.0.1:8000/health`](http://127.0.0.1:8000/health), Swagger는
-[`http://127.0.0.1:8000/docs`](http://127.0.0.1:8000/docs)에서 확인합니다.
+- 앱: [http://localhost:8081](http://localhost:8081)
+- API 상태: [http://127.0.0.1:8000/health](http://127.0.0.1:8000/health)
+- Swagger: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
 
-백엔드 없이 화면만 확인하려면 다음을 사용합니다.
-
-```bash
-make web-mock
-```
-
-실제 휴대폰에서는 `pawsafe-mobile/.env`의
-`EXPO_PUBLIC_API_BASE_URL`을 Mac의 LAN IP로 바꾸고 `make backend`를
-`--host 0.0.0.0`로 실행해야 합니다. 자세한 내용은
-[`DEPLOYMENT.md`](DEPLOYMENT.md)를 참고합니다.
-
-## 기상값과 Heat Cost 갱신
-
-저장소에 포함된 `backend/data/exports/`만으로 앱과 API는 바로 실행할 수 있습니다.
-다만 Heat Cost를 다시 계산하려면 재배포 권한 때문에 Git에서 제외한 원본 지리
-자료와 학습 산출물(`data/processed/`, `outputs/`)이 로컬에 준비되어 있어야 합니다.
-필요한 파일과 생성 순서는
-[`docs/DATA_PIPELINE_HANDOFF.md`](docs/DATA_PIPELINE_HANDOFF.md)를 따릅니다.
-
-백엔드가 실행 중인 상태에서 한 번 갱신합니다.
+iOS 개발 빌드:
 
 ```bash
-make update-weather
+cd pawsafe-mobile
+npm run build:ios
+npm run ios
 ```
 
-매 정시 자동 갱신을 유지하려면 다음을 사용합니다.
+실제 휴대폰에서는 `EXPO_PUBLIC_API_BASE_URL`을 개발 PC의 LAN IP로 바꾸고
+휴대폰과 PC를 같은 네트워크에 연결합니다.
 
-```bash
-make update-weather-watch
-```
+## 사용자 흐름
 
-이 작업은 KMA 현재 기상값과 ASOS 전날 동일 시간 일사량을 JSON으로 받아
-`data/live/*.csv`에 누적하고, v2 입력을 기준으로 3,797개 Edge의 Heat Cost를
-재계산한 뒤 `backend/data/exports/edge_heat_cost.json`을 교체합니다. 서버는
-파일 변경 시 자동으로 새 스냅샷을 읽습니다.
+1. 백엔드가 제공하는 지원 주소를 검색하거나 음성으로 입력
+2. 빠른 산책 또는 시원한 산책 선택
+3. 빠른 산책은 동일 GMM 그래프의 순수 최단경로만 표시
+4. 시원한 산책은 최단경로와 Heat Cost 최적 경로, 거리·점수를 비교
+5. 선택한 경로를 실제 GPS 지도에 표시
+6. 앱을 화면에 켠 상태에서 좌·우회전, 경로 이탈·복귀, 도착을 음성·진동으로 안내
+
+가상 GPS, 임시 결과 버튼, 하드코딩 경로 응답, 시연 전용 음성 파일은 최종
+제출본에 포함하지 않습니다.
 
 ## 검증
 
-전체 검사는 루트에서 실행합니다.
-
 ```bash
 make test
-```
-
-검사 범위는 모바일 Jest·TypeScript·ESLint, 백엔드 pytest·Ruff·mypy,
-파이프라인 pytest입니다. 웹 배포용 정적 빌드는 다음 명령으로 확인합니다.
-
-```bash
 make build-web
 ```
 
-## 협업 규칙
-
-모든 작업은 이 저장소의 `main`에서 시작합니다.
+개별 검사:
 
 ```bash
-git switch main
-git pull --ff-only origin main
-git switch -c feature/<작업명>
+cd backend && PYTHONPATH=. .venv/bin/python -m pytest -q
+cd pawsafe-mobile && npm run test:all
 ```
 
-기능 변경 후 `make test`를 통과시키고 Pull Request를 만든 뒤 `main`에
-병합합니다. 자세한 절차는 [`CONTRIBUTING.md`](CONTRIBUTING.md), API 계약은
-[`backend/docs/API_CONTRACT.md`](backend/docs/API_CONTRACT.md),
-데이터 설명은 [`docs/DATA_PIPELINE_HANDOFF.md`](docs/DATA_PIPELINE_HANDOFF.md),
-저작권·출처 표기는 [`DATA_ATTRIBUTION.md`](DATA_ATTRIBUTION.md)를 참고합니다.
-
-## 배포
-
-- 백엔드: 루트의 [`render.yaml`](render.yaml)로 Render 배포
-- 웹 앱: `pawsafe-mobile`을 Vercel Root Directory로 지정
-- 배포 절차: [`DEPLOYMENT.md`](DEPLOYMENT.md)
-
-원본 IoT 문서와 개인 API 키는 공개 저장소에 포함하지 않습니다. 공개된 데이터
-파일과 지도·기상 API의 출처 및 라이선스는 [`DATA_ATTRIBUTION.md`](DATA_ATTRIBUTION.md)에
-정리되어 있습니다. 저장소 코드의 현재 이용조건은 [`LICENSE.md`](LICENSE.md)를
-따르며 제3자 데이터의 이용조건을 대체하지 않습니다.
+모델 원본·해시·해석은
+[`backend/data/models/ongil_gmm_0815_1600/README.md`](backend/data/models/ongil_gmm_0815_1600/README.md),
+API 구조는 [`backend/docs/API_CONTRACT.md`](backend/docs/API_CONTRACT.md),
+데이터 출처는 [`DATA_ATTRIBUTION.md`](DATA_ATTRIBUTION.md)를 참고합니다.

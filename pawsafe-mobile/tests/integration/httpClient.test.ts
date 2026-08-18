@@ -4,7 +4,7 @@ import type { RouteAnalysisRequest } from '@/src/api/contracts';
 import { requestJson } from '@/src/api/client';
 import { HttpAnalysisProvider } from '@/src/providers/analysis/HttpAnalysisProvider';
 import { HttpPlaceSearchProvider } from '@/src/providers/places/HttpPlaceSearchProvider';
-import { getMockRouteScenario } from '@/src/mocks/routeScenarios';
+import { makeRouteAnalysisResponse } from '@/tests/fixtures/routeAnalysis';
 
 jest.mock('@react-native-community/netinfo', () => ({
   __esModule: true,
@@ -36,9 +36,9 @@ describe('HTTP analysis client', () => {
   afterEach(() => { jest.useRealTimers(); globalThis.fetch = originalFetch; });
 
   it('posts the exact route-analysis request body to the canonical endpoint', async () => {
-    mockFetch.mockResolvedValue(response(getMockRouteScenario(request)));
+    mockFetch.mockResolvedValue(response(makeRouteAnalysisResponse()));
     const result = await new HttpAnalysisProvider('https://api.example.test/').analyzeRoute(request);
-    expect(result.analysis_id).toBe('demo_analysis_cool-improvement');
+    expect(result.analysis_id).toBe('analysis_gmm_001');
     expect(mockFetch).toHaveBeenCalledWith('https://api.example.test/v1/route-analyses', expect.objectContaining({
       method: 'POST',
       body: JSON.stringify(request),

@@ -8,9 +8,6 @@ import { AnalysisStatus } from '@/src/features/walk/components/AnalysisStatus';
 import { FastRouteStatus } from '@/src/features/walk/components/FastRouteStatus';
 import { useRouteAnalysis } from '@/src/features/walk/hooks/useRouteAnalysis';
 import { clearPendingRouteRequest, loadPendingRouteRequest } from '@/src/features/walk/utils/pendingRouteRequest';
-import { env } from '@/src/config/env';
-import { getMockRouteScenario } from '@/src/mocks/routeScenarios';
-import { pipelineMockRouteDestination, pipelineMockRouteOrigin } from '@/src/mocks/places';
 import { useWalkFlow } from '@/src/state/WalkFlowContext';
 import { spacing } from '@/src/theme/spacing';
 
@@ -22,22 +19,6 @@ export default function AnalyzingScreen() {
   const recoveredRequest = useMemo(loadPendingRouteRequest, []);
   const request = state.status === 'submitting' ? state.request : null;
   const walkMode = request?.walk_mode ?? recoveredRequest?.walk_mode ?? (params.walkMode === 'fast' ? 'fast' : 'cool');
-  const showTemporaryResult = () => {
-    // Keep the preview usable even if a web refresh lost the in-memory form
-    // state. The real model/API path is untouched; this is only a local UI
-    // escape hatch for reviewing the screens after analysis.
-    const previewRequest = request ?? {
-      origin: pipelineMockRouteOrigin,
-      destination: pipelineMockRouteDestination,
-      walk_mode: 'cool' as const,
-    };
-    cancel();
-    if (!request) dispatch({ type: 'BEGIN_SUBMIT', request: previewRequest });
-    dispatch({ type: 'SUBMIT_SUCCESS', result: getMockRouteScenario(previewRequest) });
-    clearPendingRouteRequest();
-    router.replace('/comparison');
-  };
-
   useEffect(() => {
     if (state.status !== 'input') return;
     if (recoveredRequest) {
@@ -90,8 +71,7 @@ export default function AnalyzingScreen() {
   return (
     <ScreenContainer>
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
-        {walkMode === 'fast' ? <FastRouteStatus /> : <AnalysisStatus isMock={env.analysisMode === 'mock'} />}
-        {env.showDemoControls && env.analysisMode === 'mock' ? <AppButton testID="preview-results-button" variant="secondary" onPress={showTemporaryResult}>분석 결과 임시로 보기</AppButton> : null}
+        {walkMode === 'fast' ? <FastRouteStatus /> : <AnalysisStatus />}
         <AppButton variant="quiet" onPress={() => { cancel(); clearPendingRouteRequest(); router.back(); }}>검색 취소</AppButton>
       </ScrollView>
     </ScreenContainer>

@@ -16,7 +16,6 @@ class WeightProfileResponse(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     id: str
-    is_demo: bool
 
 
 WalkMode = Literal["fast", "cool"]

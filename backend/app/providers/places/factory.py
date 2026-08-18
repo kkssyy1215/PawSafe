@@ -5,8 +5,8 @@ import httpx
 from app.core.config import Settings
 from app.core.errors import PipelineNotReadyError
 from app.providers.places.base import PlaceSearchProvider
+from app.providers.places.catalog_places import CatalogPlaceSearchProvider
 from app.providers.places.kakao_places import KakaoPlaceSearchProvider
-from app.providers.places.mock_places import MockPlaceSearchProvider
 from app.schemas.location import CoordinateInput
 from app.schemas.place import Place
 
@@ -33,8 +33,10 @@ def create_place_provider(
     settings: Settings,
     client: httpx.AsyncClient,
 ) -> PlaceSearchProvider:
-    if settings.place_provider == "mock":
-        return MockPlaceSearchProvider(settings.resolve_path(settings.mock_places_file_path))
+    if settings.place_provider == "catalog":
+        return CatalogPlaceSearchProvider(
+            settings.resolve_path(settings.supported_places_file_path)
+        )
     if not settings.kakao_rest_api_key:
         return UnavailablePlaceSearchProvider("kakao_rest_api_key")
     return KakaoPlaceSearchProvider(

@@ -25,11 +25,11 @@ describe('AnalysisStatus', () => {
     expect(screen.queryByText('Edge별 Heat Cost 계산')).toBeNull();
   });
 
-  it('shows the current-weather pipeline for cool walks', async () => {
-    const screen = await render(<AnalysisStatus isMock={false} />);
+  it('shows the final GMM routing pipeline for cool walks', async () => {
+    const screen = await render(<AnalysisStatus />);
 
     expect(screen.getByText(/우리 강아지가 걷기 좋은 길을/)).toBeTruthy();
-    expect(screen.getByText(/포장재 · ASOS 기상 · 일사량 · 그늘 · Heat Cost/)).toBeTruthy();
+    expect(screen.getByText(/GMM 상대 Heat Cost · 고온 군집 확률 · 경로 거리/)).toBeTruthy();
     expect(screen.queryByText('분석 5/5')).toBeNull();
   });
 });

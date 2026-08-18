@@ -14,16 +14,15 @@ function validationCopy(value: HeatSegment['validation_status']) {
   return '실측 검증 전';
 }
 
-export function HeatSegmentCard({ segment, isDemo }: { segment: HeatSegment; isDemo: boolean }) {
+export function HeatSegmentCard({ segment }: { segment: HeatSegment }) {
   const rows = [
     ['상대 열노출 수준', heatLevelCopy[segment.level]],
     ['Heat Cost', segment.heat_cost == null ? '정보 없음' : segment.heat_cost.toFixed(0)],
     ['예상 그늘 비율', formatPercent(segment.shade_ratio)],
     ['직사광선 노출 시간', formatDuration(segment.direct_sun_minutes)],
     ['포장재', segment.surface_type || '포장재 정보 없음'],
-    ['데이터 기준', segment.data_valid_at ? new Date(segment.data_valid_at).toLocaleString('ko-KR') : 'MVP 예시 시나리오'],
+    ['데이터 기준', segment.data_valid_at ? new Date(segment.data_valid_at).toLocaleString('ko-KR') : '정보 없음'],
     ['검증 상태', validationCopy(segment.validation_status)],
-    ['데이터 구분', isDemo ? 'MVP 예시 데이터' : 'API 연결 데이터'],
   ];
   return (
     <AppCard accessible accessibilityLabel={`${segment.display_name}, ${rows.map((row) => row.join(' ')).join(', ')}`} style={styles.card}>

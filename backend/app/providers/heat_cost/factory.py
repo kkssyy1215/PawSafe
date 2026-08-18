@@ -9,7 +9,6 @@ from app.core.errors import PipelineNotReadyError
 from app.providers.heat_cost.base import HeatCostProvider
 from app.providers.heat_cost.external_heat_cost import ExternalHeatCostProvider
 from app.providers.heat_cost.file_heat_cost import FileHeatCostProvider
-from app.providers.heat_cost.mock_heat_cost import MockHeatCostProvider
 
 
 def create_heat_cost_provider(
@@ -20,8 +19,6 @@ def create_heat_cost_provider(
     data_version_override: str | None = None,
     timezone_name: str = "Asia/Seoul",
 ) -> HeatCostProvider:
-    if settings.heat_cost_provider == "mock":
-        return MockHeatCostProvider(settings.resolve_path(settings.heat_cost_file_path))
     if settings.heat_cost_provider == "file":
         return FileHeatCostProvider(
             path_override or settings.resolve_path(settings.heat_cost_file_path),

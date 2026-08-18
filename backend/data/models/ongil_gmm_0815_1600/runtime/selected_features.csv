@@ -1,0 +1,6 @@
+﻿feature,selected,decision,reason
+shade_ratio,True,retained,반복 재계산 후 상대적으로 고유한 정보를 유지해 최종 GMM 입력으로 선택
+recent_direct_sun_minutes,False,removed,"|r|=0.904인 shade_ratio와 정보가 중복되고, pair 안에서 VIF=18.567가 더 높아 제거"
+cumulative_effective_solar_mj_m2,True,retained,반복 재계산 후 상대적으로 고유한 정보를 유지해 최종 GMM 입력으로 선택
+heat_storage_proxy,False,removed,"|r|=0.973인 cumulative_effective_solar_mj_m2와 정보가 중복되고, pair 안에서 VIF=344.749가 더 높아 제거"
+surface_absorptivity,True,retained,반복 재계산 후 상대적으로 고유한 정보를 유지해 최종 GMM 입력으로 선택

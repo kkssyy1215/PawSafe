@@ -107,7 +107,6 @@ class FileHeatCostProvider:
             valid_at=representative,
             data_version=self.data_version,
             source=self._source,
-            is_demo=False,
             warnings=(
                 [
                     WarningMessage(

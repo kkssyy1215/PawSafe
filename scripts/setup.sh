@@ -29,6 +29,6 @@ if [[ ! -f "$ROOT_DIR/pawsafe-mobile/.env" ]]; then
   cp "$ROOT_DIR/pawsafe-mobile/.env.example" "$ROOT_DIR/pawsafe-mobile/.env"
 fi
 
-echo "PawSafe setup complete. Add local API keys to backend/.env, then run:"
+echo "온:길 setup complete. The final route model needs no API key. Run:"
 echo "  make backend"
 echo "  make web"

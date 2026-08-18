@@ -83,7 +83,7 @@ class GraphAnalysisProvider(AnalysisProvider):
         pawsafe = self._statistics.summarize(
             pawsafe_path,
             snapshot,
-            label="PawSafe 경로",
+            label="온:길 경로",
             route_source=self._pawsafe_route_source,
             route_kind="pawsafe",
         )
@@ -108,7 +108,6 @@ class GraphAnalysisProvider(AnalysisProvider):
         validation_status = "validated" if statuses == {"validated"} else "not_validated"
         return RouteAnalysisResponse(
             analysis_id=f"analysis_{digest}",
-            is_demo=self._graph_data.is_demo or snapshot.is_demo or self._walk_modes.is_demo,
             analysis_source="graph",
             validation_status=validation_status,
             requested_departure_at=request.departure_at,
@@ -118,7 +117,6 @@ class GraphAnalysisProvider(AnalysisProvider):
             heat_data_version=snapshot.data_version,
             weight_profile=WeightProfileResponse(
                 id=profile.id,
-                is_demo=self._walk_modes.is_demo,
             ),
             warnings=warnings,
             shortest=shortest,

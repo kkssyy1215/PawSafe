@@ -14,12 +14,12 @@ interface RouteSummaryCardProps {
 export function RouteSummaryCard({ route, tone, selected, onPress }: RouteSummaryCardProps) {
   const isPawSafe = tone === 'pawsafe';
   const isKakao = route.route_source.toLowerCase().includes('kakao');
-  const title = isPawSafe ? 'PawSafe 추천' : isKakao ? '카카오맵 최단경로' : '일반 최단경로';
+  const title = isPawSafe ? '온:길 추천' : isKakao ? '카카오맵 최단경로' : '일반 최단경로';
   return (
     <Pressable
       accessibilityRole="radio"
       accessibilityState={{ selected, checked: selected }}
-      accessibilityLabel={`${title}, ${formatDistance(route.distance_m)}, ${formatDuration(route.duration_min)}, Heat Cost ${route.heat_cost.toFixed(0)}`}
+      accessibilityLabel={`${title}, ${formatDistance(route.distance_m)}, ${formatDuration(route.duration_min)}, 경로 열위험 점수 ${route.safety.score}`}
       style={({ pressed }) => [styles.card, isPawSafe ? styles.pawsafe : styles.shortest, selected && styles.selected, pressed && styles.pressed]}
       onPress={onPress}
     >
@@ -29,7 +29,7 @@ export function RouteSummaryCard({ route, tone, selected, onPress }: RouteSummar
       </View>
       <Text style={styles.distance}>{formatDistance(route.distance_m)}</Text>
       <Text style={styles.duration}>{formatDuration(route.duration_min)}</Text>
-      <View style={styles.heatPill}><Text style={styles.heatText}>Heat Cost {route.heat_cost.toFixed(0)}</Text></View>
+      <View style={styles.heatPill}><Text style={styles.heatText}>열위험 점수 {route.safety.score}</Text></View>
       <Text style={[styles.caption, isPawSafe ? styles.coolCaption : styles.hotCaption]}>{isPawSafe ? '조금 더 걸어도 · 열노출 감소' : '거리 우선 · 빠른 이동'}</Text>
     </Pressable>
   );

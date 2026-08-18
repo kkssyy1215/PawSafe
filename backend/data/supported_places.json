@@ -1,0 +1,25 @@
+{
+  "items": [
+    {"id":"place_001","name":"위례광장로 185","address":"서울특별시 송파구 위례광장로 185","lat":37.4811743,"lng":127.1405973,"is_in_coverage":true},
+    {"id":"place_002","name":"장지동 900-2","address":"서울특별시 송파구 장지동 900-2","lat":37.4772949,"lng":127.1410705,"is_in_coverage":true},
+    {"id":"place_003","name":"잠실동 253","address":"서울특별시 송파구 잠실동 253","lat":37.510356341,"lng":127.079320701,"is_in_coverage":true},
+    {"id":"place_004","name":"신천동 32","address":"서울특별시 송파구 신천동 32","lat":37.511922376,"lng":127.104658454,"is_in_coverage":true},
+    {"id":"place_005","name":"잠실동 256","address":"서울특별시 송파구 잠실동 256","lat":37.510284609,"lng":127.078800342,"is_in_coverage":true},
+    {"id":"place_006","name":"잠실동 49","address":"서울특별시 송파구 잠실동 49","lat":37.508805793,"lng":127.103647487,"is_in_coverage":true},
+    {"id":"place_007","name":"신천동 34","address":"서울특별시 송파구 신천동 34","lat":37.513487741,"lng":127.107313067,"is_in_coverage":true},
+    {"id":"place_008","name":"신천동 29","address":"서울특별시 송파구 신천동 29","lat":37.513793792,"lng":127.102568525,"is_in_coverage":true},
+    {"id":"place_009","name":"올림픽로 300","address":"서울특별시 송파구 올림픽로 300","lat":37.513597410,"lng":127.105593951,"is_in_coverage":true},
+    {"id":"place_010","name":"문정동 3-3","address":"서울특별시 송파구 문정동 3-3","lat":37.488614874,"lng":127.130315976,"is_in_coverage":true},
+    {"id":"place_011","name":"거여동 산 71-25","address":"서울특별시 송파구 거여동 산 71-25","lat":37.492786943,"lng":127.152554488,"is_in_coverage":true},
+    {"id":"place_012","name":"거여동 657-12","address":"서울특별시 송파구 거여동 657-12","lat":37.489379515,"lng":127.157228801,"is_in_coverage":true},
+    {"id":"place_013","name":"문정동 18-3","address":"서울특별시 송파구 문정동 18-3","lat":37.487317955,"lng":127.129833174,"is_in_coverage":true},
+    {"id":"place_014","name":"거여동 572-1","address":"서울특별시 송파구 거여동 572-1","lat":37.491960506,"lng":127.154107621,"is_in_coverage":true},
+    {"id":"place_015","name":"문정동 119-4","address":"서울특별시 송파구 문정동 119-4","lat":37.488908878,"lng":127.120727911,"is_in_coverage":true},
+    {"id":"place_016","name":"거여동 20-14","address":"서울특별시 송파구 거여동 20-14","lat":37.495699682,"lng":127.139612404,"is_in_coverage":true},
+    {"id":"place_017","name":"문정동 646-1","address":"서울특별시 송파구 문정동 646-1","lat":37.484080858,"lng":127.114823773,"is_in_coverage":true},
+    {"id":"place_018","name":"장지동 859-1","address":"서울특별시 송파구 장지동 859-1","lat":37.478385181,"lng":127.133232038,"is_in_coverage":true},
+    {"id":"place_019","name":"문정동 500","address":"서울특별시 송파구 문정동 500","lat":37.486378331,"lng":127.114923398,"is_in_coverage":true},
+    {"id":"place_020","name":"장지동 859","address":"서울특별시 송파구 장지동 859","lat":37.477341736,"lng":127.131692632,"is_in_coverage":true},
+    {"id":"place_021","name":"문정동 471","address":"서울특별시 송파구 문정동 471","lat":37.484798583,"lng":127.113349352,"is_in_coverage":true}
+  ]
+}

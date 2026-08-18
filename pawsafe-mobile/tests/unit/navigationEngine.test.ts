@@ -1,4 +1,5 @@
 import {
+  coordinateAtRouteDistance,
   getNextNavigationStep,
   instructionWithDistance,
   matchPositionToRoute,
@@ -55,5 +56,17 @@ describe('navigationEngine', () => {
     const nextStep = getNextNavigationStep(route, 0);
     expect(nextStep?.type).toBe('right');
     expect(instructionWithDistance(nextStep!, 28)).toBe('30미터 뒤 우회전하세요.');
+  });
+
+  it('interpolates smooth positions between sparse route coordinates', () => {
+    const route = prepareNavigationRoute([
+      [127, 37],
+      [127, 37.001],
+    ]);
+    const midpoint = coordinateAtRouteDistance(route, route.totalDistanceM / 2);
+
+    expect(midpoint?.lat).toBeCloseTo(37.0005, 6);
+    expect(midpoint?.lng).toBeCloseTo(127, 6);
+    expect(coordinateAtRouteDistance(route, route.totalDistanceM * 2)).toEqual(route.coordinates[1]);
   });
 });

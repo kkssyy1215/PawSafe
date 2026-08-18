@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { AccessibilityInfo } from 'react-native';
+import { AccessibilityInfo, Platform } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import * as Location from 'expo-location';
 import * as Speech from 'expo-speech';
@@ -22,27 +22,31 @@ export type NavigationStatus = 'idle' | 'requesting' | 'active' | 'paused' | 'ar
 interface UseForegroundNavigationOptions {
   route: RouteStats | null;
   destination: Place | null;
+  voiceEnabled: boolean;
 }
 
-export function useForegroundNavigation({ route, destination }: UseForegroundNavigationOptions) {
+export function useForegroundNavigation({ route, destination, voiceEnabled }: UseForegroundNavigationOptions) {
   const preparedRoute = useMemo(
     () => prepareNavigationRoute(route?.geometry.coordinates ?? []),
     [route?.geometry.coordinates],
   );
   const [status, setStatus] = useState<NavigationStatus>('idle');
   const [currentLocation, setCurrentLocation] = useState<Place | null>(null);
-  const [currentInstruction, setCurrentInstruction] = useState('음성 안내를 시작하면 현재 위치를 확인해요.');
+  const [currentInstruction, setCurrentInstruction] = useState('산책길 안내를 시작하면 현재 위치를 확인해요.');
   const [remainingDistanceM, setRemainingDistanceM] = useState(route?.distance_m ?? 0);
   const [remainingDurationMin, setRemainingDurationMin] = useState(route?.duration_min ?? 0);
   const [accuracyM, setAccuracyM] = useState<number | null>(null);
   const [isOffRoute, setIsOffRoute] = useState(false);
-  const [voiceEnabled, setVoiceEnabled] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const subscriptionRef = useRef<Location.LocationSubscription | null>(null);
+  const webUtteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const webSpeechStartTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const webSpeechRetryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const webSpeechGenerationRef = useRef(0);
   const watchGenerationRef = useRef(0);
   const statusRef = useRef<NavigationStatus>('idle');
-  const voiceEnabledRef = useRef(true);
+  const voiceEnabledRef = useRef(voiceEnabled);
   const progressRef = useRef(0);
   const announcementStageRef = useRef<Record<string, number>>({});
   const offRouteCountRef = useRef(0);
@@ -55,8 +59,104 @@ export function useForegroundNavigation({ route, destination }: UseForegroundNav
     setStatus(nextStatus);
   }, []);
 
+  const stopSpeaking = useCallback(() => {
+    if (Platform.OS === 'web' && typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      webSpeechGenerationRef.current += 1;
+      if (webSpeechStartTimerRef.current) clearTimeout(webSpeechStartTimerRef.current);
+      if (webSpeechRetryTimerRef.current) clearTimeout(webSpeechRetryTimerRef.current);
+      webSpeechStartTimerRef.current = null;
+      webSpeechRetryTimerRef.current = null;
+      window.speechSynthesis.cancel();
+      webUtteranceRef.current = null;
+      return;
+    }
+    void Speech.stop();
+  }, []);
+
   const speak = useCallback((message: string, force = false) => {
     if (!voiceEnabledRef.current && !force) return;
+    if (
+      Platform.OS === 'web'
+      && typeof window !== 'undefined'
+      && 'speechSynthesis' in window
+      && typeof SpeechSynthesisUtterance !== 'undefined'
+    ) {
+      const speechSynthesis = window.speechSynthesis;
+      const generation = webSpeechGenerationRef.current + 1;
+      webSpeechGenerationRef.current = generation;
+      if (webSpeechStartTimerRef.current) clearTimeout(webSpeechStartTimerRef.current);
+      if (webSpeechRetryTimerRef.current) clearTimeout(webSpeechRetryTimerRef.current);
+      webSpeechStartTimerRef.current = null;
+      webSpeechRetryTimerRef.current = null;
+
+      const reportFailure = () => {
+        if (webSpeechGenerationRef.current !== generation) return;
+        setErrorMessage('브라우저에서 음성 안내가 시작되지 않았어요. 기기 음량과 브라우저의 사이트 소리 허용 상태를 확인한 뒤 안내 다시 듣기를 눌러 주세요.');
+      };
+
+      const runAttempt = (attempt: number) => {
+        if (webSpeechGenerationRef.current !== generation) return;
+        speechSynthesis.resume();
+        let didStart = false;
+        const utterance = new SpeechSynthesisUtterance(message);
+        const voices = speechSynthesis.getVoices();
+        const koreanVoice = voices.find((voice) => voice.lang.toLowerCase().startsWith('ko'));
+        if (koreanVoice) utterance.voice = koreanVoice;
+        utterance.lang = 'ko-KR';
+        utterance.rate = 0.9;
+        utterance.pitch = 1;
+        utterance.volume = 1;
+        utterance.onstart = () => {
+          if (webSpeechGenerationRef.current !== generation) return;
+          didStart = true;
+          if (webSpeechStartTimerRef.current) clearTimeout(webSpeechStartTimerRef.current);
+          webSpeechStartTimerRef.current = null;
+          setErrorMessage(null);
+        };
+        utterance.onend = () => {
+          if (webSpeechGenerationRef.current !== generation) return;
+          if (webSpeechStartTimerRef.current) clearTimeout(webSpeechStartTimerRef.current);
+          webSpeechStartTimerRef.current = null;
+          if (webUtteranceRef.current === utterance) webUtteranceRef.current = null;
+        };
+        utterance.onerror = (event) => {
+          if (webSpeechGenerationRef.current !== generation) return;
+          if (webSpeechStartTimerRef.current) clearTimeout(webSpeechStartTimerRef.current);
+          webSpeechStartTimerRef.current = null;
+          if (webUtteranceRef.current === utterance) webUtteranceRef.current = null;
+          if (event.error === 'canceled' || event.error === 'interrupted') return;
+          if (!didStart && attempt < 2) {
+            webSpeechRetryTimerRef.current = setTimeout(() => runAttempt(attempt + 1), 120);
+            return;
+          }
+          reportFailure();
+        };
+        webUtteranceRef.current = utterance;
+        speechSynthesis.speak(utterance);
+        webSpeechStartTimerRef.current = setTimeout(() => {
+          if (webSpeechGenerationRef.current !== generation || didStart) return;
+          utterance.onerror = null;
+          speechSynthesis.cancel();
+          webUtteranceRef.current = null;
+          if (attempt < 2) {
+            webSpeechRetryTimerRef.current = setTimeout(() => runAttempt(attempt + 1), 120);
+          } else {
+            reportFailure();
+          }
+        }, attempt === 1 ? 900 : 1_400);
+      };
+
+      // Calling cancel() while the engine is already idle can swallow the next
+      // utterance in Chromium/WebKit. Only clear a genuinely active queue.
+      const hasActiveSpeech = speechSynthesis.speaking || speechSynthesis.pending || Boolean(webUtteranceRef.current);
+      if (hasActiveSpeech) {
+        speechSynthesis.cancel();
+        webSpeechRetryTimerRef.current = setTimeout(() => runAttempt(1), 120);
+      } else {
+        runAttempt(1);
+      }
+      return;
+    }
     void Speech.stop();
     Speech.speak(message, { language: 'ko-KR', rate: 0.9, pitch: 1 });
   }, []);
@@ -205,22 +305,22 @@ export function useForegroundNavigation({ route, destination }: UseForegroundNav
       updateStatus('error');
       AccessibilityInfo.announceForAccessibility(message);
     }
-  }, [destination, handleLocation, preparedRoute.coordinates.length, route, speak, updateStatus]);
+  }, [destination, handleLocation, preparedRoute, route, speak, updateStatus]);
 
   const pause = useCallback(() => {
     watchGenerationRef.current += 1;
     subscriptionRef.current?.remove();
     subscriptionRef.current = null;
-    void Speech.stop();
+    stopSpeaking();
     updateStatus('paused');
-    setCurrentInstruction('음성 안내가 일시정지되었습니다.');
-  }, [updateStatus]);
+    setCurrentInstruction('산책길 안내가 일시정지되었습니다.');
+  }, [stopSpeaking, updateStatus]);
 
   const stop = useCallback(() => {
     watchGenerationRef.current += 1;
     subscriptionRef.current?.remove();
     subscriptionRef.current = null;
-    void Speech.stop();
+    stopSpeaking();
     progressRef.current = 0;
     announcementStageRef.current = {};
     offRouteCountRef.current = 0;
@@ -228,19 +328,20 @@ export function useForegroundNavigation({ route, destination }: UseForegroundNav
     isOffRouteRef.current = false;
     setIsOffRoute(false);
     updateStatus('idle');
-  }, [updateStatus]);
-
-  const toggleVoice = useCallback(() => {
-    const nextEnabled = !voiceEnabledRef.current;
-    voiceEnabledRef.current = nextEnabled;
-    setVoiceEnabled(nextEnabled);
-    if (nextEnabled) speak(`음성 안내를 켰습니다. ${lastInstructionRef.current}`, true);
-    else void Speech.stop();
-  }, [speak]);
+  }, [stopSpeaking, updateStatus]);
 
   const repeatInstruction = useCallback(() => {
-    speak(lastInstructionRef.current, true);
+    speak(lastInstructionRef.current);
   }, [speak]);
+
+  useEffect(() => {
+    const wasEnabled = voiceEnabledRef.current;
+    voiceEnabledRef.current = voiceEnabled;
+    if (!voiceEnabled) stopSpeaking();
+    else if (!wasEnabled && statusRef.current === 'active') {
+      speak(`음성 안내를 켰습니다. ${lastInstructionRef.current}`, true);
+    }
+  }, [speak, stopSpeaking, voiceEnabled]);
 
   useEffect(() => {
     setRemainingDistanceM(route?.distance_m ?? 0);
@@ -250,8 +351,8 @@ export function useForegroundNavigation({ route, destination }: UseForegroundNav
   useEffect(() => () => {
     watchGenerationRef.current += 1;
     subscriptionRef.current?.remove();
-    void Speech.stop();
-  }, []);
+    stopSpeaking();
+  }, [stopSpeaking]);
 
   return {
     status,
@@ -267,7 +368,6 @@ export function useForegroundNavigation({ route, destination }: UseForegroundNav
     resume: beginWatching,
     pause,
     stop,
-    toggleVoice,
     repeatInstruction,
   };
 }

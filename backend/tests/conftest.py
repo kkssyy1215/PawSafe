@@ -24,19 +24,19 @@ def client(settings: Settings) -> Iterator[TestClient]:
 def route_payload() -> dict[str, object]:
     return {
         "origin": {
-            "id": "place_home",
-            "name": "우리집",
-            "address": "서울특별시 마포구 독막로",
-            "lat": 37.55,
-            "lng": 126.91,
+            "id": "place_001",
+            "name": "위례광장로 185",
+            "address": "서울특별시 송파구 위례광장로 185",
+            "lat": 37.4811743,
+            "lng": 127.1405973,
         },
         "destination": {
-            "id": "place_001",
-            "name": "망원한강공원",
-            "address": "서울특별시 마포구 마포나루길",
-            "lat": 37.555,
-            "lng": 126.9,
+            "id": "place_002",
+            "name": "장지동 900-2",
+            "address": "서울특별시 송파구 장지동 900-2",
+            "lat": 37.4772949,
+            "lng": 127.1410705,
         },
-        "departure_at": "2026-08-12T18:30:00+09:00",
+        "departure_at": "2026-08-19T12:00:00+09:00",
         "walk_mode": "cool",
     }
